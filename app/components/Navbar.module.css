@@ -1,0 +1,55 @@
+.nav {
+  width: 100%;
+  background: white;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.container {
+  max-width: 80rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.logoIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.75rem;
+  background: #f97316;
+  color: white;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.menuActive {
+  color: #f97316;
+  border-bottom: 2px solid #f97316;
+  padding-bottom: 0.25rem;
+}
+
+.menuInactive {
+  color: #6b7280;
+  padding-bottom: 0.25rem;
+}
+
+.right {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
