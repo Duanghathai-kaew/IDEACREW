@@ -14,76 +14,77 @@ export default function Navbar() {
       <div className={styles.container}>
         {/* LEFT */}
         <div className="flex items-center gap-6">
+          {/* Logo */}
           <div className={styles.logo}>
             <div className={styles.logoIcon}>IC</div>
-            <span className="font-bold text-logo text-orange-500">
+            <span className="text-logo font-semibold text-orange-500">
               IDEACREW
             </span>
           </div>
 
           {/* Desktop menu */}
           <div className={`${styles.menu} hidden md:flex`}>
-            <button
+            <NavItem
+              active={active === "home"}
               onClick={() => setActive("home")}
-              className={
-                active === "home" ? styles.menuActive : styles.menuInactive
-              }
             >
               หน้าหลัก
-            </button>
+            </NavItem>
 
-            <button
+            <NavItem
+              active={active === "my-project"}
               onClick={() => setActive("my-project")}
-              className={
-                active === "my-project"
-                  ? styles.menuActive
-                  : styles.menuInactive
-              }
             >
               โปรเจกต์ของฉัน
-            </button>
+            </NavItem>
           </div>
         </div>
 
         {/* RIGHT (Desktop) */}
         <div className="hidden md:flex items-center gap-2">
           <IconButton>
-            <Bell className="w-5 h-5 text-gray-600" />
+            <Bell className="icon-sm text-gray-600" />
           </IconButton>
 
           <IconButton>
-            <CircleUserRound className="w-5 h-5 text-gray-600" />
+            <CircleUserRound className="icon-sm text-gray-600" />
           </IconButton>
 
-          <Button className="bg-orange-500 hover:bg-orange-600">
+          <Button className="text-button bg-orange-500 hover:bg-orange-600">
             โพสต์โปรเจกต์
           </Button>
 
           <IconButton>
-            <LogOut className="w-5 h-5 text-orange-500" />
+            <LogOut className="icon-sm text-orange-500" />
           </IconButton>
         </div>
 
-        {/* Mobile menu button */}
-        <button className="md:hidden p-2" onClick={() => setOpen(!open)}>
-          {open ? <X /> : <Menu />}
+        {/* Mobile toggle */}
+        <button
+          className="md:hidden icon-btn"
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle menu"
+        >
+          {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
         </button>
       </div>
 
       {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
-          <button className="block w-full text-left">หน้าหลัก</button>
-          <button className="block w-full text-left">โปรเจกต์ของฉัน</button>
+          <button className="block w-full text-left text-nav">หน้าหลัก</button>
+          <button className="block w-full text-left text-nav">
+            โปรเจกต์ของฉัน
+          </button>
 
-          <Button className="w-full bg-orange-500 hover:bg-orange-600">
+          <Button className="w-full text-button bg-orange-500 hover:bg-orange-600">
             โพสต์โปรเจกต์
           </Button>
 
-          <div className="flex items-center gap-4">
-            <Bell />
-            <CircleUserRound />
-            <LogOut />
+          <div className="flex items-center gap-4 pt-2">
+            <Bell className="icon-sm text-gray-600" />
+            <CircleUserRound className="icon-sm text-gray-600" />
+            <LogOut className="icon-sm text-orange-500" />
           </div>
         </div>
       )}
@@ -91,11 +92,29 @@ export default function Navbar() {
   );
 }
 
-/* small helper component */
-function IconButton({ children }: { children: React.ReactNode }) {
+/* ======================
+   Helper Components
+====================== */
+
+function NavItem({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
   return (
-    <div className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-gray-100 cursor-pointer">
+    <button
+      onClick={onClick}
+      className={`text-nav ${active ? styles.menuActive : styles.menuInactive}`}
+    >
       {children}
-    </div>
+    </button>
   );
+}
+
+function IconButton({ children }: { children: React.ReactNode }) {
+  return <div className="icon-btn">{children}</div>;
 }
