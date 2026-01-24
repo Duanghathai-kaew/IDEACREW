@@ -14,12 +14,14 @@ export default function Navbar() {
     <nav className={styles.nav}>
       <div className={styles.container}>
         <div className="flex items-center w-full">
+          {/* Logo (ซ้าย) */}
           <div className={styles.logo}>
             <div className={styles.logoIcon}>IC</div>
             <span className="text-logo font-semibold text-orange-500">
               IDEACREW
             </span>
           </div>
+          {/* Menu (กลาง) */}
           <div className="flex-1 flex justify-center">
             <div className={`${styles.menu} hidden md:flex`}>
               <NavItem
@@ -36,31 +38,33 @@ export default function Navbar() {
               </NavItem>
             </div>
           </div>
-        </div>
-        <div className="hidden md:flex items-center gap-2">
-          <div className={styles.bellWrapper}>
+          {/* ปุ่มขวา */}
+          <div className="hidden md:flex items-center gap-2">
+            <div className={styles.bellWrapper}>
+              <IconButton>
+                <Bell className="icon-sm text-gray-600" />
+              </IconButton>
+              <Badge className={styles.badge}>4</Badge>
+            </div>
             <IconButton>
-              <Bell className="icon-sm text-gray-600" />
+              <CircleUserRound className="icon-sm text-gray-600" />
             </IconButton>
-            <Badge className={styles.badge}>4</Badge>
+            <Button className={styles.postButton}>โพสต์โปรเจกต์</Button>
+            <IconButton>
+              <LogOut className="icon-sm text-orange-500" />
+            </IconButton>
           </div>
-          <IconButton>
-            <CircleUserRound className="icon-sm text-gray-600" />
-          </IconButton>
-          <Button className={styles.postButton}>โพสต์โปรเจกต์</Button>
-          <IconButton>
-            <LogOut className="icon-sm text-orange-500" />
-          </IconButton>
+          {/* Hamburger (mobile) */}
+          <button
+            className="md:hidden"
+            onClick={() => setOpen(!open)}
+            aria-label="Toggle menu"
+          >
+            <IconButton>
+              {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
+            </IconButton>
+          </button>
         </div>
-        <button
-          className="md:hidden"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          <IconButton>
-            {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
-          </IconButton>
-        </button>
       </div>
       {open && (
         <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
