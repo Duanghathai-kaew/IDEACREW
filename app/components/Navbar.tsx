@@ -13,26 +13,28 @@ export default function Navbar() {
   return (
     <nav className={styles.nav}>
       <div className={styles.container}>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center w-full">
           <div className={styles.logo}>
             <div className={styles.logoIcon}>IC</div>
             <span className="text-logo font-semibold text-orange-500">
               IDEACREW
             </span>
           </div>
-          <div className={`${styles.menu} hidden md:flex`}>
-            <NavItem
-              active={active === "home"}
-              onClick={() => setActive("home")}
-            >
-              หน้าหลัก
-            </NavItem>
-            <NavItem
-              active={active === "my-project"}
-              onClick={() => setActive("my-project")}
-            >
-              โปรเจกต์ของฉัน
-            </NavItem>
+          <div className="flex-1 flex justify-center">
+            <div className={`${styles.menu} hidden md:flex`}>
+              <NavItem
+                active={active === "home"}
+                onClick={() => setActive("home")}
+              >
+                หน้าหลัก
+              </NavItem>
+              <NavItem
+                active={active === "my-project"}
+                onClick={() => setActive("my-project")}
+              >
+                โปรเจกต์ของฉัน
+              </NavItem>
+            </div>
           </div>
         </div>
         <div className="hidden md:flex items-center gap-2">
