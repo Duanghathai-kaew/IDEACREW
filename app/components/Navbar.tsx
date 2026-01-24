@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import { useState } from "react";
@@ -42,9 +43,12 @@ export default function Navbar() {
 
         {/* RIGHT (Desktop) */}
         <div className="hidden md:flex items-center gap-2">
-          <IconButton>
-            <Bell className="icon-sm text-gray-600" />
-          </IconButton>
+          <div className={styles.bellWrapper}>
+            <IconButton>
+              <Bell className="icon-sm text-gray-600" />
+            </IconButton>
+            <Badge className={styles.badge}>4</Badge>
+          </div>
 
           <IconButton>
             <CircleUserRound className="icon-sm text-gray-600" />
