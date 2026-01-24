@@ -54,9 +54,7 @@ export default function Navbar() {
             <CircleUserRound className="icon-sm text-gray-600" />
           </IconButton>
 
-          <Button className="text-button bg-orange-500 hover:bg-orange-600">
-            โพสต์โปรเจกต์
-          </Button>
+          <Button className={styles.postButton}>โพสต์โปรเจกต์</Button>
 
           <IconButton>
             <LogOut className="icon-sm text-orange-500" />
@@ -81,7 +79,7 @@ export default function Navbar() {
             โปรเจกต์ของฉัน
           </button>
 
-          <Button className="w-full text-button bg-orange-500 hover:bg-orange-600">
+          <Button className={styles.postButton + " w-full"}>
             โพสต์โปรเจกต์
           </Button>
 

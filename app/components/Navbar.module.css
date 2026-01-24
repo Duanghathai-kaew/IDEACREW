@@ -1,3 +1,16 @@
+.postButton {
+  background: linear-gradient(135deg, #ff6a5f 0%, #ff9472 100%);
+  color: #fff;
+  font-weight: 500;
+  font-size: 1.1rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 24px 0 rgba(255, 107, 107, 0.15);
+  padding: 0.75rem 2.25rem;
+  transition: background 0.2s;
+}
+.postButton:hover {
+  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+}
 .bellWrapper {
   position: relative;
   display: flex;
