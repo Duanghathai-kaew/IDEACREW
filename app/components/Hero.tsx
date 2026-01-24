@@ -22,6 +22,21 @@ export default function Hero() {
       className="w-full flex flex-col items-center justify-center py-16 px-4 md:py-24 md:px-0 relative overflow-hidden group"
       style={{ minHeight: 320 }}
     >
+      {/* วงกลมกราเดี้ยนจางๆ เล็ก 2 อัน ลอยซ้ายบนและขวาล่าง */}
+      <div
+        className="absolute z-0 left-1/2 top-1/2 w-[180px] h-[180px] rounded-full opacity-20 blur-2xl pointer-events-none -translate-x-[200%] -translate-y-1/2"
+        style={{
+          background:
+            "radial-gradient(circle at 60% 40%, #FD5E4B 0%, #FDB591 100%)",
+        }}
+      />
+      <div
+        className="absolute z-0 left-1/2 top-1/2 w-[140px] h-[140px] rounded-full opacity-20 blur-2xl pointer-events-none translate-x-[140%] -translate-y-1/2"
+        style={{
+          background:
+            "radial-gradient(circle at 60% 40%, #FCCF00 0%, #FD5E4B 100%)",
+        }}
+      />
       <h1
         className={`relative z-10 text-4xl md:text-6xl font-bold mb-2 tracking-tight text-center bg-linear-to-r from-[#ff9472] to-[#f2709c] text-transparent bg-clip-text transition-all duration-700 ${showH1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} group-hover:scale-105 group-hover:drop-shadow-lg group-hover:duration-300`}
         style={{ letterSpacing: "0.01em" }}
