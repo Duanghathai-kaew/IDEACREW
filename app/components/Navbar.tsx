@@ -13,17 +13,13 @@ export default function Navbar() {
   return (
     <nav className={styles.nav}>
       <div className={styles.container}>
-        {/* LEFT */}
         <div className="flex items-center gap-6">
-          {/* Logo */}
           <div className={styles.logo}>
             <div className={styles.logoIcon}>IC</div>
             <span className="text-logo font-semibold text-orange-500">
               IDEACREW
             </span>
           </div>
-
-          {/* Desktop menu */}
           <div className={`${styles.menu} hidden md:flex`}>
             <NavItem
               active={active === "home"}
@@ -31,7 +27,6 @@ export default function Navbar() {
             >
               หน้าหลัก
             </NavItem>
-
             <NavItem
               active={active === "my-project"}
               onClick={() => setActive("my-project")}
@@ -40,8 +35,6 @@ export default function Navbar() {
             </NavItem>
           </div>
         </div>
-
-        {/* RIGHT (Desktop) */}
         <div className="hidden md:flex items-center gap-2">
           <div className={styles.bellWrapper}>
             <IconButton>
@@ -49,40 +42,33 @@ export default function Navbar() {
             </IconButton>
             <Badge className={styles.badge}>4</Badge>
           </div>
-
           <IconButton>
             <CircleUserRound className="icon-sm text-gray-600" />
           </IconButton>
-
           <Button className={styles.postButton}>โพสต์โปรเจกต์</Button>
-
           <IconButton>
             <LogOut className="icon-sm text-orange-500" />
           </IconButton>
         </div>
-
-        {/* Mobile toggle */}
         <button
-          className="md:hidden icon-btn"
+          className="md:hidden"
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
-          {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
+          <IconButton>
+            {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
+          </IconButton>
         </button>
       </div>
-
-      {/* Mobile menu */}
       {open && (
         <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
           <button className="block w-full text-left text-nav">หน้าหลัก</button>
           <button className="block w-full text-left text-nav">
             โปรเจกต์ของฉัน
           </button>
-
           <Button className={styles.postButton + " w-full"}>
             โพสต์โปรเจกต์
           </Button>
-
           <div className="flex items-center gap-4 pt-2">
             <Bell className="icon-sm text-gray-600" />
             <CircleUserRound className="icon-sm text-gray-600" />
@@ -93,10 +79,6 @@ export default function Navbar() {
     </nav>
   );
 }
-
-/* ======================
-   Helper Components
-====================== */
 
 function NavItem({
   active,
