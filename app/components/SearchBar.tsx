@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-
+import styles from "./Navbar.module.css";
 export default function SearchBar() {
   return (
     <div className="w-full">
@@ -33,18 +33,9 @@ export default function SearchBar() {
 
         {/* Button */}
         <Button
-          className="
-            h-12
-            rounded-xl
-            px-6
-            text-base
-            bg-orange-500
-            hover:bg-orange-600
-            md:w-auto
-            w-full
-          "
+          className={`${styles.postButton} mr-10 h-12 w-20 flex items-center gap-2`}
         >
-          <Search className="mr-2 h-5 w-5" />
+          <Search className="h-4 w-4" />
           ค้นหา
         </Button>
       </div>
