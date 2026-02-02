@@ -24,14 +24,14 @@ export default function Hero() {
     >
       {/* วงกลมกราเดี้ยนจางๆ เล็ก 2 อัน ลอยซ้ายบนและขวาล่าง */}
       <div
-        className="absolute z-0 left-1/2 top-1/2 w-[180px] h-[180px] rounded-full opacity-20 blur-2xl pointer-events-none -translate-x-[200%] -translate-y-1/2"
+        className="absolute z-0 left-1/2 top-1/2 w-45 h-45 rounded-full opacity-20 blur-2xl pointer-events-none -translate-x-[200%] -translate-y-1/2"
         style={{
           background:
             "radial-gradient(circle at 60% 40%, #FD5E4B 0%, #FDB591 100%)",
         }}
       />
       <div
-        className="absolute z-0 left-1/2 top-1/2 w-[140px] h-[140px] rounded-full opacity-20 blur-2xl pointer-events-none translate-x-[140%] -translate-y-1/2"
+        className="absolute z-0 left-1/2 top-1/2 w-35 h-35 rounded-full opacity-20 blur-2xl pointer-events-none translate-x-[140%] -translate-y-1/2"
         style={{
           background:
             "radial-gradient(circle at 60% 40%, #FCCF00 0%, #FD5E4B 100%)",

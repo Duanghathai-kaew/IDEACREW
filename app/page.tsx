@@ -1,9 +1,9 @@
 "use client";
-
 import { useState } from "react";
-import Hero from "./components/Hero";
-import Navbar from "./components/Navbar";
-import SearchBar from "./components/SearchBar";
+
+import Hero from "@/components/Hero";
+import Navbar from "@/components/Navbar";
+import SearchBar from "@/components/SearchBar";
 
 const projects = [
   {
