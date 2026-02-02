@@ -215,8 +215,56 @@
 
 /* Right */
 .project-right {
-  text-align: right;
-  min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 220px;
+  width: 100%;
+  gap: 0;
+}
+
+/* Status badge container (right top) */
+.project-status {
+  align-self: flex-end;
+  margin-bottom: 8px;
+}
+
+/* Info block (open roles, skills, etc.) */
+.project-info {
+  width: 100%;
+  margin-bottom: 8px;
+}
+
+/* Open roles row */
+.open-roles-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.open-roles-icon {
+  color: #fd5e4b;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+}
+.open-roles-count {
+  color: #fd5e4b;
+  font-weight: 500;
+  font-size: 16px;
+}
+.open-roles-unit {
+  color: #a78a7f;
+  font-weight: 400;
+  font-size: 15px;
+  margin-left: 2px;
+}
+
+/* Label for info sections */
+.label {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 4px;
 }
 
 .status {
@@ -232,12 +280,28 @@
   color: #1e9b4b;
 }
 
+.btn-detail {
+  margin-top: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.btn-detail:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .skill-list {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   justify-content: flex-end;
   margin-bottom: 12px;
+}
+
+.label {
+  text-align: right;
+  width: 100%;
 }
 
 .skill {
