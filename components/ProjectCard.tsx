@@ -69,9 +69,14 @@ export default function ProjectCard({ project }: { project: Project }) {
             {project.status === "open" ? "เปิดรับ" : "ปิดรับ"}
           </span>
         </div>
-        <div className="project-info">
-          <p className="label">ทักษะที่ต้องการ</p>
-          <div className="skill-list">
+        <div
+          className="project-info"
+          style={{ alignItems: "flex-start", textAlign: "left" }}
+        >
+          <p className="label" style={{ textAlign: "left" }}>
+            ทักษะที่ต้องการ
+          </p>
+          <div className="skill-list" style={{ justifyContent: "flex-start" }}>
             {project.skills.map((skill) => (
               <span key={skill} className="skill">
                 {skill}
