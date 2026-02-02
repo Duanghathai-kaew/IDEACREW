@@ -10,7 +10,7 @@ const prompt = Prompt({
 
 export const metadata: Metadata = {
   title: "IDEACREW",
-  description: "Find teammates and projects",
+  description: "Build Your Dream Team",
 };
 
 export default function RootLayout({
@@ -20,7 +20,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="th" className={prompt.variable}>
-      <body className="font-sans antialiased">{children}</body>
+      <body className="font-sans antialiased bg-[#FFF9F6]">{children}</body>
     </html>
   );
 }
