@@ -3,19 +3,21 @@ import { useState } from "react";
 
 import Hero from "@/components/Hero";
 import Navbar from "@/components/Navbar";
+import ProjectFeed from "@/components/ProjectFeed";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
 
+/* ===== Mock Data ===== */
 const projects = [
   {
-    title: "CSTU E-Sport Tournament",
+    title: "CSTU E-Sport Tournament 2025: Voice Casting Team",
+    org: "CSTU E-Sport",
+    description:
+      "สร้างทีมผู้พากย์เสียงคุณภาพสำหรับงานแข่งขัน E-Sport ของสาขา เพื่อทำให้การถ่ายทอดสดมีความสนุก น่าติดตาม และสร้างบรรยากาศระดับโปรทัวร์นาเมนต์",
+    status: "open" as const,
+    openRoles: "ผู้พากย์เสียง (Caster) 2 คน",
     positions: ["Caster", "Sound Engineer"],
-    skills: ["E-sport", "Voice"],
-  },
-  {
-    title: "Open House Media Team",
-    positions: ["Frontend Dev", "UX/UI"],
-    skills: ["React", "Figma"],
+    skills: ["พากย์เสียง", "เขียนสคริปต์", "ตัดต่อเสียง"],
   },
 ];
 
@@ -41,20 +43,10 @@ export default function Home() {
       <Hero />
       <SearchBar onSearch={handleSearch} />
 
-      {/* 🔹 Layout หลัก */}
+      {/* ===== Main Layout ===== */}
       <main className="layout">
         <Sidebar />
-
-        <section className="feed">
-          {filtered.map((p) => (
-            <div key={p.title} className="rounded-xl border bg-white p-4 mb-4">
-              <h3 className="font-semibold">{p.title}</h3>
-              <p className="text-sm text-muted-foreground">
-                {p.positions.join(", ")}
-              </p>
-            </div>
-          ))}
-        </section>
+        <ProjectFeed projects={filtered} />
       </main>
     </>
   );
