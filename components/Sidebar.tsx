@@ -7,7 +7,6 @@ export default function Sidebar() {
         <div className="sidebar-icon">✦</div>
         <span>ตัวกรอง</span>
       </div>
-      <h3 className="sidebar-title">ตัวกรอง</h3>
 
       <div className="sidebar-section">
         <p className="sidebar-label">ทักษะที่ต้องการ</p>
