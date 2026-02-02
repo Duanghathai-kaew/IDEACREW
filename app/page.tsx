@@ -4,6 +4,7 @@ import { useState } from "react";
 import Hero from "@/components/Hero";
 import Navbar from "@/components/Navbar";
 import SearchBar from "@/components/SearchBar";
+import Sidebar from "@/components/Sidebar";
 
 const projects = [
   {
@@ -38,21 +39,23 @@ export default function Home() {
     <>
       <Navbar />
       <Hero />
-
-      {/* 🔹 SearchBar ส่ง logic ลงไป */}
       <SearchBar onSearch={handleSearch} />
 
-      {/* 🔹 แสดงผลลัพธ์ */}
-      <div className="mt-6 space-y-4 px-6">
-        {filtered.map((p) => (
-          <div key={p.title} className="rounded-xl border bg-white p-4">
-            <h3 className="font-semibold">{p.title}</h3>
-            <p className="text-sm text-muted-foreground">
-              {p.positions.join(", ")}
-            </p>
-          </div>
-        ))}
-      </div>
+      {/* 🔹 Layout หลัก */}
+      <main className="layout">
+        <Sidebar />
+
+        <section className="feed">
+          {filtered.map((p) => (
+            <div key={p.title} className="rounded-xl border bg-white p-4 mb-4">
+              <h3 className="font-semibold">{p.title}</h3>
+              <p className="text-sm text-muted-foreground">
+                {p.positions.join(", ")}
+              </p>
+            </div>
+          ))}
+        </section>
+      </main>
     </>
   );
 }
