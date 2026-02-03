@@ -1,14 +1,18 @@
 "use client";
 
+import AddProjectModal from "@/app/add-project/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
   const [active, setActive] = useState<"home" | "my-project">("home");
   const [open, setOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const router = useRouter();
 
   const menuItems = [
     { key: "home", label: "หน้าหลัก" },
@@ -53,7 +57,12 @@ export default function Navbar() {
             <div className="icon-btn">
               <CircleUserRound className="icon-sm text-gray-600" />
             </div>
-            <Button className={styles.postButton}>เพิ่มโปรเจกต์</Button>
+            <Button
+              className={styles.postButton}
+              onClick={() => setIsModalOpen(true)}
+            >
+              เพิ่มโปรเจกต์
+            </Button>
             <div className="icon-btn">
               <LogOut className="icon-sm text-orange-500" />
             </div>
@@ -76,7 +85,10 @@ export default function Navbar() {
               {label}
             </button>
           ))}
-          <Button className={styles.postButton + " w-full"}>
+          <Button
+            className={styles.postButton + " w-full"}
+            onClick={() => setIsModalOpen(true)}
+          >
             เพิ่มโปรเจกต์
           </Button>
           <div className="flex items-center gap-4 pt-2">
@@ -86,6 +98,12 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Add Project Modal */}
+      <AddProjectModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </nav>
   );
 }
