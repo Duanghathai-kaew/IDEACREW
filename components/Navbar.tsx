@@ -10,70 +10,74 @@ export default function Navbar() {
   const [active, setActive] = useState<"home" | "my-project">("home");
   const [open, setOpen] = useState(false);
 
+  const menuItems = [
+    { key: "home", label: "หน้าหลัก" },
+    { key: "my-project", label: "โปรเจกต์ของฉัน" },
+  ];
+
   return (
     <nav className={styles.nav}>
       <div className={styles.container}>
         <div className="flex items-center w-full">
-          {/* Logo (ซ้าย) */}
+          {/* Logo */}
           <div className={styles.logo}>
             <div className={styles.logoIcon}>IC</div>
             <span className="text-logo font-semibold text-orange-500">
               IDEACREW
             </span>
           </div>
-          {/* Menu (กลาง) */}
+
+          {/* Desktop Menu */}
           <div className="flex-1 flex justify-center">
             <div className={`${styles.menu} hidden md:flex`}>
-              <NavItem
-                active={active === "home"}
-                onClick={() => setActive("home")}
-              >
-                หน้าหลัก
-              </NavItem>
-              <NavItem
-                active={active === "my-project"}
-                onClick={() => setActive("my-project")}
-              >
-                โปรเจกต์ของฉัน
-              </NavItem>
+              {menuItems.map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setActive(key as "home" | "my-project")}
+                  className={`text-nav ${active === key ? styles.menuActive : styles.menuInactive}`}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
           </div>
-          {/* ปุ่มขวา */}
-          <div className="hidden md:flex items-center gap-2">
+
+          {/* Desktop Actions */}
+          <div className="hidden md:flex items-center gap-6">
             <div className={styles.bellWrapper}>
-              <IconButton>
+              <div className="icon-btn">
                 <Bell className="icon-sm text-gray-600" />
-              </IconButton>
+              </div>
               <Badge className={styles.badge}>4</Badge>
             </div>
-            <IconButton>
+            <div className="icon-btn">
               <CircleUserRound className="icon-sm text-gray-600" />
-            </IconButton>
-            <Button className={styles.postButton}>โพสต์โปรเจกต์</Button>
-            <IconButton>
+            </div>
+            <Button className={styles.postButton}>เพิ่มโปรเจกต์</Button>
+            <div className="icon-btn">
               <LogOut className="icon-sm text-orange-500" />
-            </IconButton>
+            </div>
           </div>
-          {/* Hamburger (mobile) */}
-          <button
-            className="md:hidden"
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle menu"
-          >
-            <IconButton>
+
+          {/* Mobile Toggle */}
+          <button className="md:hidden" onClick={() => setOpen(!open)}>
+            <div className="icon-btn">
               {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
-            </IconButton>
+            </div>
           </button>
         </div>
       </div>
+
+      {/* Mobile Menu */}
       {open && (
         <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
-          <button className="block w-full text-left text-nav">หน้าหลัก</button>
-          <button className="block w-full text-left text-nav">
-            โปรเจกต์ของฉัน
-          </button>
+          {menuItems.map(({ label }) => (
+            <button key={label} className="block w-full text-left text-nav">
+              {label}
+            </button>
+          ))}
           <Button className={styles.postButton + " w-full"}>
-            โพสต์โปรเจกต์
+            เพิ่มโปรเจกต์
           </Button>
           <div className="flex items-center gap-4 pt-2">
             <Bell className="icon-sm text-gray-600" />
@@ -84,27 +88,4 @@ export default function Navbar() {
       )}
     </nav>
   );
-}
-
-function NavItem({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={`text-nav ${active ? styles.menuActive : styles.menuInactive}`}
-    >
-      {children}
-    </button>
-  );
-}
-
-function IconButton({ children }: { children: React.ReactNode }) {
-  return <div className="icon-btn">{children}</div>;
 }
