@@ -1,11 +1,16 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Benefit, ProjectFormData, WorkMode } from "@/types/project";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import {
+  ArrowLeft,
+  Calendar,
+  Plus,
+  Shield,
+  Target,
+  Trash2,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 
 const WORK_MODES: { value: WorkMode; label: string }[] = [
@@ -41,9 +46,9 @@ const FormField = ({
   required?: boolean;
   children: React.ReactNode;
 }) => (
-  <div>
-    <label className="block text-sm font-medium mb-2">
-      {label} {required && "*"}
+  <div className="form-field">
+    <label className="form-label">
+      {label} {required && <span className="form-required">*</span>}
     </label>
     {children}
   </div>
@@ -65,29 +70,29 @@ const TagInput = ({
   placeholder: string;
 }) => (
   <>
-    <div className="flex flex-wrap gap-2 mb-2">
+    <div className="tag-container">
       {items.map((item, index) => (
-        <Badge key={index} variant="secondary" className="gap-1">
+        <div key={index} className="tag-item">
           {item}
           <button
             type="button"
             onClick={() => onRemove(index)}
-            className="ml-1 text-xs hover:bg-red-100 rounded-full w-4 h-4 flex items-center justify-center"
+            className="tag-remove"
           >
             ×
           </button>
-        </Badge>
+        </div>
       ))}
     </div>
-    <div className="flex gap-2">
+    <div className="tag-input-row">
       <Input
         value={newItem}
         onChange={(e) => setNewItem(e.target.value)}
         placeholder={placeholder}
       />
-      <Button type="button" onClick={onAdd} size="sm">
+      <button type="button" onClick={onAdd} className="btn-primary">
         เพิ่ม
-      </Button>
+      </button>
     </div>
   </>
 );
@@ -229,14 +234,42 @@ export default function AddProjectPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" size="sm">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+    <div className="form-container">
+      <div className="form-wrapper">
+        <div className="form-header">
+          <button
+            className="btn-secondary"
+            style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+          >
+            <ArrowLeft className="w-4 h-4" />
             กลับ
-          </Button>
-          <h1 className="text-2xl font-bold">เพิ่มโปรเจกต์ใหม่</h1>
+          </button>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div
+              style={{
+                backgroundColor: "var(--form-primary)",
+                borderRadius: "12px",
+                padding: "0.75rem",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Shield className="w-6 h-6" style={{ color: "white" }} />
+            </div>
+            <div>
+              <h1 className="form-title">วิธีการสร้างโปรเจกต์</h1>
+              <p
+                style={{
+                  color: "var(--form-text-secondary)",
+                  fontSize: "0.875rem",
+                  margin: 0,
+                }}
+              >
+                กรอกข้อมูลในแบบฟอร์มเพื่อเขียนเนียน
+              </p>
+            </div>
+          </div>
         </div>
 
         <form
@@ -244,12 +277,34 @@ export default function AddProjectPage() {
             e.preventDefault();
             console.log("Form Data:", formData);
           }}
-          className="space-y-8"
         >
           {/* ข้อมูลโปรเจกต์ */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">ข้อมูลโปรเจกต์</h2>
-            <div className="space-y-4">
+          <div className="form-card">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "var(--form-primary)",
+                  borderRadius: "8px",
+                  padding: "0.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Shield className="w-5 h-5" style={{ color: "white" }} />
+              </div>
+              <h2 className="form-section-title" style={{ margin: 0 }}>
+                ข้อมูลพื้นฐานโปรเจกต์
+              </h2>
+            </div>
+            <div>
               <FormField label="ชื่อโปรเจกต์" required>
                 <Input
                   value={formData.title}
@@ -268,7 +323,7 @@ export default function AddProjectPage() {
               </FormField>
               <FormField label="รายละเอียดโปรเจกต์" required>
                 <textarea
-                  className="w-full min-h-24 p-3 border border-gray-300 rounded-md"
+                  className="form-textarea"
                   value={formData.description}
                   onChange={(e) =>
                     updateFormData({ description: e.target.value })
@@ -278,44 +333,68 @@ export default function AddProjectPage() {
                 />
               </FormField>
               <FormField label="หมวดหมู่">
-                <div className="flex flex-wrap gap-2 mb-3">
+                <div className="category-badges">
                   {CATEGORIES.map((category) => (
-                    <Badge
+                    <div
                       key={category}
-                      variant={
-                        formData.categories.includes(category)
-                          ? "default"
-                          : "outline"
-                      }
-                      className="cursor-pointer"
+                      className={`category-badge ${
+                        formData.categories.includes(category) ? "active" : ""
+                      }`}
                       onClick={() => handleCategoryToggle(category)}
                     >
                       {category}
-                    </Badge>
+                    </div>
                   ))}
                 </div>
-                <div className="flex gap-2">
+                <div className="tag-input-row">
                   <Input
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     placeholder="เพิ่มหมวดหมู่ใหม่"
                   />
-                  <Button type="button" onClick={addCategory} size="sm">
+                  <button
+                    type="button"
+                    onClick={addCategory}
+                    className="btn-primary"
+                  >
                     เพิ่ม
-                  </Button>
+                  </button>
                 </div>
               </FormField>
             </div>
-          </Card>
+          </div>
 
           {/* รูปแบบการทำงาน */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">รูปแบบการทำงาน</h2>
-            <div className="space-y-4">
+          <div className="form-card">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "var(--form-primary)",
+                  borderRadius: "8px",
+                  padding: "0.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Users className="w-5 h-5" style={{ color: "white" }} />
+              </div>
+              <h2 className="form-section-title" style={{ margin: 0 }}>
+                กลุ่มเป้าหมายการทำงาน
+              </h2>
+            </div>
+            <div>
               <FormField label="รูปแบบ" required>
-                <div className="flex gap-4">
+                <div className="work-mode-group">
                   {WORK_MODES.map((mode) => (
-                    <label key={mode.value} className="flex items-center gap-2">
+                    <label key={mode.value} className="work-mode-option">
                       <input
                         type="radio"
                         name="workMode"
@@ -326,6 +405,7 @@ export default function AddProjectPage() {
                             workMode: e.target.value as WorkMode,
                           })
                         }
+                        className="work-mode-radio"
                       />
                       {mode.label}
                     </label>
@@ -342,12 +422,41 @@ export default function AddProjectPage() {
                 />
               </FormField>
             </div>
-          </Card>
+          </div>
 
           {/* ระยะเวลารับสมัคร */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">ระยะเวลารับสมัคร</h2>
-            <div className="grid grid-cols-2 gap-4">
+          <div className="form-card">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "var(--form-primary)",
+                  borderRadius: "8px",
+                  padding: "0.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Calendar className="w-5 h-5" style={{ color: "white" }} />
+              </div>
+              <h2 className="form-section-title" style={{ margin: 0 }}>
+                ระยะเวลารับสมัคร
+              </h2>
+            </div>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "1fr 1fr",
+                gap: "1rem",
+              }}
+            >
               <FormField label="เริ่มรับสมัคร" required>
                 <Input
                   type="date"
@@ -369,22 +478,43 @@ export default function AddProjectPage() {
                 />
               </FormField>
             </div>
-          </Card>
+          </div>
 
           {/* ผลตอบแทน */}
-          <Card className="p-6">
-            <h2 className="text-lg font-semibold mb-4">ผลตอบแทน</h2>
-            <div className="space-y-4">
-              <div className="flex flex-wrap gap-3">
+          <div className="form-card">
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.75rem",
+                marginBottom: "1rem",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#ffa726",
+                  borderRadius: "8px",
+                  padding: "0.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Target className="w-5 h-5" style={{ color: "white" }} />
+              </div>
+              <h2 className="form-section-title" style={{ margin: 0 }}>
+                ศักยภาพและผลตอบแทนที่ค้องการ
+              </h2>
+            </div>
+            <div>
+              <div className="benefit-group">
                 {BENEFITS.map((benefit) => (
-                  <label
-                    key={benefit.value}
-                    className="flex items-center gap-2 cursor-pointer"
-                  >
+                  <label key={benefit.value} className="benefit-option">
                     <input
                       type="checkbox"
                       checked={formData.benefits.includes(benefit.value)}
                       onChange={() => handleBenefitChange(benefit.value)}
+                      className="benefit-checkbox"
                     />
                     {benefit.label}
                   </label>
@@ -403,33 +533,72 @@ export default function AddProjectPage() {
                 </FormField>
               )}
             </div>
-          </Card>
+          </div>
 
           {/* ตำแหน่งงาน */}
-          <Card className="p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">ตำแหน่งงาน</h2>
-              <Button type="button" onClick={addPosition} size="sm">
-                <Plus className="w-4 h-4 mr-2" />
+          <div className="form-card">
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                marginBottom: "1rem",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: "var(--form-primary)",
+                    borderRadius: "8px",
+                    padding: "0.5rem",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Calendar className="w-5 h-5" style={{ color: "white" }} />
+                </div>
+                <h2 className="form-section-title" style={{ margin: 0 }}>
+                  คุณลักษณะที่ค้องการ
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={addPosition}
+                className="btn-primary"
+                style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}
+              >
+                <Plus className="w-4 h-4" />
                 เพิ่มตำแหน่ง
-              </Button>
+              </button>
             </div>
-            <div className="space-y-6">
+            <div>
               {formData.positions.map((position, index) => (
-                <div key={index} className="border rounded-lg p-4 relative">
+                <div key={index} className="position-card">
                   {formData.positions.length > 1 && (
-                    <Button
+                    <button
                       type="button"
-                      variant="outline"
-                      size="sm"
                       onClick={() => removePosition(index)}
-                      className="absolute top-2 right-2"
+                      className="position-remove-btn btn-secondary"
+                      style={{ display: "flex", alignItems: "center" }}
                     >
                       <Trash2 className="w-4 h-4" />
-                    </Button>
+                    </button>
                   )}
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <div
+                      style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr 1fr",
+                        gap: "1rem",
+                      }}
+                    >
                       <FormField label="ชื่อตำแหน่ง" required>
                         <Input
                           value={position.title}
@@ -502,7 +671,7 @@ export default function AddProjectPage() {
                     </FormField>
                     <FormField label="คุณสมบัติที่ต้องการเพิ่มเติม">
                       <textarea
-                        className="w-full min-h-20 p-3 border border-gray-300 rounded-md"
+                        className="form-textarea"
                         value={position.preferredQualifications || ""}
                         onChange={(e) =>
                           updatePosition(
@@ -518,13 +687,27 @@ export default function AddProjectPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
 
-          <div className="flex justify-end gap-4 pt-6">
-            <Button type="button" variant="outline">
+          <div className="form-actions">
+            <button type="button" className="btn-secondary">
               บันทึกร่าง
-            </Button>
-            <Button type="submit">ส่งขออนุมัติ</Button>
+            </button>
+            <button
+              type="submit"
+              style={{
+                background: "linear-gradient(135deg, #ff6b47, #ffa726)",
+                color: "white",
+                padding: "0.75rem 1.5rem",
+                borderRadius: "8px",
+                fontWeight: "500",
+                border: "none",
+                cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              ส่งโปรเจกต์
+            </button>
           </div>
         </form>
       </div>
