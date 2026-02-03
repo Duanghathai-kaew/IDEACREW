@@ -1,13 +1,19 @@
 import ProjectCard from "./ProjectCard";
 
+type Position = {
+  role: string;
+  needed: number;
+  skills: string[];
+};
+
 type Project = {
+  id: string;
   title: string;
   org: string;
   description: string;
-  positions: string[];
-  skills: string[];
   status: "open" | "closed";
-  openRoles: string;
+  category: string[];
+  positions: Position[];
 };
 
 export default function ProjectFeed({ projects }: { projects: Project[] }) {
