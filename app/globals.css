@@ -497,6 +497,14 @@
   right: 0.5rem;
 }
 
+.position-remove-btn {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
 .tag-container {
   display: flex;
   flex-wrap: wrap;
@@ -578,4 +586,140 @@
 .btn-secondary:hover {
   background: var(--form-bg-light);
   border-color: var(--form-primary);
+}
+
+/* =========================
+   MODAL COMPONENTS
+========================= */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: white;
+  border-radius: 20px;
+  max-width: 64rem;
+  width: 100%;
+  max-height: 90vh;
+  overflow: auto;
+  position: relative;
+}
+
+.modal-form-container {
+  background: transparent;
+  min-height: auto;
+  padding: 0;
+}
+
+.modal-form-wrapper {
+  padding: 2rem;
+}
+
+/* =========================
+   FORM SECTION HEADERS
+========================= */
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.section-header-with-button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-icon {
+  background-color: var(--form-primary);
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.section-icon-alt {
+  background-color: #ffa726;
+  border-radius: 8px;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.header-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header-icon-large {
+  background-color: var(--form-primary);
+  border-radius: 12px;
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+}
+
+.header-text {
+  color: var(--form-text-secondary);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.close-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.add-position-button {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* =========================
+   GRID LAYOUTS
+========================= */
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+/* =========================
+   SUBMIT BUTTON
+========================= */
+.btn-submit {
+  background: linear-gradient(135deg, #ff6b47, #ffa726);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(255, 107, 71, 0.3);
 }
