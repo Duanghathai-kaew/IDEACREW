@@ -1,26 +1,15 @@
 import ProjectCard from "./ProjectCard";
+import { SimpleProject } from "@/lib/simpleMockData";
 
-type Position = {
-  role: string;
-  needed: number;
-  skills: string[];
-};
-
-type Project = {
-  id: string;
-  title: string;
-  org: string;
-  description: string;
-  status: "open" | "closed";
-  category: string[];
-  positions: Position[];
-};
-
-export default function ProjectFeed({ projects }: { projects: Project[] }) {
+export default function ProjectFeed({
+  projects,
+}: {
+  projects: SimpleProject[];
+}) {
   return (
     <section className="feed space-y-6">
       {projects.map((p) => (
-        <ProjectCard key={p.title} project={p} />
+        <ProjectCard key={p.id} project={p} />
       ))}
     </section>
   );

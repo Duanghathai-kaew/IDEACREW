@@ -1,20 +1,7 @@
-type Position = {
-  role: string;
-  needed: number;
-  skills: string[];
-};
+import Link from "next/link";
+import { SimpleProject } from "@/lib/simpleMockData";
 
-type Project = {
-  id: string;
-  title: string;
-  org: string;
-  description: string;
-  status: "open" | "closed";
-  category: string[];
-  positions: Position[];
-};
-
-export default function ProjectCard({ project }: { project: Project }) {
+export default function ProjectCard({ project }: { project: SimpleProject }) {
   const avatar = project.org.slice(0, 2).toUpperCase();
 
   return (
@@ -38,8 +25,10 @@ export default function ProjectCard({ project }: { project: Project }) {
         style={{ flexBasis: "40%", maxWidth: "40%" }}
       >
         <div className="project-status">
-          <span className={`status ${project.status}`}>
-            {project.status === "open" ? "เปิดรับ" : "ปิดรับ"}
+          <span
+            className={`status ${project.status === "approved" ? "open" : "closed"}`}
+          >
+            {project.status === "approved" ? "เปิดรับ" : "ปิดรับ"}
           </span>
         </div>
         <div
@@ -85,9 +74,11 @@ export default function ProjectCard({ project }: { project: Project }) {
             </div>
           )}
         </div>
-        <button className="btn-detail" disabled={project.status === "closed"}>
-          ดูรายละเอียด →
-        </button>
+        <Link href={`/project/${project.id}`}>
+          <button className="btn-detail" disabled={project.status !== "open"}>
+            ดูรายละเอียด →
+          </button>
+        </Link>
       </div>
     </div>
   );
