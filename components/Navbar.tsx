@@ -4,8 +4,8 @@ import AddProjectModal from "@/app/add-project/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
@@ -13,6 +13,15 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathname?.startsWith("/my-project")) {
+      setActive("my-project");
+      return;
+    }
+    setActive("home");
+  }, [pathname]);
 
   const menuItems = [
     { key: "home", label: "หน้าหลัก" },
@@ -37,7 +46,9 @@ export default function Navbar() {
               {menuItems.map(({ key, label }) => (
                 <button
                   key={key}
-                  onClick={() => setActive(key as "home" | "my-project")}
+                  onClick={() =>
+                    router.push(key === "home" ? "/" : "/my-project")
+                  }
                   className={`text-nav ${active === key ? styles.menuActive : styles.menuInactive}`}
                 >
                   {label}
@@ -80,8 +91,12 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {open && (
         <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
-          {menuItems.map(({ label }) => (
-            <button key={label} className="block w-full text-left text-nav">
+          {menuItems.map(({ key, label }) => (
+            <button
+              key={label}
+              className="block w-full text-left text-nav"
+              onClick={() => router.push(key === "home" ? "/" : "/my-project")}
+            >
               {label}
             </button>
           ))}
