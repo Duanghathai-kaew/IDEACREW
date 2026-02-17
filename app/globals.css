@@ -571,7 +571,7 @@
   .form-actions {
     flex-direction: column;
   }
-  
+
   .form-actions button {
     width: 100%;
     justify-content: center;
@@ -743,12 +743,12 @@
     grid-template-columns: 1fr;
     gap: 1rem;
   }
-  
+
   .tag-input-row {
     flex-direction: column;
     align-items: stretch;
   }
-  
+
   .tag-input-row > input,
   .tag-input-row > .tag-input-field {
     min-width: auto;
