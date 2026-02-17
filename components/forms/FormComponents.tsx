@@ -54,9 +54,16 @@ export const TagInput: React.FC<TagInputProps> = ({
     </div>
     <div className="tag-input-row">
       <Input
+        className="tag-input-field"
         value={newItem}
         onChange={(e) => setNewItem(e.target.value)}
         placeholder={placeholder}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault();
+            onAdd();
+          }
+        }}
       />
       <button type="button" onClick={onAdd} className="btn-primary">
         เพิ่ม
