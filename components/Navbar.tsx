@@ -65,9 +65,13 @@ export default function Navbar() {
               </div>
               <Badge className={styles.badge}>4</Badge>
             </div>
-            <div className="icon-btn">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => router.push("/profile")}
+            >
               <CircleUserRound className="icon-sm text-gray-600" />
-            </div>
+            </button>
             <Button
               className={styles.postButton}
               onClick={() => setIsModalOpen(true)}
@@ -108,7 +112,13 @@ export default function Navbar() {
           </Button>
           <div className="flex items-center gap-4 pt-2">
             <Bell className="icon-sm text-gray-600" />
-            <CircleUserRound className="icon-sm text-gray-600" />
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => router.push("/profile")}
+            >
+              <CircleUserRound className="icon-sm text-gray-600" />
+            </button>
             <LogOut className="icon-sm text-orange-500" />
           </div>
         </div>

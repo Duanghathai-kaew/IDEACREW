@@ -127,3 +127,87 @@ export const mockProjects: Project[] = [
 export const getProjectById = (id: string): Project | undefined => {
   return mockProjects.find((project) => project.id === id);
 };
+
+export type ProfileLink = {
+  label: string;
+  url: string;
+};
+
+export type ProfileProject = {
+  title: string;
+  role: string;
+  year: string;
+  description: string;
+  tags: string[];
+};
+
+export type ProfileData = {
+  id: string;
+  name: string;
+  headline: string;
+  status: string;
+  faculty: string;
+  major: string;
+  year: string;
+  studentId: string;
+  email: string;
+  phone: string;
+  location: string;
+  bio: string;
+  skills: string[];
+  interests: string[];
+  portfolioLinks: ProfileLink[];
+  socialLinks: ProfileLink[];
+  projects: ProfileProject[];
+};
+
+export const mockProfile: ProfileData = {
+  id: "u01",
+  name: "ธนากร อินทร์สุข",
+  headline: "Content Creator | Creative Strategy",
+  status: "พร้อมร่วมงาน",
+  faculty: "คณะเทคโนโลยีสารสนเทศ",
+  major: "สาขาเทคโนโลยีมัลติมีเดีย",
+  year: "ชั้นปีที่ 2",
+  studentId: "64123456",
+  email: "thanakorn@cstu.ac.th",
+  phone: "091-234-5678",
+  location: "กรุงเทพฯ",
+  bio: "สนใจการสร้างคอนเทนต์เชิงสร้างสรรค์และการสื่อสารแบรนด์ผ่านสื่อดิจิทัล ชอบทำงานเป็นทีมและเรียนรู้สิ่งใหม่ๆ",
+  skills: [
+    "Creative Design",
+    "Video Editing",
+    "Photography",
+    "Content Writing",
+    "Social Media",
+    "Brand Story",
+  ],
+  interests: ["Motion Design", "Public Speaking", "Podcast", "UX Writing"],
+  portfolioLinks: [
+    { label: "Behance", url: "https://behance.net/thanakorn" },
+    { label: "Google Drive", url: "https://drive.google.com/thanakorn" },
+    { label: "Notion", url: "https://notion.so/thanakorn" },
+  ],
+  socialLinks: [
+    { label: "Facebook", url: "https://facebook.com/thanakorn" },
+    { label: "Instagram", url: "https://instagram.com/thanakorn" },
+    { label: "LinkedIn", url: "https://linkedin.com/in/thanakorn" },
+    { label: "TikTok", url: "https://tiktok.com/@thanakorn" },
+  ],
+  projects: [
+    {
+      title: "ถ่ายภาพงาน Freshy Night 2024",
+      role: "ช่างภาพ",
+      year: "2024",
+      description: "ถ่ายภาพบรรยากาศงานและจัดทำอัลบั้มภาพสำหรับประชาสัมพันธ์",
+      tags: ["Photography", "Event"],
+    },
+    {
+      title: "คอนเทนต์รีลส์ Open House 2024",
+      role: "Content Creator",
+      year: "2024",
+      description: "วางสคริปต์และตัดต่อวิดีโอสั้นสำหรับ TikTok/Instagram",
+      tags: ["Video", "Social"],
+    },
+  ],
+};
