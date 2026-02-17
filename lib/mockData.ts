@@ -161,6 +161,21 @@ export type ProfileData = {
   projects: ProfileProject[];
 };
 
+export type NotificationCategory = "my-project" | "applied";
+export type NotificationTone = "success" | "warning" | "info";
+
+export type NotificationItem = {
+  id: string;
+  category: NotificationCategory;
+  title: string;
+  message: string;
+  projectTitle: string;
+  projectId: string;
+  date: string;
+  isRead: boolean;
+  tone: NotificationTone;
+};
+
 export const mockProfile: ProfileData = {
   id: "u01",
   name: "ธนากร อินทร์สุข",
@@ -211,3 +226,39 @@ export const mockProfile: ProfileData = {
     },
   ],
 };
+
+export const mockNotifications: NotificationItem[] = [
+  {
+    id: "n1",
+    category: "my-project",
+    title: "โปรเจกต์ได้รับการอนุมัติแล้ว!",
+    message: "ยินดีด้วย! โปรเจกต์ของคุณผ่านการตรวจสอบและได้รับการอนุมัติ",
+    projectTitle: "ทีมสร้าง Social Media Content สำหรับ...",
+    projectId: "p1",
+    date: "27 พ.ย.",
+    isRead: false,
+    tone: "success",
+  },
+  {
+    id: "n2",
+    category: "my-project",
+    title: "มีผู้สมัครเข้าร่วมโปรเจกต์ใหม่",
+    message: "มีนักศึกษาส่งใบสมัครเข้าร่วมโปรเจกต์ของคุณ 2 คน",
+    projectTitle: "ทีมถ่ายทำและตัดต่อวิดีโอสำหรับ Univ...",
+    projectId: "p2",
+    date: "27 พ.ย.",
+    isRead: false,
+    tone: "info",
+  },
+  {
+    id: "n3",
+    category: "applied",
+    title: "โปรเจกต์ใกล้ปิดรับสมัคร",
+    message: "โปรเจกต์ที่คุณสมัครไว้ใกล้ปิดรับสมัครแล้ว",
+    projectTitle: "MC และ Host สำหรับงาน CSTU Talent S...",
+    projectId: "p1",
+    date: "26 พ.ย.",
+    isRead: true,
+    tone: "warning",
+  },
+];

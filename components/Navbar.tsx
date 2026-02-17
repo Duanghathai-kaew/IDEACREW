@@ -5,15 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./Navbar.module.css";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 export default function Navbar() {
   const [active, setActive] = useState<"home" | "my-project">("home");
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isNotiOpen, setIsNotiOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const notiRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (pathname?.startsWith("/my-project")) {
@@ -22,6 +25,18 @@ export default function Navbar() {
     }
     setActive("home");
   }, [pathname]);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!notiRef.current) return;
+      if (!notiRef.current.contains(event.target as Node)) {
+        setIsNotiOpen(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const menuItems = [
     { key: "home", label: "หน้าหลัก" },
@@ -59,11 +74,18 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-6">
-            <div className={styles.bellWrapper}>
-              <div className="icon-btn">
+            <div className={styles.bellWrapper} ref={notiRef}>
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setIsNotiOpen((prev) => !prev)}
+              >
                 <Bell className="icon-sm text-gray-600" />
-              </div>
+              </button>
               <Badge className={styles.badge}>4</Badge>
+              {isNotiOpen && (
+                <NotificationDropdown onClose={() => setIsNotiOpen(false)} />
+              )}
             </div>
             <button
               type="button"
@@ -111,7 +133,13 @@ export default function Navbar() {
             เพิ่มโปรเจกต์
           </Button>
           <div className="flex items-center gap-4 pt-2">
-            <Bell className="icon-sm text-gray-600" />
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setIsNotiOpen((prev) => !prev)}
+            >
+              <Bell className="icon-sm text-gray-600" />
+            </button>
             <button
               type="button"
               className="icon-btn"
