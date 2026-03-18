@@ -14,6 +14,7 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -335,18 +336,14 @@ export default async function ProjectDetailPage({
                   }}
                 >
                   <div className="flex items-center justify-center mb-4">
-                    <div
-                      className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center"
-                      style={{ color: "var(--form-primary)" }}
-                    >
-                      <svg
-                        className="w-8 h-8"
-                        viewBox="0 0 24 24"
-                        fill="currentColor"
-                      >
-                        <path d="M2 21l1.5-5L22 2.5 21.5 2 7 16.5z" />
-                      </svg>
-                    </div>
+                    <Image
+                      src="/logo.png?v=2"
+                      alt="IDEACREW mark"
+                      width={61}
+                      height={67}
+                      className="h-16 w-auto"
+                      unoptimized
+                    />
                   </div>
                   <h3 className="text-center text-lg font-bold mb-2">
                     พร้อมจะเข้าร่วมแล้ว?
