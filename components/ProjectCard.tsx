@@ -26,9 +26,9 @@ export default function ProjectCard({ project }: { project: SimpleProject }) {
       >
         <div className="project-status">
           <span
-            className={`status ${project.status === "approved" ? "open" : "closed"}`}
+            className={`status ${project.status === "open" ? "open" : "closed"}`}
           >
-            {project.status === "approved" ? "เปิดรับ" : "ปิดรับ"}
+            {project.status === "open" ? "เปิดรับ" : "ปิดรับ"}
           </span>
         </div>
         <div
