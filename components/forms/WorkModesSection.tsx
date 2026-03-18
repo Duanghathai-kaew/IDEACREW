@@ -21,16 +21,16 @@ export const WorkModesSection: React.FC<WorkModesSectionProps> = ({
   updateFormData,
 }) => {
   return (
-    <div className="form-card">
+    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Users className="w-5 h-5" />}
         title="กลุ่มเป้าหมายการทำงาน"
       />
       <div>
         <FormField label="รูปแบบ" required>
-          <div className="work-mode-group">
+          <div className="flex flex-wrap gap-6">
             {WORK_MODES.map((mode) => (
-              <label key={mode.value} className="work-mode-option">
+              <label key={mode.value} className="flex cursor-pointer items-center gap-2">
                 <input
                   type="radio"
                   name="workMode"
@@ -39,7 +39,7 @@ export const WorkModesSection: React.FC<WorkModesSectionProps> = ({
                   onChange={(e) =>
                     updateFormData({ workMode: e.target.value as WorkMode })
                   }
-                  className="work-mode-radio"
+                  className="accent-(--form-primary)"
                 />
                 {mode.label}
               </label>

@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useState } from "react";
-import styles from "./Navbar.module.css";
 
 type SearchBarProps = {
   onSearch: (keyword: string) => void;
@@ -35,7 +34,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
         {/* Button */}
         <Button
           onClick={handleSearch}
-          className={`${styles.postButton} h-12 w-full md:w-24 flex items-center gap-2`}
+          className="h-12 w-full rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400) md:w-24"
         >
           <Search className="h-4 w-4" />
           ค้นหา

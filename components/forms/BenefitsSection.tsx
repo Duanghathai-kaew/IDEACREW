@@ -25,21 +25,21 @@ export const BenefitsSection: React.FC<BenefitsSectionProps> = ({
   onBenefitChange,
 }) => {
   return (
-    <div className="form-card">
+    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Target className="w-5 h-5" />}
         title="ศักยภาพและผลตอบแทนที่ค้องการ"
         isAlt={true}
       />
       <div>
-        <div className="benefit-group">
+        <div className="flex flex-wrap gap-4">
           {BENEFITS.map((benefit) => (
-            <label key={benefit.value} className="benefit-option">
+            <label key={benefit.value} className="flex cursor-pointer items-center gap-2">
               <input
                 type="checkbox"
                 checked={formData.benefits.includes(benefit.value)}
                 onChange={() => onBenefitChange(benefit.value)}
-                className="benefit-checkbox"
+                className="accent-(--form-primary)"
               />
               {benefit.label}
             </label>

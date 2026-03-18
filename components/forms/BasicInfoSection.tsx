@@ -32,7 +32,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   onAddCategory,
 }) => {
   return (
-    <div className="form-card">
+    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Shield className="w-5 h-5" />}
         title="ข้อมูลพื้นฐานโปรเจกต์"
@@ -58,7 +58,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
         <FormField label="รายละเอียดโปรเจกต์" required>
           <textarea
-            className="form-textarea"
+            className="min-h-24 w-full resize-y rounded-lg border border-(--form-border) px-3 py-3 text-sm transition focus:border-(--form-primary) focus:outline-none focus:ring-4 focus:ring-[rgb(253_94_75/0.16)]"
             value={formData.description}
             onChange={(e) => updateFormData({ description: e.target.value })}
             placeholder="อธิบายรายละเอียดโปรเจกต์..."
@@ -67,12 +67,14 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
         </FormField>
 
         <FormField label="หมวดหมู่">
-          <div className="category-badges">
+          <div className="mb-3 flex flex-wrap gap-2">
             {CATEGORIES.map((category) => (
               <div
                 key={category}
-                className={`category-badge ${
-                  formData.categories.includes(category) ? "active" : ""
+                className={`inline-flex cursor-pointer items-center rounded-[20px] border-2 border-transparent px-4 py-2 text-sm font-medium transition ${
+                  formData.categories.includes(category)
+                    ? "bg-(--form-primary) text-white"
+                    : "bg-[#fff1ee] text-(--brand-500) hover:-translate-y-px hover:bg-(--form-primary) hover:text-white"
                 }`}
                 onClick={() => onCategoryToggle(category)}
               >
@@ -80,7 +82,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               </div>
             ))}
           </div>
-          <div className="tag-input-row">
+          <div className="flex flex-wrap items-end gap-3 max-md:flex-col max-md:items-stretch">
             <Input
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
@@ -89,7 +91,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <button
               type="button"
               onClick={onAddCategory}
-              className="btn-primary"
+              className="h-fit whitespace-nowrap rounded-lg bg-(--form-primary) px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-(--brand-400) hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)]"
             >
               เพิ่ม
             </button>

@@ -14,12 +14,12 @@ export const ApplicationDatesSection: React.FC<
   ApplicationDatesSectionProps
 > = ({ formData, updateFormData }) => {
   return (
-    <div className="form-card">
+    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Calendar className="w-5 h-5" />}
         title="ระยะเวลารับสมัคร"
       />
-      <div className="form-grid-2">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
         <FormField label="เริ่มรับสมัคร" required>
           <Input
             type="date"

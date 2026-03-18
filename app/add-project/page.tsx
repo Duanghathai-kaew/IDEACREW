@@ -17,11 +17,7 @@ interface AddProjectModalProps {
 export default function AddProjectModal({
   isOpen,
   onClose,
-}: {
-  isOpen: boolean;
-  onClose: () => void;
-}) {
-  if (!isOpen) return null;
+}: AddProjectModalProps) {
 
   const [formData, setFormData] = useState<ProjectFormData>({
     title: "",
@@ -48,6 +44,9 @@ export default function AddProjectModal({
   const [newSkill, setNewSkill] = useState<string[]>([""]);
   const [newQualification, setNewQualification] = useState<string[]>([""]);
   const [newCategory, setNewCategory] = useState("");
+  type PositionForm = ProjectFormData["positions"][number];
+
+  if (!isOpen) return null;
 
   const updateFormData = (updates: Partial<ProjectFormData>) =>
     setFormData((prev) => ({ ...prev, ...updates }));
@@ -110,9 +109,13 @@ export default function AddProjectModal({
     }
   };
 
-  const updatePosition = (index: number, field: string, value: any) => {
+  const updatePosition = <K extends keyof PositionForm>(
+    index: number,
+    field: K,
+    value: PositionForm[K],
+  ) => {
     const newPositions = [...formData.positions];
-    (newPositions[index] as any)[field] = value;
+    newPositions[index][field] = value;
     updateFormData({ positions: newPositions });
   };
 
@@ -161,26 +164,34 @@ export default function AddProjectModal({
   return (
     <>
       {/* Modal Overlay */}
-      <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/45 p-4"
+        onClick={onClose}
+      >
         {/* Modal Content */}
-        <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-          <div className="modal-form-container">
-            <div className="modal-form-wrapper">
-              <div className="form-header">
+        <div
+          className="relative max-h-[90vh] w-full max-w-5xl overflow-auto rounded-[20px] bg-white"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div>
+            <div className="p-8">
+              <div className="mb-8 flex items-center gap-4">
                 <button
-                  className="btn-secondary close-button"
+                  className="flex h-fit items-center gap-2 whitespace-nowrap rounded-lg border border-(--form-border) bg-white px-4 py-2 text-sm font-medium text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light)"
                   onClick={onClose}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   ปิด
                 </button>
-                <div className="header-info">
-                  <div className="header-icon-large">
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center justify-center rounded-xl bg-(--form-primary) p-3 text-white">
                     <Shield className="w-6 h-6" />
                   </div>
                   <div>
-                    <h1 className="form-title">วิธีการสร้างโปรเจกต์</h1>
-                    <p className="header-text">
+                    <h1 className="text-2xl font-bold text-slate-700">
+                      วิธีการสร้างโปรเจกต์
+                    </h1>
+                    <p className="m-0 text-sm text-(--form-text-secondary)">
                       กรอกข้อมูลในแบบฟอร์มเพื่อเขียนเนียน
                     </p>
                   </div>
@@ -237,11 +248,17 @@ export default function AddProjectModal({
                   onRemoveFromPosition={removeFromPosition}
                 />
 
-                <div className="form-actions">
-                  <button type="button" className="btn-secondary">
+                <div className="flex flex-wrap justify-end gap-4 pt-6 max-[480px]:flex-col">
+                  <button
+                    type="button"
+                    className="h-fit whitespace-nowrap rounded-lg border border-(--form-border) bg-white px-4 py-2 text-sm font-medium text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light) max-[480px]:w-full"
+                  >
                     บันทึกร่าง
                   </button>
-                  <button type="submit" className="btn-submit">
+                  <button
+                    type="submit"
+                    className="cursor-pointer rounded-[10px] bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-8 py-3 text-base font-semibold text-white shadow-[0_4px_12px_rgb(253_94_75/0.22)] transition hover:-translate-y-px hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)] max-[480px]:w-full"
+                  >
                     ส่งโปรเจกต์
                   </button>
                 </div>

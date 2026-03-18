@@ -7,7 +7,7 @@ export default function ProjectFeed({
   projects: SimpleProject[];
 }) {
   return (
-    <section className="feed space-y-6">
+    <section className="flex flex-col gap-6 space-y-6">
       {projects.map((p) => (
         <ProjectCard key={p.id} project={p} />
       ))}

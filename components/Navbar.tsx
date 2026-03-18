@@ -6,25 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import styles from "./Navbar.module.css";
 import NotificationDropdown from "@/components/NotificationDropdown";
 
 export default function Navbar() {
-  const [active, setActive] = useState<"home" | "my-project">("home");
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const notiRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (pathname?.startsWith("/my-project")) {
-      setActive("my-project");
-      return;
-    }
-    setActive("home");
-  }, [pathname]);
+  const active: "home" | "my-project" = pathname?.startsWith("/my-project")
+    ? "my-project"
+    : "home";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -44,12 +37,14 @@ export default function Navbar() {
   ];
 
   return (
-    <nav className={styles.nav}>
-      <div className={styles.container}>
+    <nav className="sticky top-0 z-50 w-full overflow-visible border-b border-slate-200 bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between overflow-visible px-6 py-4">
         <div className="flex items-center w-full">
           {/* Logo */}
-          <div className={styles.logo}>
-            <div className={styles.logoIcon}>IC</div>
+          <div className="flex items-center gap-2">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--brand-500) font-bold text-white">
+              IC
+            </div>
             <span className="text-logo font-semibold text-orange-500">
               IDEACREW
             </span>
@@ -57,14 +52,18 @@ export default function Navbar() {
 
           {/* Desktop Menu */}
           <div className="flex-1 flex justify-center">
-            <div className={`${styles.menu} hidden md:flex`}>
+            <div className="hidden gap-6 md:flex">
               {menuItems.map(({ key, label }) => (
                 <button
                   key={key}
                   onClick={() =>
                     router.push(key === "home" ? "/" : "/my-project")
                   }
-                  className={`text-nav ${active === key ? styles.menuActive : styles.menuInactive}`}
+                  className={`text-nav pb-1 ${
+                    active === key
+                      ? "border-b-2 border-(--brand-500) text-(--brand-500)"
+                      : "text-slate-500"
+                  }`}
                 >
                   {label}
                 </button>
@@ -74,7 +73,7 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-6">
-            <div className={styles.bellWrapper} ref={notiRef}>
+            <div className="relative flex items-center" ref={notiRef}>
               <button
                 type="button"
                 className="icon-btn"
@@ -82,7 +81,9 @@ export default function Navbar() {
               >
                 <Bell className="icon-sm text-gray-600" />
               </button>
-              <Badge className={styles.badge}>4</Badge>
+              <Badge className="pointer-events-none absolute -right-0.5 -top-1.5 z-[1] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-br from-(--brand-500) to-(--brand-400) px-1.5 text-[0.85rem] font-medium text-white shadow-[0_2px_8px_rgb(253_94_75/0.22)]">
+                4
+              </Badge>
               {isNotiOpen && (
                 <NotificationDropdown onClose={() => setIsNotiOpen(false)} />
               )}
@@ -95,7 +96,7 @@ export default function Navbar() {
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
             <Button
-              className={styles.postButton}
+              className="rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
               onClick={() => setIsModalOpen(true)}
             >
               เพิ่มโปรเจกต์
@@ -127,7 +128,7 @@ export default function Navbar() {
             </button>
           ))}
           <Button
-            className={styles.postButton + " w-full"}
+            className="w-full rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
             onClick={() => setIsModalOpen(true)}
           >
             เพิ่มโปรเจกต์

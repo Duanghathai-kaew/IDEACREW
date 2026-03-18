@@ -5,6 +5,8 @@ import React from "react";
 import { FormField, TagInput } from "./FormComponents";
 import { SectionHeader } from "./SectionHeader";
 
+type PositionForm = ProjectFormData["positions"][number];
+
 interface PositionsSectionProps {
   formData: ProjectFormData;
   updateFormData: (updates: Partial<ProjectFormData>) => void;
@@ -14,7 +16,11 @@ interface PositionsSectionProps {
   setNewQualification: (qualifications: string[]) => void;
   onAddPosition: () => void;
   onRemovePosition: (index: number) => void;
-  onUpdatePosition: (index: number, field: string, value: any) => void;
+  onUpdatePosition: <K extends keyof PositionForm>(
+    index: number,
+    field: K,
+    value: PositionForm[K],
+  ) => void;
   onAddToPosition: (
     positionIndex: number,
     field: "skills" | "basicQualifications",
@@ -40,7 +46,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
   onRemoveFromPosition,
 }) => {
   return (
-    <div className="form-card">
+    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Calendar className="w-5 h-5" />}
         title="คุณลักษณะที่ค้องการ"
@@ -48,7 +54,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
         <button
           type="button"
           onClick={onAddPosition}
-          className="btn-primary add-position-button"
+          className="flex items-center gap-2 rounded-[10px] bg-(--form-primary) px-5 py-2.5 text-sm text-white shadow-[0_2px_4px_rgb(253_94_75/0.2)] transition hover:-translate-y-px hover:bg-(--brand-400)"
         >
           <Plus className="w-4 h-4" />
           เพิ่มตำแหน่ง
@@ -56,18 +62,21 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
       </SectionHeader>
       <div>
         {formData.positions.map((position, index) => (
-          <div key={index} className="position-card">
+          <div
+            key={index}
+            className="relative mb-6 rounded-xl border border-(--form-border) bg-white p-4"
+          >
             {formData.positions.length > 1 && (
               <button
                 type="button"
                 onClick={() => onRemovePosition(index)}
-                className="position-remove-btn btn-secondary"
+                className="absolute right-2 top-2 flex min-w-auto items-center rounded-lg border border-(--form-border) bg-white p-1 text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light)"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
             )}
             <div>
-              <div className="form-grid-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6">
                 <FormField label="ชื่อตำแหน่ง" required>
                   <Input
                     value={position.title}
@@ -140,7 +149,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
               </FormField>
               <FormField label="คุณสมบัติที่ต้องการเพิ่มเติม">
                 <textarea
-                  className="form-textarea"
+                  className="min-h-24 w-full resize-y rounded-lg border border-(--form-border) px-3 py-3 text-sm transition focus:border-(--form-primary) focus:outline-none focus:ring-4 focus:ring-[rgb(253_94_75/0.16)]"
                   value={position.preferredQualifications || ""}
                   onChange={(e) =>
                     onUpdatePosition(

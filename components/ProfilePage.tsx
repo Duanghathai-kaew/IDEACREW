@@ -314,7 +314,10 @@ export default function ProfilePage({
             <div className="space-y-4">
               <div className="flex flex-wrap gap-2">
                 {data.skills.map((skill) => (
-                  <span key={skill} className="tag">
+                  <span
+                    key={skill}
+                    className="rounded-full bg-orange-50 px-3 py-1 text-xs text-orange-500"
+                  >
                     {skill}
                   </span>
                 ))}

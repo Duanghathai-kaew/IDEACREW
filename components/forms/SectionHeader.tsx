@@ -13,17 +13,21 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
   isAlt = false,
   children,
 }) => {
-  const headerClass = children
-    ? "section-header-with-button"
-    : "section-header";
-
   return (
-    <div className={headerClass}>
-      <div className="section-header">
-        <div className={isAlt ? "section-icon-alt" : "section-icon"}>
+    <div
+      className={`mb-4 flex items-center ${
+        children ? "justify-between" : "gap-3"
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        <div
+          className={`flex items-center justify-center rounded-lg p-2 text-white ${
+            isAlt ? "bg-(--brand-400)" : "bg-(--form-primary)"
+          }`}
+        >
           {icon}
         </div>
-        <h2 className="form-section-title" style={{ margin: 0 }}>
+        <h2 className="m-0 text-lg font-semibold text-slate-700">
           {title}
         </h2>
       </div>

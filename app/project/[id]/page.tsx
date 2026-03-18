@@ -1,5 +1,3 @@
-"use client";
-
 import {
   getDetailedProjectById,
   getBenefitLabel,
@@ -55,11 +53,11 @@ export default async function ProjectDetailPage({
             <div className="flex items-start gap-4">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                style={{
-                  background:
-                    "linear-gradient(90deg, var(--sidebar-grad-1) 0%, var(--sidebar-grad-2) 50%, var(--sidebar-grad-3) 100%)",
-                }}
-              >
+                  style={{
+                    background:
+                      "linear-gradient(90deg, var(--brand-500) 0%, var(--brand-400) 50%, var(--brand-300) 100%)",
+                  }}
+                >
                 {avatar}
               </div>
               <div className="flex-1">
@@ -72,22 +70,25 @@ export default async function ProjectDetailPage({
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {project.categories.map((category) => (
-                    <span key={category} className="tag">
+                    <span
+                      key={category}
+                      className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)"
+                    >
                       {category}
                     </span>
                   ))}
                 </div>
               </div>
               <div className="text-sm text-gray-500">
-                <span
-                  className="status"
-                  style={{
-                    background: isOpen ? "#e6f7ea" : "#ffebee",
-                    color: isOpen ? "#1e9b4b" : "#c62828",
-                  }}
-                >
-                  {isOpen ? "เปิดรับสมัคร" : "ปิดรับสมัครแล้ว"}
-                </span>
+                  <span
+                    className={`inline-block rounded-full px-2.5 py-1 text-xs ${
+                      isOpen
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-rose-100 text-rose-700"
+                    }`}
+                  >
+                    {isOpen ? "เปิดรับสมัคร" : "ปิดรับสมัครแล้ว"}
+                  </span>
               </div>
             </div>
           </div>
@@ -97,20 +98,27 @@ export default async function ProjectDetailPage({
               {/* Main Content */}
               <div className="lg:col-span-7 space-y-6">
                 {/* Project Description */}
-                <div className="form-card">
-                  <h2 className="form-section-title">รายละเอียดโปรเจกต์</h2>
+                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                  <h2 className="mb-4 text-lg font-semibold text-slate-700">
+                    รายละเอียดโปรเจกต์
+                  </h2>
                   <p className="text-gray-700 leading-relaxed">
                     {project.description}
                   </p>
                 </div>
 
                 {/* Positions */}
-                <div className="form-card">
-                  <h2 className="form-section-title">ตำแหน่งงานที่เปิดรับ</h2>
+                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                  <h2 className="mb-4 text-lg font-semibold text-slate-700">
+                    ตำแหน่งงานที่เปิดรับ
+                  </h2>
 
                   <div className="space-y-8">
                     {project.positions.map((position, index) => (
-                      <div key={position.id} className="position-card">
+                      <div
+                        key={position.id}
+                        className="relative rounded-xl border border-(--form-border) bg-white p-4"
+                      >
                         <div className="mb-4">
                           <h3
                             className="text-xl font-semibold mb-2"
@@ -131,10 +139,15 @@ export default async function ProjectDetailPage({
 
                         {/* Skills */}
                         <div className="mb-4">
-                          <h4 className="form-label">ทักษะที่ต้องการ:</h4>
-                          <div className="tag-container">
+                          <h4 className="mb-2 block text-sm font-medium text-slate-700">
+                            ทักษะที่ต้องการ:
+                          </h4>
+                          <div className="mb-2 flex flex-wrap gap-2">
                             {position.skills.map((skill) => (
-                              <span key={skill} className="tag-item">
+                              <span
+                                key={skill}
+                                className="inline-flex items-center gap-2 rounded-2xl bg-[#fff1ee] px-3 py-2 text-xs font-medium text-(--brand-500)"
+                              >
                                 {skill}
                               </span>
                             ))}
@@ -143,7 +156,9 @@ export default async function ProjectDetailPage({
 
                         {/* Basic Qualifications */}
                         <div className="mb-4">
-                          <h4 className="form-label">คุณสมบัติพื้นฐาน:</h4>
+                          <h4 className="mb-2 block text-sm font-medium text-slate-700">
+                            คุณสมบัติพื้นฐาน:
+                          </h4>
                           <ul className="space-y-2">
                             {position.basicQualifications.map(
                               (qualification, qualIndex) => (
@@ -169,7 +184,7 @@ export default async function ProjectDetailPage({
                         {/* Preferred Qualifications */}
                         {position.preferredQualifications && (
                           <div className="mb-4">
-                            <h4 className="form-label">
+                            <h4 className="mb-2 block text-sm font-medium text-slate-700">
                               คุณสมบัติที่พึงประสงค์:
                             </h4>
                             <p
@@ -190,8 +205,10 @@ export default async function ProjectDetailPage({
                 </div>
 
                 {/* Work Information */}
-                <div className="form-card">
-                  <h2 className="form-section-title">ข้อมูลการทำงาน</h2>
+                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                  <h2 className="mb-4 text-lg font-semibold text-slate-700">
+                    ข้อมูลการทำงาน
+                  </h2>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -245,12 +262,12 @@ export default async function ProjectDetailPage({
                 </div>
 
                 {/* Benefits */}
-                <div className="form-card">
-                  <h2 className="form-section-title">
+                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                  <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ผลตอบแทนและสิ่งที่จะได้รับ
                   </h2>
 
-                  <div className="benefit-group">
+                  <div className="flex flex-wrap gap-4">
                     {project.benefits.map((benefit) => (
                       <div
                         key={benefit}
@@ -346,7 +363,7 @@ export default async function ProjectDetailPage({
                 {/* ส่วน 2 คอลัมน์ */}
                 <div className="space-y-6">
                   {/* ตำแหน่งที่ใดอีก widget */}
-                  <div className="form-card">
+                  <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-lg">📄</span>
                       <h3
@@ -373,7 +390,7 @@ export default async function ProjectDetailPage({
                   </div>
 
                   {/* ทักษะที่ต้องการ */}
-                  <div className="form-card">
+                  <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
                       <span className="text-lg">⚙️</span>
                       <h3
@@ -384,9 +401,15 @@ export default async function ProjectDetailPage({
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="tag">พากย์ไทย</span>
-                      <span className="tag">เสียงพากย์</span>
-                      <span className="tag">กล้อง</span>
+                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
+                        พากย์ไทย
+                      </span>
+                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
+                        เสียงพากย์
+                      </span>
+                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
+                        กล้อง
+                      </span>
                     </div>
                   </div>
                 </div>

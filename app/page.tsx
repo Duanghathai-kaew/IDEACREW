@@ -44,7 +44,7 @@ export default function Home() {
       <SearchBar onSearch={handleSearch} />
 
       {/* ===== Main Layout ===== */}
-      <main className="layout">
+      <main className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[280px_1fr]">
         <Sidebar />
         <ProjectFeed projects={filtered} />
       </main>
