@@ -8,11 +8,6 @@ type PositionForm = ProjectFormData["positions"][number];
 
 interface PositionsSectionProps {
   formData: ProjectFormData;
-  updateFormData: (updates: Partial<ProjectFormData>) => void;
-  newSkill: string[];
-  setNewSkill: (skills: string[]) => void;
-  newQualification: string[];
-  setNewQualification: (qualifications: string[]) => void;
   onAddPosition: () => void;
   onRemovePosition: (index: number) => void;
   onUpdatePosition: <K extends keyof PositionForm>(
@@ -20,29 +15,13 @@ interface PositionsSectionProps {
     field: K,
     value: PositionForm[K],
   ) => void;
-  onAddToPosition: (
-    positionIndex: number,
-    field: "skills" | "basicQualifications",
-    newValue: string,
-  ) => void;
-  onRemoveFromPosition: (
-    positionIndex: number,
-    field: "skills" | "basicQualifications",
-    itemIndex: number,
-  ) => void;
 }
 
 export const PositionsSection: React.FC<PositionsSectionProps> = ({
   formData,
-  newSkill,
-  setNewSkill,
-  newQualification,
-  setNewQualification,
   onAddPosition,
   onRemovePosition,
   onUpdatePosition,
-  onAddToPosition,
-  onRemoveFromPosition,
 }) => {
   return (
     <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
@@ -105,17 +84,8 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
               <FormField label="ทักษะที่ต้องการ">
                 <TagInput
                   items={position.skills}
-                  newItem={newSkill[index] || ""}
-                  setNewItem={(value) => {
-                    const skills = [...newSkill];
-                    skills[index] = value;
-                    setNewSkill(skills);
-                  }}
-                  onAdd={() =>
-                    onAddToPosition(index, "skills", newSkill[index] || "")
-                  }
-                  onRemove={(skillIndex) =>
-                    onRemoveFromPosition(index, "skills", skillIndex)
+                  onChangeItems={(next) =>
+                    onUpdatePosition(index, "skills", next)
                   }
                   placeholder="เพิ่มทักษะ"
                 />
@@ -123,25 +93,8 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
               <FormField label="คุณสมบัติพื้นฐาน">
                 <TagInput
                   items={position.basicQualifications}
-                  newItem={newQualification[index] || ""}
-                  setNewItem={(value) => {
-                    const quals = [...newQualification];
-                    quals[index] = value;
-                    setNewQualification(quals);
-                  }}
-                  onAdd={() =>
-                    onAddToPosition(
-                      index,
-                      "basicQualifications",
-                      newQualification[index] || "",
-                    )
-                  }
-                  onRemove={(qualIndex) =>
-                    onRemoveFromPosition(
-                      index,
-                      "basicQualifications",
-                      qualIndex,
-                    )
+                  onChangeItems={(next) =>
+                    onUpdatePosition(index, "basicQualifications", next)
                   }
                   placeholder="เพิ่มคุณสมบัติ"
                 />

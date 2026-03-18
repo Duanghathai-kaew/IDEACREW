@@ -40,8 +40,6 @@ export default function AddProjectModal({
     ],
   });
 
-  const [newSkill, setNewSkill] = useState<string[]>([""]);
-  const [newQualification, setNewQualification] = useState<string[]>([""]);
   const [newCategory, setNewCategory] = useState("");
   type PositionForm = ProjectFormData["positions"][number];
 
@@ -94,8 +92,6 @@ export default function AddProjectModal({
         },
       ],
     });
-    setNewSkill([...newSkill, ""]);
-    setNewQualification([...newQualification, ""]);
   };
 
   const removePosition = (index: number) => {
@@ -103,8 +99,6 @@ export default function AddProjectModal({
       updateFormData({
         positions: formData.positions.filter((_, i) => i !== index),
       });
-      setNewSkill(newSkill.filter((_, i) => i !== index));
-      setNewQualification(newQualification.filter((_, i) => i !== index));
     }
   };
 
@@ -115,48 +109,6 @@ export default function AddProjectModal({
   ) => {
     const newPositions = [...formData.positions];
     newPositions[index][field] = value;
-    updateFormData({ positions: newPositions });
-  };
-
-  const addToPosition = (
-    positionIndex: number,
-    field: "skills" | "basicQualifications",
-    newValue: string,
-  ) => {
-    const trimmedValue = newValue.trim();
-    if (
-      !trimmedValue ||
-      formData.positions[positionIndex][field].includes(trimmedValue)
-    )
-      return;
-
-    const newPositions = [...formData.positions];
-    newPositions[positionIndex][field] = [
-      ...newPositions[positionIndex][field],
-      trimmedValue,
-    ];
-    updateFormData({ positions: newPositions });
-
-    if (field === "skills") {
-      const newSkills = [...newSkill];
-      newSkills[positionIndex] = "";
-      setNewSkill(newSkills);
-    } else {
-      const newQuals = [...newQualification];
-      newQuals[positionIndex] = "";
-      setNewQualification(newQuals);
-    }
-  };
-
-  const removeFromPosition = (
-    positionIndex: number,
-    field: "skills" | "basicQualifications",
-    itemIndex: number,
-  ) => {
-    const newPositions = [...formData.positions];
-    newPositions[positionIndex][field] = newPositions[positionIndex][
-      field
-    ].filter((_, i) => i !== itemIndex);
     updateFormData({ positions: newPositions });
   };
 
@@ -229,16 +181,9 @@ export default function AddProjectModal({
                 {/* ตำแหน่งงาน */}
                 <PositionsSection
                   formData={formData}
-                  updateFormData={updateFormData}
-                  newSkill={newSkill}
-                  setNewSkill={setNewSkill}
-                  newQualification={newQualification}
-                  setNewQualification={setNewQualification}
                   onAddPosition={addPosition}
                   onRemovePosition={removePosition}
                   onUpdatePosition={updatePosition}
-                  onAddToPosition={addToPosition}
-                  onRemoveFromPosition={removeFromPosition}
                 />
 
                 <div className="flex flex-wrap justify-end gap-4 pt-6 max-[480px]:flex-col">
