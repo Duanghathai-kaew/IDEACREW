@@ -378,22 +378,26 @@ export default async function ProjectDetailPage({
                         className="text-sm font-semibold"
                         style={{ color: "var(--form-text-primary)" }}
                       >
-                        ตำแหน่งที่ใดอีก
+                        ตำแหน่งงานที่เปิดรับ
                       </h3>
                     </div>
-                    <div
-                      className="p-4 rounded-lg border-2 border-dashed text-center"
-                      style={{
-                        borderColor: "var(--form-primary)",
-                        background: "var(--form-primary-light)",
-                      }}
-                    >
-                      <p
-                        className="text-sm font-medium"
-                        style={{ color: "var(--form-primary)" }}
-                      >
-                        ผู้คนที่สนใจ (Contest) 2 คน
-                      </p>
+                    <div className="space-y-2">
+                      {project.positions.map((position) => (
+                        <div
+                          key={position.id}
+                          className="rounded-lg px-3 py-2"
+                          style={{
+                            background: "var(--form-primary-light)",
+                          }}
+                        >
+                          <p
+                            className="text-sm font-medium"
+                            style={{ color: "var(--form-primary)" }}
+                          >
+                            {position.title} ({position.neededCount} คน)
+                          </p>
+                        </div>
+                      ))}
                     </div>
                   </div>
 
