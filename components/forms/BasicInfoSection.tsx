@@ -30,6 +30,10 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   onCategoryToggle,
   onAddCategory,
 }) => {
+  const customCategories = formData.categories.filter(
+    (category) => !CATEGORIES.includes(category),
+  );
+
   return (
     <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
@@ -81,11 +85,32 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
               </div>
             ))}
           </div>
+          {customCategories.length > 0 && (
+            <div className="mb-3 flex flex-wrap gap-2">
+              {customCategories.map((category) => (
+                <button
+                  key={category}
+                  type="button"
+                  onClick={() => onCategoryToggle(category)}
+                  className="inline-flex items-center rounded-[20px] bg-[#fff1ee] px-4 py-2 text-sm font-medium text-(--brand-500)"
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="flex flex-wrap items-end gap-3 max-md:flex-col max-md:items-stretch">
             <Input
+              className="min-w-0 flex-1"
               value={newCategory}
               onChange={(e) => setNewCategory(e.target.value)}
               placeholder="เพิ่มหมวดหมู่ใหม่"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  onAddCategory();
+                }
+              }}
             />
             <button
               type="button"
