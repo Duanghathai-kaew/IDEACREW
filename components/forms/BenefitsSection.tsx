@@ -2,8 +2,7 @@ import { Input } from "@/components/ui/input";
 import { Benefit, ProjectFormData } from "@/types/project";
 import { Target } from "lucide-react";
 import React from "react";
-import { FormField } from "./FormComponents";
-import { SectionHeader } from "./SectionHeader";
+import { FormField, SectionHeader } from "./FormComponents";
 
 const BENEFITS: { value: Benefit; label: string }[] = [
   { value: "certificate", label: "ใบประกาศนียบัตร" },

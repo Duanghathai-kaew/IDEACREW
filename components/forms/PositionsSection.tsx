@@ -2,8 +2,7 @@ import { Input } from "@/components/ui/input";
 import { ProjectFormData } from "@/types/project";
 import { Calendar, Plus, Trash2 } from "lucide-react";
 import React from "react";
-import { FormField, TagInput } from "./FormComponents";
-import { SectionHeader } from "./SectionHeader";
+import { FormField, SectionHeader, TagInput } from "./FormComponents";
 
 type PositionForm = ProjectFormData["positions"][number];
 

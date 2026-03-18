@@ -1,10 +1,9 @@
 "use client";
 
-import { ApplicationDatesSection } from "@/components/forms/ApplicationDatesSection";
 import { BasicInfoSection } from "@/components/forms/BasicInfoSection";
 import { BenefitsSection } from "@/components/forms/BenefitsSection";
 import { PositionsSection } from "@/components/forms/PositionsSection";
-import { WorkModesSection } from "@/components/forms/WorkModesSection";
+import { ScheduleSection } from "@/components/forms/ScheduleSection";
 import { Benefit, ProjectFormData } from "@/types/project";
 import { ArrowLeft, Shield } from "lucide-react";
 import { useState } from "react";
@@ -214,14 +213,8 @@ export default function AddProjectModal({
                   onAddCategory={addCategory}
                 />
 
-                {/* รูปแบบการทำงาน */}
-                <WorkModesSection
-                  formData={formData}
-                  updateFormData={updateFormData}
-                />
-
-                {/* ระยะเวลารับสมัคร */}
-                <ApplicationDatesSection
+                {/* รูปแบบการทำงานและระยะเวลารับสมัคร */}
+                <ScheduleSection
                   formData={formData}
                   updateFormData={updateFormData}
                 />

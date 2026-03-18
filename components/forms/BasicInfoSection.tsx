@@ -2,8 +2,7 @@ import { Input } from "@/components/ui/input";
 import { ProjectFormData } from "@/types/project";
 import { Shield } from "lucide-react";
 import React from "react";
-import { FormField } from "./FormComponents";
-import { SectionHeader } from "./SectionHeader";
+import { FormField, SectionHeader } from "./FormComponents";
 
 const CATEGORIES = [
   "E-Sport",
