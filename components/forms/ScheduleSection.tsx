@@ -20,7 +20,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
   updateFormData,
 }) => {
   return (
-    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+    <div className="mb-8 rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Users className="h-5 w-5" />}
         title="รูปแบบการทำงานและระยะเวลารับสมัคร"
@@ -41,7 +41,7 @@ export const ScheduleSection: React.FC<ScheduleSectionProps> = ({
                 onChange={(e) =>
                   updateFormData({ workMode: e.target.value as WorkMode })
                 }
-                className="accent-(--form-primary)"
+                className="accent-[var(--form-primary)]"
               />
               {mode.label}
             </label>

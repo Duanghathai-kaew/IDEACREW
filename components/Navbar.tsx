@@ -66,7 +66,7 @@ export default function Navbar() {
                   }
                   className={`text-nav pb-1 ${
                     active === key
-                      ? "border-b-2 border-(--brand-500) text-(--brand-500)"
+                      ? "border-b-2 border-[var(--brand-500)] text-[var(--brand-500)]"
                       : "text-slate-500"
                   }`}
                 >
@@ -107,7 +107,7 @@ export default function Navbar() {
               เพิ่มโปรเจกต์
             </Button>
             <div className="icon-btn">
-              <LogOut className="icon-sm text-(--brand-500)" />
+              <LogOut className="icon-sm text-[var(--brand-500)]" />
             </div>
           </div>
 
@@ -153,7 +153,7 @@ export default function Navbar() {
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
-            <LogOut className="icon-sm text-(--brand-500)" />
+            <LogOut className="icon-sm text-[var(--brand-500)]" />
           </div>
         </div>
       )}

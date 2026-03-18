@@ -78,7 +78,7 @@ export const TagInput: React.FC<TagInputProps> = ({
               <button
                 type="button"
                 onClick={addField}
-                className="ml-auto h-fit whitespace-nowrap rounded-lg bg-(--form-primary) px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-(--brand-400) hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)] max-md:ml-0"
+                className="ml-auto h-fit whitespace-nowrap rounded-lg bg-[var(--form-primary)] px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-[var(--brand-400)] hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)] max-md:ml-0"
               >
                 เพิ่ม
               </button>
@@ -112,7 +112,7 @@ export const SectionHeader: React.FC<SectionHeaderProps> = ({
       <div className="flex items-center gap-3">
         <div
           className={`flex items-center justify-center rounded-lg p-2 text-white ${
-            isAlt ? "bg-(--brand-400)" : "bg-(--form-primary)"
+            isAlt ? "bg-[var(--brand-400)]" : "bg-[var(--form-primary)]"
           }`}
         >
           {icon}

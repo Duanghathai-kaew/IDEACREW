@@ -42,7 +42,7 @@ export default async function ProjectDetailPage({
       <div
         className="min-h-screen"
         style={{
-          background: "linear-gradient(135deg, #f8fafc 0%, #e8f4ff 100%)",
+          background: "linear-gradient(135deg, var(--form-bg-light) 0%, var(--background) 100%)",
         }}
       >
         {/* Header */}
@@ -107,7 +107,7 @@ export default async function ProjectDetailPage({
               {/* Main Content */}
               <div className="lg:col-span-7 space-y-6">
                 {/* Project Description */}
-                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                <div className="rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     รายละเอียดโปรเจกต์
                   </h2>
@@ -117,7 +117,7 @@ export default async function ProjectDetailPage({
                 </div>
 
                 {/* Positions */}
-                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                <div className="rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ตำแหน่งงานที่เปิดรับ
                   </h2>
@@ -126,7 +126,7 @@ export default async function ProjectDetailPage({
                     {project.positions.map((position, index) => (
                       <div
                         key={position.id}
-                        className="relative rounded-xl border border-(--form-border) bg-white p-4"
+                        className="relative rounded-xl border border-[var(--form-border)] bg-white p-4"
                       >
                         <div className="mb-4">
                           <h3
@@ -155,7 +155,7 @@ export default async function ProjectDetailPage({
                             {position.skills.map((skill) => (
                               <span
                                 key={skill}
-                                className="inline-flex items-center gap-2 rounded-2xl bg-[#fff1ee] px-3 py-2 text-xs font-medium text-(--brand-500)"
+                                className="inline-flex items-center gap-2 rounded-2xl bg-[var(--form-primary-light)] px-3 py-2 text-xs font-medium text-[var(--brand-500)]"
                               >
                                 {skill}
                               </span>
@@ -214,7 +214,7 @@ export default async function ProjectDetailPage({
                 </div>
 
                 {/* Work Information */}
-                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                <div className="rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ข้อมูลการทำงาน
                   </h2>
@@ -271,7 +271,7 @@ export default async function ProjectDetailPage({
                 </div>
 
                 {/* Benefits */}
-                <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                <div className="rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ผลตอบแทนและสิ่งที่จะได้รับ
                   </h2>
@@ -368,9 +368,9 @@ export default async function ProjectDetailPage({
                 {/* ส่วน 2 คอลัมน์ */}
                 <div className="space-y-6">
                   {/* ตำแหน่งที่ใดอีก widget */}
-                  <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                  <div className="rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
-                      <FileText className="h-4 w-4 text-(--form-primary)" />
+                      <FileText className="h-4 w-4 text-[var(--form-primary)]" />
                       <h3
                         className="text-sm font-semibold"
                         style={{ color: "var(--form-text-primary)" }}
@@ -399,9 +399,9 @@ export default async function ProjectDetailPage({
                   </div>
 
                   {/* ทักษะที่ต้องการ */}
-                  <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+                  <div className="rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
-                      <Settings className="h-4 w-4 text-(--form-primary)" />
+                      <Settings className="h-4 w-4 text-[var(--form-primary)]" />
                       <h3
                         className="text-sm font-semibold"
                         style={{ color: "var(--form-text-primary)" }}

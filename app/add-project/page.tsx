@@ -128,21 +128,21 @@ export default function AddProjectModal({
             <div className="p-8">
               <div className="mb-8 flex items-center gap-4">
                 <button
-                  className="flex h-fit items-center gap-2 whitespace-nowrap rounded-lg border border-(--form-border) bg-white px-4 py-2 text-sm font-medium text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light)"
+                  className="flex h-fit items-center gap-2 whitespace-nowrap rounded-lg border border-[var(--form-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--form-text-secondary)] transition hover:border-[var(--form-primary)] hover:bg-[var(--form-bg-light)]"
                   onClick={onClose}
                 >
                   <ArrowLeft className="w-4 h-4" />
                   ปิด
                 </button>
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center justify-center rounded-xl bg-(--form-primary) p-3 text-white">
+                  <div className="flex items-center justify-center rounded-xl bg-[var(--form-primary)] p-3 text-white">
                     <Shield className="w-6 h-6" />
                   </div>
                   <div>
                     <h1 className="text-2xl font-bold text-slate-700">
                       วิธีการสร้างโปรเจกต์
                     </h1>
-                    <p className="m-0 text-sm text-(--form-text-secondary)">
+                    <p className="m-0 text-sm text-[var(--form-text-secondary)]">
                       กรอกข้อมูลในแบบฟอร์มเพื่อเขียนเนียน
                     </p>
                   </div>
@@ -189,7 +189,7 @@ export default function AddProjectModal({
                 <div className="flex flex-wrap justify-end gap-4 pt-6 max-[480px]:flex-col">
                   <button
                     type="button"
-                    className="h-fit whitespace-nowrap rounded-lg border border-(--form-border) bg-white px-4 py-2 text-sm font-medium text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light) max-[480px]:w-full"
+                    className="h-fit whitespace-nowrap rounded-lg border border-[var(--form-border)] bg-white px-4 py-2 text-sm font-medium text-[var(--form-text-secondary)] transition hover:border-[var(--form-primary)] hover:bg-[var(--form-bg-light)] max-[480px]:w-full"
                   >
                     บันทึกร่าง
                   </button>

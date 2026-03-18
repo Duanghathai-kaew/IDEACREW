@@ -24,7 +24,7 @@ export const BenefitsSection: React.FC<BenefitsSectionProps> = ({
   onBenefitChange,
 }) => {
   return (
-    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+    <div className="mb-8 rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Target className="w-5 h-5" />}
         title="ศักยภาพและผลตอบแทนที่ต้องการ"
@@ -41,7 +41,7 @@ export const BenefitsSection: React.FC<BenefitsSectionProps> = ({
                 type="checkbox"
                 checked={formData.benefits.includes(benefit.value)}
                 onChange={() => onBenefitChange(benefit.value)}
-                className="accent-(--form-primary)"
+                className="accent-[var(--form-primary)]"
               />
               {benefit.label}
             </label>

@@ -27,29 +27,29 @@ export default function Hero() {
         className="absolute z-0 left-1/2 top-1/2 w-45 h-45 rounded-full opacity-20 blur-2xl pointer-events-none -translate-x-[200%] -translate-y-1/2"
         style={{
           background:
-            "radial-gradient(circle at 60% 40%, #FD5E4B 0%, #FDB591 100%)",
+            "radial-gradient(circle at 60% 40%, var(--brand-500) 0%, var(--brand-400) 100%)",
         }}
       />
       <div
         className="absolute z-0 left-1/2 top-1/2 w-35 h-35 rounded-full opacity-20 blur-2xl pointer-events-none translate-x-[140%] -translate-y-1/2"
         style={{
           background:
-            "radial-gradient(circle at 60% 40%, #FCCF00 0%, #FD5E4B 100%)",
+            "radial-gradient(circle at 60% 40%, var(--brand-300) 0%, var(--brand-500) 100%)",
         }}
       />
       <h1
-        className={`relative z-10 text-4xl md:text-6xl font-bold mb-2 tracking-tight text-center bg-linear-to-r from-[#ff9472] to-[#f2709c] text-transparent bg-clip-text transition-all duration-700 ${showH1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} group-hover:scale-105 group-hover:drop-shadow-lg group-hover:duration-300`}
+        className={`relative z-10 text-4xl md:text-6xl font-bold mb-2 tracking-tight text-center bg-linear-to-r from-[var(--brand-500)] via-[var(--brand-400)] to-[var(--brand-300)] text-transparent bg-clip-text transition-all duration-700 ${showH1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} group-hover:scale-105 group-hover:drop-shadow-lg group-hover:duration-300`}
         style={{ letterSpacing: "0.01em" }}
       >
         IDEACREW
       </h1>
       <h2
-        className={`relative z-10 text-xl md:text-3xl font-semibold text-gray-700 mb-4 text-center transition-all duration-700 ${showH2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        className={`relative z-10 text-xl md:text-3xl font-semibold text-[var(--form-text-primary)] mb-4 text-center transition-all duration-700 ${showH2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
         Build Your Dream Team
       </h2>
       <p
-        className={`relative z-10 max-w-2xl text-base md:text-lg text-gray-600 text-center transition-all duration-700 ${showP ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        className={`relative z-10 max-w-2xl text-base md:text-lg text-[var(--form-text-secondary)] text-center transition-all duration-700 ${showP ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
       >
         ร่วมงานกับโปรเจกต์สุดเจ๋งของมหาวิทยาลัย พัฒนาทักษะและสร้างผลงานไปด้วยกัน
       </p>

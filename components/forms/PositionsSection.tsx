@@ -24,7 +24,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
   onUpdatePosition,
 }) => {
   return (
-    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+    <div className="mb-8 rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Calendar className="w-5 h-5" />}
         title="คุณลักษณะที่ค้องการ"
@@ -32,7 +32,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
         <button
           type="button"
           onClick={onAddPosition}
-          className="flex items-center gap-2 rounded-[10px] bg-(--form-primary) px-5 py-2.5 text-sm text-white shadow-[0_2px_4px_rgb(253_94_75/0.2)] transition hover:-translate-y-px hover:bg-(--brand-400)"
+          className="flex items-center gap-2 rounded-[10px] bg-[var(--form-primary)] px-5 py-2.5 text-sm text-white shadow-[0_2px_4px_rgb(253_94_75/0.2)] transition hover:-translate-y-px hover:bg-[var(--brand-400)]"
         >
           <Plus className="w-4 h-4" />
           เพิ่มตำแหน่ง
@@ -42,13 +42,13 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
         {formData.positions.map((position, index) => (
           <div
             key={index}
-            className="relative mb-6 rounded-xl border border-(--form-border) bg-white p-4"
+            className="relative mb-6 rounded-xl border border-[var(--form-border)] bg-white p-4"
           >
             {formData.positions.length > 1 && (
               <button
                 type="button"
                 onClick={() => onRemovePosition(index)}
-                className="absolute right-2 top-2 flex min-w-auto items-center rounded-lg border border-(--form-border) bg-white p-1 text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light)"
+                className="absolute right-2 top-2 flex min-w-auto items-center rounded-lg border border-[var(--form-border)] bg-white p-1 text-[var(--form-text-secondary)] transition hover:border-[var(--form-primary)] hover:bg-[var(--form-bg-light)]"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -101,7 +101,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
               </FormField>
               <FormField label="คุณสมบัติที่ต้องการเพิ่มเติม">
                 <textarea
-                  className="min-h-24 w-full resize-y rounded-lg border border-(--form-border) px-3 py-3 text-sm transition focus:border-(--form-primary) focus:outline-none focus:ring-4 focus:ring-[rgb(253_94_75/0.16)]"
+                  className="min-h-24 w-full resize-y rounded-lg border border-[var(--form-border)] px-3 py-3 text-sm transition focus:border-[var(--form-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--brand-400)]"
                   value={position.preferredQualifications || ""}
                   onChange={(e) =>
                     onUpdatePosition(

@@ -35,7 +35,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
   );
 
   return (
-    <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
+    <div className="mb-8 rounded-[20px] border border-[var(--form-border)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Shield className="w-5 h-5" />}
         title="ข้อมูลพื้นฐานโปรเจกต์"
@@ -61,7 +61,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
 
         <FormField label="รายละเอียดโปรเจกต์" required>
           <textarea
-            className="min-h-24 w-full resize-y rounded-lg border border-(--form-border) px-3 py-3 text-sm transition focus:border-(--form-primary) focus:outline-none focus:ring-4 focus:ring-[rgb(253_94_75/0.16)]"
+            className="min-h-24 w-full resize-y rounded-lg border border-[var(--form-border)] px-3 py-3 text-sm transition focus:border-[var(--form-primary)] focus:outline-none focus:ring-4 focus:ring-[var(--brand-400)]"
             value={formData.description}
             onChange={(e) => updateFormData({ description: e.target.value })}
             placeholder="อธิบายรายละเอียดโปรเจกต์..."
@@ -76,8 +76,8 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                 key={category}
                 className={`inline-flex cursor-pointer items-center rounded-[20px] border-2 border-transparent px-4 py-2 text-sm font-medium transition ${
                   formData.categories.includes(category)
-                    ? "bg-(--form-primary) text-white"
-                    : "bg-[#fff1ee] text-(--brand-500) hover:-translate-y-px hover:bg-(--form-primary) hover:text-white"
+                    ? "bg-[var(--form-primary)] text-white"
+                    : "bg-[var(--form-primary-light)] text-[var(--brand-500)] hover:-translate-y-px hover:bg-[var(--form-primary)] hover:text-white"
                 }`}
                 onClick={() => onCategoryToggle(category)}
               >
@@ -92,7 +92,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
                   key={category}
                   type="button"
                   onClick={() => onCategoryToggle(category)}
-                  className="inline-flex items-center rounded-[20px] bg-[#fff1ee] px-4 py-2 text-sm font-medium text-(--brand-500)"
+                  className="inline-flex items-center rounded-[20px] bg-[var(--form-primary-light)] px-4 py-2 text-sm font-medium text-[var(--brand-500)]"
                 >
                   {category}
                 </button>
@@ -115,7 +115,7 @@ export const BasicInfoSection: React.FC<BasicInfoSectionProps> = ({
             <button
               type="button"
               onClick={onAddCategory}
-              className="h-fit whitespace-nowrap rounded-lg bg-(--form-primary) px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-(--brand-400) hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)]"
+              className="h-fit whitespace-nowrap rounded-lg bg-[var(--form-primary)] px-4 py-2 text-sm font-medium text-white transition hover:-translate-y-px hover:bg-[var(--brand-400)] hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)]"
             >
               เพิ่ม
             </button>
