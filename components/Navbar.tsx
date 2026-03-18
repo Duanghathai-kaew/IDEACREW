@@ -107,7 +107,7 @@ export default function Navbar() {
               เพิ่มโปรเจกต์
             </Button>
             <div className="icon-btn">
-              <LogOut className="icon-sm text-orange-500" />
+              <LogOut className="icon-sm text-(--brand-500)" />
             </div>
           </div>
 
@@ -153,7 +153,7 @@ export default function Navbar() {
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
-            <LogOut className="icon-sm text-orange-500" />
+            <LogOut className="icon-sm text-(--brand-500)" />
           </div>
         </div>
       )}

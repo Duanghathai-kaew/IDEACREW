@@ -81,7 +81,7 @@ export default async function ProjectDetailPage({
                   {project.categories.map((category) => (
                     <span
                       key={category}
-                      className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)"
+                      className="rounded-full bg-[var(--form-secondary)] px-2.5 py-1 text-xs text-[var(--brand-500)]"
                     >
                       {category}
                     </span>
@@ -410,13 +410,13 @@ export default async function ProjectDetailPage({
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
+                      <span className="rounded-full bg-[var(--form-secondary)] px-2.5 py-1 text-xs text-[var(--brand-500)]">
                         พากย์ไทย
                       </span>
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
+                      <span className="rounded-full bg-[var(--form-secondary)] px-2.5 py-1 text-xs text-[var(--brand-500)]">
                         เสียงพากย์
                       </span>
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
+                      <span className="rounded-full bg-[var(--form-secondary)] px-2.5 py-1 text-xs text-[var(--brand-500)]">
                         กล้อง
                       </span>
                     </div>
