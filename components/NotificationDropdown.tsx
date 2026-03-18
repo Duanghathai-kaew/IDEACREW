@@ -21,7 +21,7 @@ function getToneStyles(tone: NotificationItem["tone"]) {
   if (tone === "warning") {
     return "bg-amber-100 text-amber-600";
   }
-  return "bg-rose-100 text-rose-500";
+  return "bg-[var(--form-secondary)] text-[var(--brand-500)]";
 }
 
 export default function NotificationDropdown({
@@ -66,8 +66,11 @@ export default function NotificationDropdown({
   }
 
   return (
-    <div className="absolute right-0 top-12 z-50 w-[360px] rounded-2xl shadow-2xl overflow-hidden border border-orange-100 bg-white">
-      <div className="bg-gradient-to-r from-orange-400 via-orange-300 to-amber-300 px-5 pt-4 pb-3 text-white">
+    <div className="absolute right-0 top-12 z-50 w-[360px] rounded-2xl shadow-2xl overflow-hidden border border-[var(--form-border)] bg-white">
+      <div
+        className="px-5 pt-4 pb-3 text-white"
+        style={{ background: "var(--brand-gradient-90)" }}
+      >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5" />
@@ -89,7 +92,7 @@ export default function NotificationDropdown({
                 onClick={() => setActiveTab(tab.key)}
                 className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium transition-all ${
                   isActive
-                    ? "bg-white text-orange-500 shadow"
+                    ? "bg-white text-[var(--brand-500)] shadow"
                     : "bg-white/20 text-white"
                 }`}
               >
@@ -108,9 +111,9 @@ export default function NotificationDropdown({
         </div>
       </div>
 
-      <div className="max-h-[360px] overflow-y-auto bg-[#fff7f2]">
+      <div className="max-h-[360px] overflow-y-auto bg-[var(--form-primary-light)]/60">
         {filtered.length === 0 ? (
-          <div className="px-6 py-10 text-center text-sm text-orange-400">
+          <div className="px-6 py-10 text-center text-sm text-[var(--brand-400)]">
             ยังไม่มีการแจ้งเตือนในแท็บนี้
           </div>
         ) : (
@@ -118,7 +121,7 @@ export default function NotificationDropdown({
             <button
               key={item.id}
               onClick={() => handleClick(item)}
-              className="w-full text-left px-5 py-4 border-b border-orange-100 bg-white/70 hover:bg-white transition"
+              className="w-full text-left px-5 py-4 border-b border-[var(--form-border)] bg-white/70 hover:bg-white transition"
             >
               <div className="flex items-start gap-3">
                 <div
@@ -137,17 +140,17 @@ export default function NotificationDropdown({
                     <span>{item.title}</span>
                     <span>{item.date}</span>
                   </div>
-                  <span className="inline-flex rounded-full bg-orange-50 px-2 py-0.5 text-[11px] text-orange-500">
+                  <span className="inline-flex rounded-full bg-[var(--form-secondary)] px-2 py-0.5 text-[11px] text-[var(--brand-500)]">
                     {item.projectTitle}
                   </span>
                   <p className="text-xs text-gray-500">{item.message}</p>
-                  <div className="flex items-center gap-3 text-[11px] text-orange-500">
+                  <div className="flex items-center gap-3 text-[11px] text-[var(--brand-500)]">
                     <span>{item.isRead ? "อ่านแล้ว" : "ยังไม่อ่าน"}</span>
                     <span>ดู</span>
                   </div>
                 </div>
                 {!item.isRead && (
-                  <span className="mt-2 h-2 w-2 rounded-full bg-orange-400" />
+                  <span className="mt-2 h-2 w-2 rounded-full bg-[var(--brand-400)]" />
                 )}
               </div>
             </button>
@@ -158,7 +161,7 @@ export default function NotificationDropdown({
       <div className="bg-white px-5 py-3">
         <button
           onClick={deleteAll}
-          className="flex items-center justify-center w-full gap-2 rounded-lg border border-orange-100 py-2 text-xs text-orange-500"
+          className="flex items-center justify-center w-full gap-2 rounded-lg border border-[var(--form-border)] py-2 text-xs text-[var(--brand-500)]"
         >
           <Trash2 className="w-4 h-4" />
           ลบการแจ้งเตือนทั้งหมด

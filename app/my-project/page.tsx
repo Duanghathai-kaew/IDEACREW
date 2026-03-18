@@ -122,13 +122,13 @@ export default function MyProjectPage() {
   return (
     <>
       <Navbar />
-      <main className="bg-[#fff7f2]">
+      <main className="bg-[var(--background)]">
         <section className="max-w-4xl mx-auto px-6 pt-10 pb-16">
           <div className="text-center mb-10">
-            <h1 className="text-3xl md:text-4xl font-bold text-orange-500 mb-2">
+            <h1 className="text-3xl md:text-4xl font-bold text-[var(--brand-500)] mb-2">
               โปรเจกต์ของฉัน
             </h1>
-            <p className="text-sm md:text-base text-orange-400">
+            <p className="text-sm md:text-base text-[var(--brand-400)]">
               จัดการและติดตามสถานะโปรเจกต์ของคุณ
             </p>
           </div>
@@ -143,14 +143,16 @@ export default function MyProjectPage() {
                     onClick={() => setActiveFilter(filter.key)}
                     className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
                       isActive
-                        ? "bg-gradient-to-r from-orange-400 to-amber-400 text-white border-transparent shadow"
-                        : "bg-white text-orange-500 border-orange-200 hover:border-orange-400"
+                        ? "bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) text-white border-transparent shadow"
+                        : "bg-white text-[var(--brand-500)] border-[var(--form-border)] hover:border-[var(--brand-400)]"
                     }`}
                   >
                     {filter.label}
                     <span
                       className={`ml-2 inline-flex items-center justify-center w-5 h-5 text-xs rounded-full ${
-                        isActive ? "bg-white/20 text-white" : "bg-orange-100"
+                        isActive
+                          ? "bg-white/20 text-white"
+                          : "bg-[var(--form-secondary)]"
                       }`}
                     >
                       {counts[filter.key]}
@@ -159,7 +161,7 @@ export default function MyProjectPage() {
                 );
               })}
             </div>
-            <button className="flex items-center gap-2 text-sm text-orange-500">
+            <button className="flex items-center gap-2 text-sm text-[var(--brand-500)]">
               <Filter className="w-4 h-4" />
               กรองตามสถานะ
             </button>
@@ -167,14 +169,14 @@ export default function MyProjectPage() {
 
           <div className="space-y-6">
             {filteredProjects.length === 0 ? (
-              <div className="bg-[#ffe9e1] border border-orange-200 rounded-2xl px-6 py-10 text-center">
-                <div className="mx-auto w-12 h-12 rounded-full border-2 border-pink-400 flex items-center justify-center text-pink-400">
+              <div className="bg-[var(--form-primary-light)] border border-[var(--form-border)] rounded-2xl px-6 py-10 text-center">
+                <div className="mx-auto w-12 h-12 rounded-full border-2 border-[var(--brand-400)] flex items-center justify-center text-[var(--brand-400)]">
                   <Gift className="w-6 h-6" />
                 </div>
-                <h3 className="mt-4 text-lg font-semibold text-orange-500">
+                <h3 className="mt-4 text-lg font-semibold text-[var(--brand-500)]">
                   ยังไม่มีโปรเจกต์
                 </h3>
-                <p className="mt-2 text-sm text-orange-400">
+                <p className="mt-2 text-sm text-[var(--brand-400)]">
                   เริ่มต้นโพสต์โปรเจกต์ของคุณตอนนี้!
                 </p>
               </div>
@@ -211,7 +213,7 @@ export default function MyProjectPage() {
                           {project.tags.map((tag) => (
                             <span
                               key={tag}
-                              className="px-3 py-1 text-xs rounded-full bg-orange-50 text-orange-500"
+                              className="px-3 py-1 text-xs rounded-full bg-[var(--form-secondary)] text-[var(--brand-500)]"
                             >
                               {tag}
                             </span>
@@ -236,12 +238,12 @@ export default function MyProjectPage() {
                       {project.status === "active" ? (
                         <Link
                           href={`/project/${project.detailId ?? project.id}`}
-                          className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-orange-400 to-amber-400 shadow"
+                          className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) shadow"
                         >
                           ดูรายละเอียดโปรเจกต์
                         </Link>
                       ) : project.status === "pending" ? (
-                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-orange-400 bg-orange-50">
+                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-[var(--brand-400)] bg-[var(--form-secondary)]">
                           กำลังตรวจสอบ
                         </button>
                       ) : (
