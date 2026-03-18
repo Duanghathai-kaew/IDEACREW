@@ -1,15 +1,19 @@
 .postButton {
-  background: linear-gradient(135deg, #ff6a5f 0%, #ff9472 100%);
+  background: var(--brand-gradient-135);
   color: #fff;
   font-weight: 500;
   font-size: 1rem;
   border-radius: 0.75rem;
-  box-shadow: 0 4px 24px 0 rgba(255, 107, 107, 0.15);
+  box-shadow: 0 4px 24px 0 rgb(253 94 75 / 0.2);
   padding: 0.5rem 1.5rem;
   transition: background 0.2s;
 }
 .postButton:hover {
-  background: linear-gradient(135deg, #ff7e5f 0%, #feb47b 100%);
+  background: linear-gradient(
+    135deg,
+    var(--brand-500) 0%,
+    var(--brand-400) 100%
+  );
 }
 .bellWrapper {
   position: relative;
@@ -21,11 +25,15 @@
   position: absolute;
   top: -6px;
   right: -2px;
-  background: linear-gradient(135deg, #ff6a5f 0%, #ff9472 100%);
+  background: linear-gradient(
+    135deg,
+    var(--brand-500) 0%,
+    var(--brand-400) 100%
+  );
   color: #fff;
   font-weight: 500;
   font-size: 0.85rem;
-  box-shadow: 0 2px 8px 0 rgba(255, 107, 107, 0.15);
+  box-shadow: 0 2px 8px 0 rgb(253 94 75 / 0.22);
   pointer-events: none;
   border-radius: 999px;
   min-width: 18px;
@@ -39,7 +47,7 @@
 .nav {
   width: 100%;
   background: white;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid #e2e8f0;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -66,7 +74,7 @@
   width: 36px;
   height: 36px;
   border-radius: 0.75rem;
-  background: #f97316;
+  background: var(--brand-500);
   color: white;
   font-weight: bold;
   display: flex;
@@ -80,13 +88,13 @@
 }
 
 .menuActive {
-  color: #f97316;
-  border-bottom: 2px solid #f97316;
+  color: var(--brand-500);
+  border-bottom: 2px solid var(--brand-500);
   padding-bottom: 0.25rem;
 }
 
 .menuInactive {
-  color: #6b7280;
+  color: #64748b;
   padding-bottom: 0.25rem;
 }
 
