@@ -5,7 +5,15 @@ import {
   formatThaiDate,
 } from "@/lib/detailedMockData";
 import Navbar from "@/components/Navbar";
-import { ArrowLeft, Calendar, Clock, Users, Award } from "lucide-react";
+import {
+  ArrowLeft,
+  Award,
+  Calendar,
+  Clock,
+  FileText,
+  Settings,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
@@ -365,7 +373,7 @@ export default async function ProjectDetailPage({
                   {/* ตำแหน่งที่ใดอีก widget */}
                   <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-lg">📄</span>
+                      <FileText className="h-4 w-4 text-(--form-primary)" />
                       <h3
                         className="text-sm font-semibold"
                         style={{ color: "var(--form-text-primary)" }}
@@ -392,7 +400,7 @@ export default async function ProjectDetailPage({
                   {/* ทักษะที่ต้องการ */}
                   <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
-                      <span className="text-lg">⚙️</span>
+                      <Settings className="h-4 w-4 text-(--form-primary)" />
                       <h3
                         className="text-sm font-semibold"
                         style={{ color: "var(--form-text-primary)" }}

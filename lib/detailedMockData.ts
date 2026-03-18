@@ -185,11 +185,11 @@ export const getDetailedProjectById = (id: string): Project | undefined => {
 // Helper function to format benefits in Thai
 export const getBenefitLabel = (benefit: Benefit): string => {
   const labels = {
-    certificate: "🎓 ใบประกาศนียบัตร",
-    experience: "💼 ประสบการณ์การทำงาน",
-    portfolio: "📁 ผลงานสำหรับ Portfolio",
-    compensation: "💰 ค่าตอบแทน",
-    network: "🤝 เครือข่ายและการเชื่อมต่อ",
+    certificate: "ใบประกาศนียบัตร",
+    experience: "ประสบการณ์การทำงาน",
+    portfolio: "ผลงานสำหรับ Portfolio",
+    compensation: "ค่าตอบแทน",
+    network: "เครือข่ายและการเชื่อมต่อ",
   };
   return labels[benefit];
 };
@@ -197,9 +197,9 @@ export const getBenefitLabel = (benefit: Benefit): string => {
 // Helper function to format work mode in Thai
 export const getWorkModeLabel = (workMode: WorkMode): string => {
   const labels = {
-    onsite: "🏢 ทำงานที่ออฟฟิศ",
-    hybrid: "🔄 ทำงานแบบผสม (Hybrid)",
-    online: "🌐 ทำงานออนไลน์",
+    onsite: "ทำงานที่ออฟฟิศ",
+    hybrid: "ทำงานแบบผสม (Hybrid)",
+    online: "ทำงานออนไลน์",
   };
   return labels[workMode];
 };
