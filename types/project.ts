@@ -1,3 +1,5 @@
+import { CreatorProjectStatus } from "@/types/status";
+
 export type WorkMode = "onsite" | "hybrid" | "online";
 
 export type Benefit =
@@ -7,7 +9,7 @@ export type Benefit =
   | "compensation"
   | "network";
 
-export type ProjectStatus = "draft" | "pending" | "approved" | "rejected";
+export type ProjectStatus = CreatorProjectStatus;
 
 export interface Project {
   id: string;

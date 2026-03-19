@@ -21,7 +21,7 @@ export const detailedMockProjects: Project[] = [
       "network",
     ] as Benefit[],
     compensationDetail: "ค่าตอบแทน 15,000-25,000 บาท/วัน ขึ้นอยู่กับประสบการณ์",
-    status: "approved" as ProjectStatus,
+    status: "open" as ProjectStatus,
     positions: [
       {
         id: "pos1",
@@ -106,7 +106,7 @@ export const detailedMockProjects: Project[] = [
       "network",
     ] as Benefit[],
     compensationDetail: "",
-    status: "approved" as ProjectStatus,
+    status: "open" as ProjectStatus,
     positions: [
       {
         id: "pos4",

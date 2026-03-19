@@ -34,7 +34,7 @@ export default async function ProjectDetailPage({
   }
 
   const avatar = project.createdBy.slice(0, 2).toUpperCase();
-  const isOpen = project.status === "approved";
+  const isOpen = project.status === "open";
 
   return (
     <>

@@ -6,20 +6,40 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const statusMeta = {
-  active: {
-    label: "ดำเนินอยู่",
+  draft: {
+    label: "แบบร่าง",
+    pill: "bg-slate-100 text-slate-700",
+    border: "border-slate-300",
+  },
+  open: {
+    label: "เปิดรับสมัคร",
     pill: "bg-emerald-100 text-emerald-700",
     border: "border-emerald-400",
   },
-  pending: {
+  pending_approval: {
     label: "รอการอนุมัติ",
     pill: "bg-amber-100 text-amber-700",
     border: "border-amber-400",
   },
-  rejected: {
-    label: "ปฏิเสธ",
+  rejected_by_admin: {
+    label: "ตีกลับโดยแอดมิน",
     pill: "bg-rose-100 text-rose-700",
     border: "border-rose-400",
+  },
+  approved: {
+    label: "อนุมัติแล้ว",
+    pill: "bg-sky-100 text-sky-700",
+    border: "border-sky-400",
+  },
+  reviewing: {
+    label: "กำลังคัดเลือก",
+    pill: "bg-purple-100 text-purple-700",
+    border: "border-purple-400",
+  },
+  closed: {
+    label: "ปิดรับแล้ว",
+    pill: "bg-slate-200 text-slate-800",
+    border: "border-slate-500",
   },
 } as const;
 
@@ -42,7 +62,7 @@ const myProjects: MyProject[] = [
     id: "p101",
     detailId: "p1",
     title: "Social Media Content ทีม CSTU Innovation Week",
-    status: "active",
+    status: "open",
     createdAt: "20 พฤศจิกายน 2567",
     summary:
       "ต้องการทีมสร้างคอนเทนต์สั้นสำหรับประชาสัมพันธ์ผ่าน TikTok, Instagram และ Facebook",
@@ -53,7 +73,7 @@ const myProjects: MyProject[] = [
   {
     id: "p102",
     title: "ระบบติดตามฟังก์ชันสหกิจฯ",
-    status: "pending",
+    status: "pending_approval",
     createdAt: "26 พฤศจิกายน 2567",
     summary: "พัฒนาเว็บแอปติดตามเอกสารสหกิจฯ และระบบแจ้งเตือนสถานะ",
     tags: ["Frontend Dev", "React"],
@@ -63,7 +83,7 @@ const myProjects: MyProject[] = [
   {
     id: "p103",
     title: "ออกแบบ Key Visual งาน Freshy Night 2025",
-    status: "rejected",
+    status: "rejected_by_admin",
     createdAt: "18 พฤศจิกายน 2567",
     summary: "ออกแบบสื่อภาพนิ่งและชุดคีย์วิชวลสำหรับงานใหญ่ประจำปี",
     tags: ["กราฟิก/ดีไซน์"],
@@ -73,7 +93,7 @@ const myProjects: MyProject[] = [
   {
     id: "p104",
     title: "MC and Host สำหรับงาน CSTU Talent Show",
-    status: "pending",
+    status: "pending_approval",
     createdAt: "27 พฤศจิกายน 2567",
     summary: "คัดเลือกพิธีกรหลักและพิธีกรร่วมดูแลบรรยากาศบนเวที",
     tags: ["MC/ดำเนินรายการ"],
@@ -84,20 +104,64 @@ const myProjects: MyProject[] = [
     id: "p105",
     detailId: "p2",
     title: "Open House University Tour",
-    status: "active",
+    status: "open",
     createdAt: "22 พฤศจิกายน 2567",
     summary: "ดูแลกิจกรรมทัวร์คณะและการจัดคิวผู้เข้าร่วมงาน",
     tags: ["กิจกรรม/ประสานงาน", "Open House"],
     applicants: 5,
     deadline: "20 ธ.ค. 2568",
   },
+  {
+    id: "p106",
+    title: "CSTU Mentorship Portal",
+    status: "approved",
+    createdAt: "23 พฤศจิกายน 2567",
+    summary: "อนุมัติแล้ว รอตั้งเวลาเปิดรับสมัคร",
+    tags: ["Mentor", "Community"],
+    applicants: 0,
+    deadline: "1 ม.ค. 2569",
+  },
+  {
+    id: "p107",
+    title: "CSTU Hackathon 2026",
+    status: "reviewing",
+    createdAt: "24 พฤศจิกายน 2567",
+    summary: "อยู่ช่วงคัดเลือกผู้สมัครให้ตรงตำแหน่ง",
+    tags: ["Hackathon", "Event"],
+    applicants: 12,
+    deadline: "5 ม.ค. 2569",
+  },
+  {
+    id: "p108",
+    title: "Prototype ระบบจองห้องประชุม",
+    status: "draft",
+    createdAt: "25 พฤศจิกายน 2567",
+    summary: "ยังไม่ส่งตรวจ กำลังเขียนรายละเอียดโครงงาน",
+    tags: ["Internal Tool"],
+    applicants: 0,
+    deadline: "ยังไม่กำหนด",
+  },
+  {
+    id: "p109",
+    title: "CSTU Orientation Buddy Program",
+    status: "closed",
+    createdAt: "10 พฤศจิกายน 2567",
+    summary: "ปิดรับสมัครและสิ้นสุดโปรเจกต์เรียบร้อย",
+    tags: ["Student Activity"],
+    applicants: 18,
+    deadline: "31 พ.ย. 2568",
+  },
 ];
 
 const filters = [
   { key: "all", label: "ทั้งหมด" },
-  { key: "active", label: "กำลังทำ" },
-  { key: "pending", label: "รอการอนุมัติ" },
-  { key: "rejected", label: "ปฏิเสธ" },
+  { key: "draft", label: "แบบร่าง" },
+  { key: "pending_approval", label: "รออนุมัติ" },
+  { key: "approved", label: "อนุมัติแล้ว" },
+  { key: "open", label: "กำลังทำ" },
+  { key: "reviewing", label: "กำลังคัดเลือก" },
+  { key: "closed", label: "ปิดรับแล้ว" },
+  { key: "rejected_by_admin", label: "ตีกลับ" },
 ] as const;
 
 type FilterKey = (typeof filters)[number]["key"];
@@ -113,9 +177,15 @@ export default function MyProjectPage() {
   const counts = useMemo(() => {
     return {
       all: myProjects.length,
-      active: myProjects.filter((p) => p.status === "active").length,
-      pending: myProjects.filter((p) => p.status === "pending").length,
-      rejected: myProjects.filter((p) => p.status === "rejected").length,
+      draft: myProjects.filter((p) => p.status === "draft").length,
+      approved: myProjects.filter((p) => p.status === "approved").length,
+      open: myProjects.filter((p) => p.status === "open").length,
+      pending_approval: myProjects.filter((p) => p.status === "pending_approval").length,
+      reviewing: myProjects.filter((p) => p.status === "reviewing").length,
+      closed: myProjects.filter((p) => p.status === "closed").length,
+      rejected_by_admin: myProjects.filter(
+        (p) => p.status === "rejected_by_admin",
+      ).length,
     };
   }, []);
 
@@ -144,7 +214,7 @@ export default function MyProjectPage() {
                     className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
                       isActive
                         ? "text-white border-transparent shadow"
-                        : "bg-white text-slate-700 border-slate-200 hover:border-amber-400"
+                        : "bg-white text-slate-700 border-slate-200 hover:border-brand-400"
                     }`}
                     style={
                       isActive
@@ -157,7 +227,7 @@ export default function MyProjectPage() {
                       className={`ml-2 inline-flex items-center justify-center w-5 h-5 text-xs rounded-full ${
                         isActive
                           ? "bg-white/20 text-white"
-                          : "bg-amber-100 text-slate-700"
+                          : "bg-slate-100 text-slate-700"
                       }`}
                     >
                       {counts[filter.key]}
@@ -240,16 +310,32 @@ export default function MyProjectPage() {
                         </span>
                       </div>
 
-                      {project.status === "active" ? (
+                      {project.status === "open" ? (
                         <Link
                           href={`/project/${project.detailId ?? project.id}`}
                           className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 shadow"
                         >
                           ดูรายละเอียดโปรเจกต์
                         </Link>
-                      ) : project.status === "pending" ? (
+                      ) : project.status === "pending_approval" ? (
                         <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-amber-700 bg-amber-100">
-                          กำลังตรวจสอบ
+                          รออนุมัติจากแอดมิน
+                        </button>
+                      ) : project.status === "approved" ? (
+                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-sky-700 bg-sky-100">
+                          พร้อมเปิดรับสมัคร
+                        </button>
+                      ) : project.status === "reviewing" ? (
+                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-purple-700 bg-purple-100">
+                          กำลังคัดเลือกผู้สมัคร
+                        </button>
+                      ) : project.status === "draft" ? (
+                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100">
+                          แก้ไขแบบร่าง
+                        </button>
+                      ) : project.status === "closed" ? (
+                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-800 bg-slate-200">
+                          ปิดรับสมัครแล้ว
                         </button>
                       ) : (
                         <div className="bg-rose-100 text-rose-700 text-xs rounded-lg p-3">

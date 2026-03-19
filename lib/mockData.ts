@@ -1,4 +1,8 @@
 import { Project } from "@/types/project";
+import {
+  ApplicantApplicationStatus,
+  CreatorProjectStatus,
+} from "@/types/status";
 
 export const mockProjects: Project[] = [
   {
@@ -18,7 +22,7 @@ export const mockProjects: Project[] = [
     benefits: ["experience", "portfolio", "network"],
     compensationDetail: "",
 
-    status: "approved",
+    status: "open",
 
     positions: [
       {
@@ -85,7 +89,7 @@ export const mockProjects: Project[] = [
     benefits: ["certificate", "experience", "portfolio", "compensation"],
     compensationDetail: "3,000 บาท/เดือน สำหรับ 3 เดือน",
 
-    status: "approved",
+    status: "open",
 
     positions: [
       {
@@ -120,6 +124,168 @@ export const mockProjects: Project[] = [
 
     createdBy: "ทีม CSTU Web Team",
     createdAt: "2025-01-20",
+  },
+  {
+    id: "p3",
+    title: "Prototype ระบบจองห้องประชุมภายในคณะ",
+    categories: ["พัฒนาเว็บไซต์", "ระบบภายใน"],
+    summary: "ต้นฉบับระบบจองห้องประชุม ยังอยู่ช่วงร่างโครงงาน",
+    description:
+      "โปรเจกต์นี้ยังอยู่ในระยะร่างแนวคิด (Draft) และกำลังจัดโครงสร้างฐานข้อมูลกับหน้าจอเบื้องต้น",
+    workMode: "online",
+    workingHours: "ยืดหยุ่นตามทีม",
+    applicationStartDate: "2025-04-01",
+    applicationEndDate: "2025-04-30",
+    benefits: ["experience", "portfolio"],
+    compensationDetail: "",
+    status: "draft",
+    positions: [
+      {
+        id: "pos6",
+        projectId: "p3",
+        title: "Frontend Developer",
+        neededCount: 1,
+        skills: ["React", "TypeScript"],
+        basicQualifications: ["เข้าใจ React พื้นฐาน", "ทำงานร่วมกับทีมได้"],
+      },
+    ],
+    createdBy: "ทีม Internal Systems",
+    createdAt: "2025-02-05",
+  },
+  {
+    id: "p4",
+    title: "CSTU Career Fair Matching Platform",
+    categories: ["แพลตฟอร์ม", "กิจกรรมมหาวิทยาลัย"],
+    summary: "แพลตฟอร์มจับคู่บริษัทและนักศึกษา ส่งตรวจแอดมินแล้ว",
+    description:
+      "รายละเอียดโปรเจกต์ครบถ้วนและถูกส่งให้แอดมินตรวจสอบสถานะเพื่ออนุมัติการเผยแพร่",
+    workMode: "hybrid",
+    workingHours: "อังคาร-พฤหัส 18:00-21:00",
+    applicationStartDate: "2025-04-10",
+    applicationEndDate: "2025-05-10",
+    benefits: ["experience", "network", "certificate"],
+    compensationDetail: "",
+    status: "pending_approval",
+    positions: [
+      {
+        id: "pos7",
+        projectId: "p4",
+        title: "Backend Developer",
+        neededCount: 1,
+        skills: ["Node.js", "PostgreSQL"],
+        basicQualifications: ["ออกแบบ API ได้", "มีพื้นฐานฐานข้อมูล"],
+      },
+    ],
+    createdBy: "ทีม Career Hub",
+    createdAt: "2025-02-12",
+  },
+  {
+    id: "p5",
+    title: "CSTU Alumni Story Podcast",
+    categories: ["สื่อ", "พอดแคสต์"],
+    summary: "โปรเจกต์พอดแคสต์ศิษย์เก่า ถูกตีกลับให้แก้รายละเอียด",
+    description:
+      "โปรเจกต์นี้ได้รับข้อเสนอแนะจากแอดมินให้ปรับรายละเอียดงบประมาณและแผนการผลิตก่อนส่งใหม่",
+    workMode: "onsite",
+    workingHours: "เสาร์ 10:00-16:00",
+    applicationStartDate: "2025-04-15",
+    applicationEndDate: "2025-05-15",
+    benefits: ["experience", "portfolio"],
+    compensationDetail: "",
+    status: "rejected_by_admin",
+    positions: [
+      {
+        id: "pos8",
+        projectId: "p5",
+        title: "Sound Editor",
+        neededCount: 1,
+        skills: ["Audio Editing", "Podcast Production"],
+        basicQualifications: ["ใช้โปรแกรมตัดต่อเสียงได้", "สื่อสารกับทีมได้ดี"],
+      },
+    ],
+    createdBy: "ทีม Media Lab",
+    createdAt: "2025-02-18",
+  },
+  {
+    id: "p6",
+    title: "CSTU Mentorship Portal",
+    categories: ["ระบบชุมชน", "เว็บไซต์"],
+    summary: "โปรเจกต์ผ่านอนุมัติแล้ว แต่ยังไม่เปิดรับสมัคร",
+    description:
+      "โครงสร้างและรายละเอียดผ่านแอดมินเรียบร้อย อยู่ในสถานะ Approved รอเปิดรับตามกำหนด",
+    workMode: "online",
+    workingHours: "จันทร์-ศุกร์ 20:00-22:00",
+    applicationStartDate: "2025-05-01",
+    applicationEndDate: "2025-06-01",
+    benefits: ["certificate", "experience", "network"],
+    compensationDetail: "",
+    status: "approved",
+    positions: [
+      {
+        id: "pos9",
+        projectId: "p6",
+        title: "Product Designer",
+        neededCount: 1,
+        skills: ["Figma", "UX Research"],
+        basicQualifications: ["ออกแบบ user flow ได้", "เข้าใจหลัก UX"],
+      },
+    ],
+    createdBy: "ทีม CSTU Mentors",
+    createdAt: "2025-02-22",
+  },
+  {
+    id: "p7",
+    title: "CSTU Hackathon 2026",
+    categories: ["งานอีเวนต์", "เทคโนโลยี"],
+    summary: "โปรเจกต์อยู่ระหว่างคัดเลือกทีมงาน",
+    description:
+      "เปิดรับสมัครแล้วและกำลังเข้าสู่ช่วง Reviewing เพื่อคัดเลือกผู้สมัครให้ตรงตำแหน่ง",
+    workMode: "hybrid",
+    workingHours: "เสาร์-อาทิตย์",
+    applicationStartDate: "2025-03-20",
+    applicationEndDate: "2025-04-20",
+    benefits: ["experience", "network", "portfolio", "compensation"],
+    compensationDetail: "เบี้ยเลี้ยงตามบทบาท",
+    status: "reviewing",
+    positions: [
+      {
+        id: "pos10",
+        projectId: "p7",
+        title: "Event Coordinator",
+        neededCount: 2,
+        skills: ["Coordination", "Communication"],
+        basicQualifications: ["จัดการตารางงานได้", "ทำงานหน้างานได้"],
+      },
+    ],
+    createdBy: "ทีม Hackathon",
+    createdAt: "2025-02-28",
+  },
+  {
+    id: "p8",
+    title: "CSTU Orientation Buddy Program",
+    categories: ["กิจกรรมนักศึกษา"],
+    summary: "โปรเจกต์ปิดรับสมัครและปิดงานแล้ว",
+    description:
+      "ปิดรับสมัครเรียบร้อยและส่งมอบงานครบถ้วน อยู่ในสถานะ Closed เพื่ออ้างอิงย้อนหลัง",
+    workMode: "onsite",
+    workingHours: "ตามตารางกิจกรรม",
+    applicationStartDate: "2025-01-01",
+    applicationEndDate: "2025-01-31",
+    benefits: ["certificate", "experience"],
+    compensationDetail: "",
+    status: "closed",
+    positions: [
+      {
+        id: "pos11",
+        projectId: "p8",
+        title: "Student Buddy",
+        neededCount: 5,
+        skills: ["Mentoring", "Communication"],
+        basicQualifications: ["มีทักษะการสื่อสาร", "ทำงานเป็นทีมได้"],
+      },
+    ],
+    createdBy: "ทีม Student Affairs",
+    createdAt: "2024-12-20",
   },
 ];
 
@@ -162,19 +328,27 @@ export type ProfileData = {
 };
 
 export type NotificationCategory = "my-project" | "applied";
-export type NotificationTone = "success" | "warning" | "info";
+export type NotificationStatus = CreatorProjectStatus | ApplicantApplicationStatus;
 
-export type NotificationItem = {
+type NotificationBase = {
   id: string;
-  category: NotificationCategory;
   title: string;
   message: string;
   projectTitle: string;
   projectId: string;
   date: string;
   isRead: boolean;
-  tone: NotificationTone;
 };
+
+export type NotificationItem =
+  | (NotificationBase & {
+      category: "my-project";
+      status: CreatorProjectStatus;
+    })
+  | (NotificationBase & {
+      category: "applied";
+      status: ApplicantApplicationStatus;
+    });
 
 export const mockProfile: ProfileData = {
   id: "u01",
@@ -231,34 +405,197 @@ export const mockNotifications: NotificationItem[] = [
   {
     id: "n1",
     category: "my-project",
-    title: "โปรเจกต์ได้รับการอนุมัติแล้ว!",
-    message: "ยินดีด้วย! โปรเจกต์ของคุณผ่านการตรวจสอบและได้รับการอนุมัติ",
-    projectTitle: "ทีมสร้าง Social Media Content สำหรับ...",
-    projectId: "p1",
-    date: "27 พ.ย.",
-    isRead: false,
-    tone: "success",
+    title: "โปรเจกต์ยังเป็นแบบร่าง",
+    message: "คุณยังไม่ได้ส่งโปรเจกต์ให้แอดมินตรวจสอบ",
+    projectTitle: "Prototype ระบบจองห้องประชุมภายในคณะ",
+    projectId: "p3",
+    date: "28 พ.ย.",
+    isRead: true,
+    status: "draft",
   },
   {
     id: "n2",
     category: "my-project",
-    title: "มีผู้สมัครเข้าร่วมโปรเจกต์ใหม่",
-    message: "มีนักศึกษาส่งใบสมัครเข้าร่วมโปรเจกต์ของคุณ 2 คน",
-    projectTitle: "ทีมถ่ายทำและตัดต่อวิดีโอสำหรับ Univ...",
-    projectId: "p2",
-    date: "27 พ.ย.",
+    title: "โปรเจกต์อยู่ระหว่างรออนุมัติ",
+    message: "แอดมินได้รับคำขอแล้ว กำลังตรวจสอบรายละเอียด",
+    projectTitle: "CSTU Career Fair Matching Platform",
+    projectId: "p4",
+    date: "28 พ.ย.",
     isRead: false,
-    tone: "info",
+    status: "pending_approval",
   },
   {
     id: "n3",
-    category: "applied",
-    title: "โปรเจกต์ใกล้ปิดรับสมัคร",
-    message: "โปรเจกต์ที่คุณสมัครไว้ใกล้ปิดรับสมัครแล้ว",
-    projectTitle: "MC และ Host สำหรับงาน CSTU Talent S...",
+    category: "my-project",
+    title: "โปรเจกต์ถูกตีกลับโดยแอดมิน",
+    message: "กรุณาแก้ไขข้อมูลงบประมาณและส่งใหม่อีกครั้ง",
+    projectTitle: "CSTU Alumni Story Podcast",
+    projectId: "p5",
+    date: "27 พ.ย.",
+    isRead: false,
+    status: "rejected_by_admin",
+  },
+  {
+    id: "n4",
+    category: "my-project",
+    title: "โปรเจกต์ได้รับการอนุมัติแล้ว",
+    message: "คุณสามารถตั้งเวลาเปิดรับสมัครได้ทันที",
+    projectTitle: "CSTU Mentorship Portal",
+    projectId: "p6",
+    date: "27 พ.ย.",
+    isRead: false,
+    status: "approved",
+  },
+  {
+    id: "n5",
+    category: "my-project",
+    title: "โปรเจกต์เปิดรับสมัครแล้ว",
+    message: "ตอนนี้นักศึกษาสามารถเห็นและสมัครโปรเจกต์นี้ได้",
+    projectTitle: "ทีมสร้าง Social Media Content สำหรับ...",
     projectId: "p1",
+    date: "27 พ.ย.",
+    isRead: false,
+    status: "open",
+  },
+  {
+    id: "n6",
+    category: "my-project",
+    title: "กำลังคัดเลือกผู้สมัคร",
+    message: "มีผู้สมัครใหม่และระบบจัดลำดับเบื้องต้นให้แล้ว",
+    projectTitle: "CSTU Hackathon 2026",
+    projectId: "p7",
+    date: "26 พ.ย.",
+    isRead: false,
+    status: "reviewing",
+  },
+  {
+    id: "n7",
+    category: "my-project",
+    title: "โปรเจกต์ปิดรับสมัครแล้ว",
+    message: "ระบบปิดรับอัตโนมัติตามวันสิ้นสุดการรับสมัคร",
+    projectTitle: "CSTU Orientation Buddy Program",
+    projectId: "p8",
     date: "26 พ.ย.",
     isRead: true,
-    tone: "warning",
+    status: "closed",
+  },
+  {
+    id: "n8",
+    category: "applied",
+    title: "ส่งใบสมัครเรียบร้อย",
+    message: "ระบบบันทึกใบสมัครของคุณแล้ว",
+    projectTitle: "CSTU E-Sport Tournament 2025: Voice Cas...",
+    projectId: "p1",
+    date: "25 พ.ย.",
+    isRead: true,
+    status: "applied",
+  },
+  {
+    id: "n9",
+    category: "applied",
+    title: "เจ้าของโปรเจกต์เห็นใบสมัครของคุณแล้ว",
+    message: "โปรไฟล์ของคุณถูกเปิดอ่านโดยเจ้าของโปรเจกต์",
+    projectTitle: "Website for CSTU Open House 2026",
+    projectId: "p2",
+    date: "25 พ.ย.",
+    isRead: false,
+    status: "viewed",
+  },
+  {
+    id: "n10",
+    category: "applied",
+    title: "ใบสมัครกำลังอยู่ระหว่างพิจารณา",
+    message: "ทีมงานกำลังประเมินความเหมาะสมของผู้สมัคร",
+    projectTitle: "CSTU Hackathon 2026",
+    projectId: "p7",
+    date: "24 พ.ย.",
+    isRead: true,
+    status: "in_review",
+  },
+  {
+    id: "n11",
+    category: "applied",
+    title: "ผ่านเข้าสู่รอบคัดเลือก",
+    message: "คุณผ่านรอบแรกและจะมีการนัดสัมภาษณ์",
+    projectTitle: "CSTU E-Sport Tournament 2025: Voice Cas...",
+    projectId: "p1",
+    date: "24 พ.ย.",
+    isRead: false,
+    status: "shortlisted",
+  },
+  {
+    id: "n12",
+    category: "applied",
+    title: "ผลการสมัครไม่ผ่าน",
+    message: "โปรเจกต์คัดเลือกครบแล้วและใบสมัครของคุณไม่ได้รับเลือก",
+    projectTitle: "CSTU Alumni Story Podcast",
+    projectId: "p2",
+    date: "23 พ.ย.",
+    isRead: false,
+    status: "rejected",
+  },
+  {
+    id: "n13",
+    category: "applied",
+    title: "คุณได้รับการตอบรับเข้าทีมแล้ว",
+    message: "ยินดีด้วย! กรุณายืนยันการเข้าร่วมภายใน 24 ชั่วโมง",
+    projectTitle: "Website for CSTU Open House 2026",
+    projectId: "p2",
+    date: "23 พ.ย.",
+    isRead: false,
+    status: "accepted",
+  },
+];
+
+export type ApplicantApplicationItem = {
+  id: string;
+  projectId: string;
+  projectTitle: string;
+  appliedAt: string;
+  status: ApplicantApplicationStatus;
+};
+
+export const mockApplicantApplications: ApplicantApplicationItem[] = [
+  {
+    id: "a1",
+    projectId: "p1",
+    projectTitle: "CSTU E-Sport Tournament 2025: Voice Casting Team",
+    appliedAt: "2025-03-10",
+    status: "applied",
+  },
+  {
+    id: "a2",
+    projectId: "p2",
+    projectTitle: "Website for CSTU Open House 2026",
+    appliedAt: "2025-03-12",
+    status: "viewed",
+  },
+  {
+    id: "a3",
+    projectId: "p7",
+    projectTitle: "CSTU Hackathon 2026",
+    appliedAt: "2025-03-15",
+    status: "in_review",
+  },
+  {
+    id: "a4",
+    projectId: "p1",
+    projectTitle: "CSTU E-Sport Tournament 2025: Voice Casting Team",
+    appliedAt: "2025-03-18",
+    status: "shortlisted",
+  },
+  {
+    id: "a5",
+    projectId: "p5",
+    projectTitle: "CSTU Alumni Story Podcast",
+    appliedAt: "2025-03-20",
+    status: "rejected",
+  },
+  {
+    id: "a6",
+    projectId: "p2",
+    projectTitle: "Website for CSTU Open House 2026",
+    appliedAt: "2025-03-22",
+    status: "accepted",
   },
 ];
