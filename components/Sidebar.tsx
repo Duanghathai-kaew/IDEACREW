@@ -1,12 +1,18 @@
 "use client";
 
+import Image from "next/image";
+
 export default function Sidebar() {
   return (
     <aside className="overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
       <div className="flex items-center gap-3 bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-[18px] py-4 font-semibold text-white">
-        <div className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-white/90 text-lg text-(--brand-500) shadow-[0_4px_10px_rgb(15_23_42/0.14)]">
-          ✦
-        </div>
+        <Image
+          src="/logo.png"
+          alt="IdeaCrew logo"
+          width={61}
+          height={67}
+          className="h-12 w-auto shrink-0"
+        />
         <span>ตัวกรอง</span>
       </div>
 

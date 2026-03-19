@@ -4,6 +4,7 @@ import AddProjectModal from "@/app/add-project/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
@@ -49,13 +50,15 @@ export default function Navbar() {
       <div className="mx-auto flex max-w-7xl items-center justify-between overflow-visible px-6 py-4">
         <div className="flex items-center w-full">
           {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-(--brand-500) font-bold text-white">
-              IC
-            </div>
-            <span className="text-logo font-semibold text-orange-500">
-              IDEACREW
-            </span>
+          <div className="flex items-center">
+            <Image
+              src="/logo-text.png"
+              alt="IDEACREW"
+              width={193}
+              height={67}
+              priority
+              className="h-9 w-auto"
+            />
           </div>
 
           {/* Desktop Menu */}
