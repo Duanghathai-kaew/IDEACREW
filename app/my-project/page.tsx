@@ -1,7 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
-import { CalendarDays, Filter, Gift, Trash2, Users } from "lucide-react";
+import { CalendarDays, Gift, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 
@@ -156,35 +156,50 @@ const myProjects: MyProject[] = [
 const filters = [
   { key: "all", label: "ทั้งหมด" },
   { key: "draft", label: "แบบร่าง" },
-  { key: "pending_approval", label: "รออนุมัติ" },
-  { key: "approved", label: "อนุมัติแล้ว" },
-  { key: "open", label: "กำลังทำ" },
-  { key: "reviewing", label: "กำลังคัดเลือก" },
-  { key: "closed", label: "ปิดรับแล้ว" },
-  { key: "rejected_by_admin", label: "ตีกลับ" },
+  { key: "queue", label: "รอดำเนินการ" },
+  { key: "active", label: "กำลังดำเนินการ" },
+  { key: "done", label: "จบแล้ว" },
 ] as const;
 
-type FilterKey = (typeof filters)[number]["key"];
+type FilterKey = "all" | "draft" | "queue" | "active" | "done";
 
 export default function MyProjectPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   const filteredProjects = useMemo(() => {
     if (activeFilter === "all") return myProjects;
-    return myProjects.filter((project) => project.status === activeFilter);
+    if (activeFilter === "draft") {
+      return myProjects.filter((project) => project.status === "draft");
+    }
+    if (activeFilter === "queue") {
+      return myProjects.filter(
+        (project) =>
+          project.status === "pending_approval" || project.status === "approved",
+      );
+    }
+    if (activeFilter === "active") {
+      return myProjects.filter(
+        (project) => project.status === "open" || project.status === "reviewing",
+      );
+    }
+    return myProjects.filter(
+      (project) =>
+        project.status === "closed" || project.status === "rejected_by_admin",
+    );
   }, [activeFilter]);
 
   const counts = useMemo(() => {
     return {
       all: myProjects.length,
       draft: myProjects.filter((p) => p.status === "draft").length,
-      approved: myProjects.filter((p) => p.status === "approved").length,
-      open: myProjects.filter((p) => p.status === "open").length,
-      pending_approval: myProjects.filter((p) => p.status === "pending_approval").length,
-      reviewing: myProjects.filter((p) => p.status === "reviewing").length,
-      closed: myProjects.filter((p) => p.status === "closed").length,
-      rejected_by_admin: myProjects.filter(
-        (p) => p.status === "rejected_by_admin",
+      queue: myProjects.filter(
+        (p) => p.status === "pending_approval" || p.status === "approved",
+      ).length,
+      active: myProjects.filter(
+        (p) => p.status === "open" || p.status === "reviewing",
+      ).length,
+      done: myProjects.filter(
+        (p) => p.status === "closed" || p.status === "rejected_by_admin",
       ).length,
     };
   }, []);
@@ -203,7 +218,7 @@ export default function MyProjectPage() {
             </p>
           </div>
 
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
+          <div className="mb-6">
             <div className="flex flex-wrap gap-3">
               {filters.map((filter) => {
                 const isActive = activeFilter === filter.key;
@@ -236,10 +251,6 @@ export default function MyProjectPage() {
                 );
               })}
             </div>
-            <button className="flex items-center gap-2 text-sm text-slate-600">
-              <Filter className="w-4 h-4" />
-              กรองตามสถานะ
-            </button>
           </div>
 
           <div className="space-y-6">
