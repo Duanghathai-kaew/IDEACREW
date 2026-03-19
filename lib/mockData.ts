@@ -493,13 +493,13 @@ export const mockNotifications: NotificationItem[] = [
   {
     id: "n9",
     category: "applied",
-    title: "เจ้าของโปรเจกต์เห็นใบสมัครของคุณแล้ว",
-    message: "โปรไฟล์ของคุณถูกเปิดอ่านโดยเจ้าของโปรเจกต์",
+    title: "ใบสมัครอยู่ระหว่าง review",
+    message: "ทีมงานกำลังพิจารณาใบสมัครของคุณ",
     projectTitle: "Website for CSTU Open House 2026",
     projectId: "p2",
     date: "25 พ.ย.",
     isRead: false,
-    status: "viewed",
+    status: "in_review",
   },
   {
     id: "n10",
@@ -515,13 +515,13 @@ export const mockNotifications: NotificationItem[] = [
   {
     id: "n11",
     category: "applied",
-    title: "ผ่านเข้าสู่รอบคัดเลือก",
-    message: "คุณผ่านรอบแรกและจะมีการนัดสัมภาษณ์",
+    title: "คุณได้รับเลือกเข้าทีม",
+    message: "ยินดีด้วย! คุณผ่านรอบและได้รับเลือกเข้าร่วมทีมแล้ว",
     projectTitle: "CSTU E-Sport Tournament 2025: Voice Cas...",
     projectId: "p1",
     date: "24 พ.ย.",
     isRead: false,
-    status: "shortlisted",
+    status: "accepted",
   },
   {
     id: "n12",
@@ -568,7 +568,7 @@ export const mockApplicantApplications: ApplicantApplicationItem[] = [
     projectId: "p2",
     projectTitle: "Website for CSTU Open House 2026",
     appliedAt: "2025-03-12",
-    status: "viewed",
+    status: "in_review",
   },
   {
     id: "a3",
@@ -582,7 +582,7 @@ export const mockApplicantApplications: ApplicantApplicationItem[] = [
     projectId: "p1",
     projectTitle: "CSTU E-Sport Tournament 2025: Voice Casting Team",
     appliedAt: "2025-03-18",
-    status: "shortlisted",
+    status: "accepted",
   },
   {
     id: "a5",

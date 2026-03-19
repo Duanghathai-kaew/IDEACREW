@@ -5,7 +5,6 @@ import {
   Bell,
   CheckCircle2,
   Clock,
-  Eye,
   FileText,
   Trash2,
   Users,
@@ -35,13 +34,28 @@ const creatorStatusLabelMap: Record<CreatorProjectStatus, string> = {
 };
 
 const applicantStatusLabelMap: Record<ApplicantApplicationStatus, string> = {
-  applied: "สมัครแล้ว",
-  viewed: "เจ้าของเห็นแล้ว",
-  in_review: "กำลังพิจารณา",
-  shortlisted: "ผ่านรอบ",
-  rejected: "ไม่ผ่าน",
-  accepted: "ได้เข้าทีม",
+  applied: "คุณสมัครแล้ว",
+  in_review: "อยู่ระหว่าง review",
+  rejected: "คุณไม่ผ่าน",
+  accepted: "คุณได้รับเลือกเข้าทีม",
 };
+
+const creatorStatusOrder: CreatorProjectStatus[] = [
+  "draft",
+  "pending_approval",
+  "approved",
+  "open",
+  "reviewing",
+  "closed",
+  "rejected_by_admin",
+];
+
+const applicantStatusOrder: ApplicantApplicationStatus[] = [
+  "applied",
+  "in_review",
+  "accepted",
+  "rejected",
+];
 
 type StatusTone = "gray" | "yellow" | "blue" | "green" | "red" | "purple" | "dark_gray";
 
@@ -49,9 +63,9 @@ function getStatusTone(status: NotificationItem["status"]): StatusTone {
   if (status === "draft") return "gray";
   if (status === "pending_approval" || status === "in_review") return "yellow";
   if (status === "approved" || status === "applied") return "blue";
-  if (status === "open" || status === "shortlisted" || status === "accepted") return "green";
+  if (status === "open" || status === "accepted") return "green";
   if (status === "rejected_by_admin" || status === "rejected") return "red";
-  if (status === "reviewing" || status === "viewed") return "purple";
+  if (status === "reviewing") return "purple";
   return "dark_gray";
 }
 
@@ -88,6 +102,17 @@ function getStatusDotStyles(status: NotificationItem["status"]) {
   return "bg-slate-700";
 }
 
+function getUnreadHighlightStyles(status: NotificationItem["status"]) {
+  const tone = getStatusTone(status);
+  if (tone === "green") return "bg-emerald-50/70";
+  if (tone === "yellow") return "bg-amber-50/70";
+  if (tone === "blue") return "bg-sky-50/70";
+  if (tone === "red") return "bg-rose-50/70";
+  if (tone === "purple") return "bg-purple-50/70";
+  if (tone === "gray") return "bg-slate-50/80";
+  return "bg-slate-100/70";
+}
+
 function getStatusLabel(item: NotificationItem) {
   if (item.category === "my-project") {
     return creatorStatusLabelMap[item.status as CreatorProjectStatus];
@@ -101,7 +126,7 @@ function getStatusIcon(status: NotificationItem["status"]) {
   if (tone === "yellow") return Clock;
   if (tone === "blue") return Bell;
   if (tone === "red") return XCircle;
-  if (tone === "purple") return Eye;
+  if (tone === "purple") return Users;
   if (tone === "gray") return FileText;
   return Users;
 }
@@ -128,6 +153,35 @@ export default function NotificationDropdown({
     () => items.filter((item) => item.category === activeTab),
     [items, activeTab],
   );
+
+  const sortedItems = useMemo(
+    () =>
+      [...filtered].sort((a, b) => {
+        if (a.isRead === b.isRead) return 0;
+        return a.isRead ? 1 : -1;
+      }),
+    [filtered],
+  );
+
+  const statusSummary = useMemo(() => {
+    const counts = filtered.reduce<Record<string, number>>((acc, item) => {
+      acc[item.status] = (acc[item.status] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    const order =
+      activeTab === "my-project" ? creatorStatusOrder : applicantStatusOrder;
+    const labels =
+      activeTab === "my-project" ? creatorStatusLabelMap : applicantStatusLabelMap;
+
+    return order
+      .filter((status) => (counts[status] ?? 0) > 0)
+      .map((status) => ({
+        status,
+        label: labels[status as keyof typeof labels],
+        count: counts[status] ?? 0,
+      }));
+  }, [filtered, activeTab]);
 
   function markAllRead() {
     setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
@@ -191,18 +245,39 @@ export default function NotificationDropdown({
       </div>
 
       <div className="max-h-[360px] overflow-y-auto bg-surface-warm">
+        {statusSummary.length > 0 && (
+          <div className="px-5 py-3 border-b border-brand-100 bg-white/80">
+            <div className="flex flex-wrap gap-2">
+              {statusSummary.map((item) => (
+                <span
+                  key={item.status}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ${getStatusStyles(
+                    item.status as NotificationItem["status"],
+                  )}`}
+                >
+                  <span>{item.label}</span>
+                  <span className="rounded-full bg-white/60 px-1.5 py-0.5 leading-none">
+                    {item.count}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
         {filtered.length === 0 ? (
           <div className="px-6 py-10 text-center text-sm text-brand-400">
             ยังไม่มีการแจ้งเตือนในแท็บนี้
           </div>
         ) : (
-          filtered.map((item) => {
+          sortedItems.map((item) => {
             const StatusIcon = getStatusIcon(item.status);
             return (
               <button
                 key={item.id}
                 onClick={() => handleClick(item)}
-                className="w-full text-left px-5 py-4 border-b border-brand-100 bg-white/70 hover:bg-white active:bg-white transition focus:outline-none"
+                className={`w-full text-left px-5 py-4 border-b border-brand-100 hover:bg-white active:bg-white transition focus:outline-none ${
+                  item.isRead ? "bg-white/70" : getUnreadHighlightStyles(item.status)
+                }`}
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
                 <div className="flex items-start gap-3">

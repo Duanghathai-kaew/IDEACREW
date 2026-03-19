@@ -18,9 +18,7 @@ export type CreatorProjectStatus =
 
 export type ApplicantApplicationStatus =
   | "applied"
-  | "viewed"
   | "in_review"
-  | "shortlisted"
   | "rejected"
   | "accepted";
 
@@ -44,10 +42,7 @@ export const APPLICANT_APPLICATION_STATUS_META: Record<
   { label: string; color: StatusColor }
 > = {
   applied: { label: "Applied", color: "blue" },
-  viewed: { label: "Viewed", color: "purple" },
   in_review: { label: "In Review", color: "yellow" },
-  shortlisted: { label: "Shortlisted", color: "green" },
   rejected: { label: "Rejected", color: "red" },
   accepted: { label: "Accepted", color: "green" },
 };
-
