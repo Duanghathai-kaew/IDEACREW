@@ -26,12 +26,12 @@ const tabConfig: { key: NotificationCategory; label: string }[] = [
 
 const creatorStatusLabelMap: Record<CreatorProjectStatus, string> = {
   draft: "แบบร่าง",
-  pending_approval: "รออนุมัติ",
-  rejected_by_admin: "ตีกลับ",
-  approved: "อนุมัติแล้ว",
-  open: "เปิดรับสมัคร",
-  reviewing: "กำลังคัดเลือก",
-  closed: "ปิดรับแล้ว",
+  pending_approval: "รอดำเนินการ",
+  rejected_by_admin: "จบแล้ว",
+  approved: "รอดำเนินการ",
+  open: "กำลังดำเนินการ",
+  reviewing: "กำลังดำเนินการ",
+  closed: "จบแล้ว",
 };
 
 const applicantStatusLabelMap: Record<ApplicantApplicationStatus, string> = {
