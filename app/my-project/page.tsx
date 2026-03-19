@@ -163,44 +163,32 @@ const filters = [
 
 type FilterKey = "all" | "draft" | "queue" | "active" | "done";
 
+const filterRules: Record<FilterKey, (status: ProjectStatus) => boolean> = {
+  all: () => true,
+  draft: (status) => status === "draft",
+  queue: (status) => status === "pending_approval" || status === "approved",
+  active: (status) => status === "open" || status === "reviewing",
+  done: (status) => status === "closed" || status === "rejected_by_admin",
+};
+
 export default function MyProjectPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
 
   const filteredProjects = useMemo(() => {
-    if (activeFilter === "all") return myProjects;
-    if (activeFilter === "draft") {
-      return myProjects.filter((project) => project.status === "draft");
-    }
-    if (activeFilter === "queue") {
-      return myProjects.filter(
-        (project) =>
-          project.status === "pending_approval" || project.status === "approved",
-      );
-    }
-    if (activeFilter === "active") {
-      return myProjects.filter(
-        (project) => project.status === "open" || project.status === "reviewing",
-      );
-    }
-    return myProjects.filter(
-      (project) =>
-        project.status === "closed" || project.status === "rejected_by_admin",
-    );
+    const rule = filterRules[activeFilter];
+    return myProjects.filter((project) => rule(project.status));
   }, [activeFilter]);
 
   const counts = useMemo(() => {
+    const countByFilter = (key: FilterKey) =>
+      myProjects.filter((project) => filterRules[key](project.status)).length;
+
     return {
-      all: myProjects.length,
-      draft: myProjects.filter((p) => p.status === "draft").length,
-      queue: myProjects.filter(
-        (p) => p.status === "pending_approval" || p.status === "approved",
-      ).length,
-      active: myProjects.filter(
-        (p) => p.status === "open" || p.status === "reviewing",
-      ).length,
-      done: myProjects.filter(
-        (p) => p.status === "closed" || p.status === "rejected_by_admin",
-      ).length,
+      all: countByFilter("all"),
+      draft: countByFilter("draft"),
+      queue: countByFilter("queue"),
+      active: countByFilter("active"),
+      done: countByFilter("done"),
     };
   }, []);
 
