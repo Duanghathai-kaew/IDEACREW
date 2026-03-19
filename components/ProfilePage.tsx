@@ -5,12 +5,12 @@ import { CalendarDays, Mail, MapPin, Phone } from "lucide-react";
 import { mockProfile, ProfileData, ProfileLink } from "@/lib/mockData";
 
 const inputBase =
-  "w-full rounded-xl border border-orange-100 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200";
+  "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200";
 
 const textAreaBase =
-  "w-full rounded-xl border border-orange-100 bg-white px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-orange-200 min-h-[110px]";
+  "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200 min-h-[110px]";
 
-const sectionTitle = "text-base font-semibold text-orange-600";
+const sectionTitle = "text-base font-semibold text-brand-500";
 
 function cloneProfile(data: ProfileData) {
   return JSON.parse(JSON.stringify(data)) as ProfileData;
@@ -67,13 +67,13 @@ export default function ProfilePage({
   }
 
   return (
-    <main className="bg-[#fff7f2] min-h-screen">
+    <main className="bg-surface-warm min-h-screen">
       <section className="max-w-4xl mx-auto px-6 pt-10 pb-16 space-y-6">
         <header className="text-center space-y-2">
-          <h1 className="text-3xl md:text-4xl font-bold text-orange-500">
+          <h1 className="text-3xl md:text-4xl font-bold text-brand-500">
             โปรไฟล์ของฉัน
           </h1>
-          <p className="text-sm md:text-base text-orange-400">
+          <p className="text-sm md:text-base text-brand-400">
             แสดงตัวตนและผลงานเพื่อให้ทีมอื่นๆ รู้จักคุณมากขึ้น
           </p>
         </header>
@@ -85,14 +85,14 @@ export default function ProfilePage({
                 <button
                   type="button"
                   onClick={cancelEdit}
-                  className="px-4 py-2 rounded-full text-sm font-medium border border-orange-200 text-orange-500 bg-white"
+                  className="px-4 py-2 rounded-full text-sm font-medium border border-brand-200 text-brand-500 bg-white"
                 >
                   ยกเลิก
                 </button>
                 <button
                   type="button"
                   onClick={saveEdit}
-                  className="px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-orange-400 to-amber-400 shadow"
+                  className="px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-300 shadow"
                 >
                   บันทึก
                 </button>
@@ -101,7 +101,7 @@ export default function ProfilePage({
               <button
                 type="button"
                 onClick={startEdit}
-                className="px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-orange-400 to-amber-400 shadow"
+                className="px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-300 shadow"
               >
                 แก้ไขโปรไฟล์
               </button>
@@ -109,8 +109,8 @@ export default function ProfilePage({
           </div>
         )}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 flex flex-col md:flex-row gap-6 items-start">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-orange-400 to-amber-400 flex items-center justify-center text-white text-xl font-semibold">
+        <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 flex flex-col md:flex-row gap-6 items-start">
+          <div className="w-20 h-20 rounded-full bg-gradient-to-r from-brand-500 to-brand-300 flex items-center justify-center text-white text-xl font-semibold">
             {fullNameInitials}
           </div>
           <div className="flex-1 space-y-2">
@@ -123,7 +123,7 @@ export default function ProfilePage({
                 className={inputBase}
               />
             ) : (
-              <h2 className="text-xl font-semibold text-gray-800">
+              <h2 className="text-xl font-semibold text-text-primary">
                 {data.name}
               </h2>
             )}
@@ -136,10 +136,10 @@ export default function ProfilePage({
                 className={inputBase}
               />
             ) : (
-              <p className="text-sm text-gray-500">{data.headline}</p>
+              <p className="text-sm text-text-secondary">{data.headline}</p>
             )}
-            <div className="flex flex-wrap items-center gap-3 text-xs text-gray-500">
-              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 text-emerald-600">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-text-secondary">
+              <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-tone-success-bg text-tone-success-fg">
                 {data.status}
               </span>
               <span className="inline-flex items-center gap-2">
@@ -155,11 +155,11 @@ export default function ProfilePage({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 space-y-3">
+          <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-3">
             <h3 className={sectionTitle}>ข้อมูลส่วนตัว</h3>
-            <div className="grid grid-cols-1 gap-3 text-sm text-gray-600">
+            <div className="grid grid-cols-1 gap-3 text-sm text-text-secondary">
               <div>
-                <p className="text-xs text-gray-400">คณะ</p>
+                <p className="text-xs text-text-muted">คณะ</p>
                 {isEditing ? (
                   <input
                     value={draft.faculty}
@@ -173,7 +173,7 @@ export default function ProfilePage({
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-400">สาขา</p>
+                <p className="text-xs text-text-muted">สาขา</p>
                 {isEditing ? (
                   <input
                     value={draft.major}
@@ -187,7 +187,7 @@ export default function ProfilePage({
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-400">รหัสนักศึกษา</p>
+                <p className="text-xs text-text-muted">รหัสนักศึกษา</p>
                 {isEditing ? (
                   <input
                     value={draft.studentId}
@@ -206,11 +206,11 @@ export default function ProfilePage({
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 space-y-3">
+          <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-3">
             <h3 className={sectionTitle}>ข้อมูลติดต่อ</h3>
-            <div className="grid grid-cols-1 gap-3 text-sm text-gray-600">
+            <div className="grid grid-cols-1 gap-3 text-sm text-text-secondary">
               <div className="flex items-center gap-2">
-                <Mail className="w-4 h-4 text-orange-400" />
+                <Mail className="w-4 h-4 text-brand-400" />
                 {isEditing ? (
                   <input
                     value={draft.email}
@@ -224,7 +224,7 @@ export default function ProfilePage({
                 )}
               </div>
               <div className="flex items-center gap-2">
-                <Phone className="w-4 h-4 text-orange-400" />
+                <Phone className="w-4 h-4 text-brand-400" />
                 {isEditing ? (
                   <input
                     value={draft.phone}
@@ -238,7 +238,7 @@ export default function ProfilePage({
                 )}
               </div>
               <div>
-                <p className="text-xs text-gray-400">ที่อยู่/พื้นที่</p>
+                <p className="text-xs text-text-muted">ที่อยู่/พื้นที่</p>
                 {isEditing ? (
                   <input
                     value={draft.location}
@@ -258,7 +258,7 @@ export default function ProfilePage({
           </div>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
           <h3 className={sectionTitle}>เกี่ยวกับฉัน</h3>
           {isEditing ? (
             <textarea
@@ -269,16 +269,16 @@ export default function ProfilePage({
               className={textAreaBase}
             />
           ) : (
-            <p className="text-sm text-gray-600 leading-relaxed">{data.bio}</p>
+            <p className="text-sm text-text-secondary leading-relaxed">{data.bio}</p>
           )}
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
           <h3 className={sectionTitle}>ทักษะและความสนใจ</h3>
           {isEditing ? (
             <div className="space-y-3">
               <div>
-                <p className="text-xs text-gray-400 mb-2">ทักษะ</p>
+                <p className="text-xs text-text-muted mb-2">ทักษะ</p>
                 <textarea
                   value={draft.skills.join(", ")}
                   onChange={(e) =>
@@ -294,7 +294,7 @@ export default function ProfilePage({
                 />
               </div>
               <div>
-                <p className="text-xs text-gray-400 mb-2">ความสนใจ</p>
+                <p className="text-xs text-text-muted mb-2">ความสนใจ</p>
                 <textarea
                   value={draft.interests.join(", ")}
                   onChange={(e) =>
@@ -316,7 +316,7 @@ export default function ProfilePage({
                 {data.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-full bg-orange-50 px-3 py-1 text-xs text-orange-500"
+                    className="rounded-full bg-brand-50 px-3 py-1 text-xs text-brand-500"
                   >
                     {skill}
                   </span>
@@ -326,7 +326,7 @@ export default function ProfilePage({
                 {data.interests.map((interest) => (
                   <span
                     key={interest}
-                    className="px-3 py-1 text-xs rounded-full bg-orange-50 text-orange-500"
+                    className="px-3 py-1 text-xs rounded-full bg-brand-50 text-brand-500"
                   >
                     {interest}
                   </span>
@@ -337,7 +337,7 @@ export default function ProfilePage({
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
             <h3 className={sectionTitle}>Portfolio URLs</h3>
             <div className="space-y-3">
               {data.portfolioLinks.map((link, index) => (
@@ -371,8 +371,8 @@ export default function ProfilePage({
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs text-gray-400">{link.label}</p>
-                      <p className="text-sm text-orange-500 truncate">
+                      <p className="text-xs text-text-muted">{link.label}</p>
+                      <p className="text-sm text-brand-500 truncate">
                         {link.url}
                       </p>
                     </div>
@@ -382,7 +382,7 @@ export default function ProfilePage({
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-sm border border-orange-100 p-6 space-y-4">
+          <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
             <h3 className={sectionTitle}>Social Links</h3>
             <div className="space-y-3">
               {data.socialLinks.map((link, index) => (
@@ -416,8 +416,8 @@ export default function ProfilePage({
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs text-gray-400">{link.label}</p>
-                      <p className="text-sm text-orange-500 truncate">
+                      <p className="text-xs text-text-muted">{link.label}</p>
+                      <p className="text-sm text-brand-500 truncate">
                         {link.url}
                       </p>
                     </div>
@@ -434,9 +434,9 @@ export default function ProfilePage({
             {data.projects.map((project, index) => (
               <article
                 key={project.title + index}
-                className="bg-white rounded-2xl shadow-sm border border-orange-100 overflow-hidden"
+                className="bg-white rounded-2xl shadow-sm border border-brand-100 overflow-hidden"
               >
-                <div className="h-36 bg-gradient-to-r from-orange-200 to-amber-200" />
+                <div className="h-36 bg-gradient-to-r from-brand-200 to-brand-100" />
                 <div className="p-4 space-y-2">
                   {isEditing ? (
                     <input
@@ -451,11 +451,11 @@ export default function ProfilePage({
                       className={inputBase}
                     />
                   ) : (
-                    <h4 className="text-sm font-semibold text-gray-800">
+                    <h4 className="text-sm font-semibold text-text-primary">
                       {project.title}
                     </h4>
                   )}
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-2 text-xs text-text-muted">
                     {isEditing ? (
                       <input
                         value={draft.projects[index]?.role ?? ""}
@@ -501,7 +501,7 @@ export default function ProfilePage({
                       className={textAreaBase}
                     />
                   ) : (
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-text-secondary">
                       {project.description}
                     </p>
                   )}
@@ -525,7 +525,7 @@ export default function ProfilePage({
                       project.tags.map((tag) => (
                         <span
                           key={tag}
-                          className="px-3 py-1 text-xs rounded-full bg-orange-50 text-orange-500"
+                          className="px-3 py-1 text-xs rounded-full bg-brand-50 text-brand-500"
                         >
                           {tag}
                         </span>

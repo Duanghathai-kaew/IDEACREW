@@ -38,6 +38,14 @@ export default function Navbar() {
 
   return (
     <nav className="sticky top-0 z-50 w-full overflow-visible border-b border-slate-200 bg-white">
+      {isNotiOpen && (
+        <button
+          type="button"
+          aria-label="Close notifications"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
+          onClick={() => setIsNotiOpen(false)}
+        />
+      )}
       <div className="mx-auto flex max-w-7xl items-center justify-between overflow-visible px-6 py-4">
         <div className="flex items-center w-full">
           {/* Logo */}
@@ -73,7 +81,7 @@ export default function Navbar() {
 
           {/* Desktop Actions */}
           <div className="hidden md:flex items-center gap-6">
-            <div className="relative flex items-center" ref={notiRef}>
+            <div className="relative z-50 flex items-center" ref={notiRef}>
               <button
                 type="button"
                 className="icon-btn"

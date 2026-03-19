@@ -9,9 +9,24 @@
   --color-border: var(--border);
   --color-ring: var(--ring);
 
+  --color-surface-warm: var(--surface-warm);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
   --color-brand-300: var(--brand-300);
   --color-brand-400: var(--brand-400);
   --color-brand-500: var(--brand-500);
+
+  --color-tone-success-bg: var(--tone-success-bg);
+  --color-tone-success-fg: var(--tone-success-fg);
+  --color-tone-warning-bg: var(--tone-warning-bg);
+  --color-tone-warning-fg: var(--tone-warning-fg);
+  --color-tone-info-bg: var(--tone-info-bg);
+  --color-tone-info-fg: var(--tone-info-fg);
 }
 
 :root {
@@ -21,8 +36,15 @@
   --foreground: #1e293b;
   --border: #e2e8f0;
   --ring: #fd8591;
+  --surface-warm: #fff7f2;
+  --text-primary: #1f2937;
+  --text-secondary: #64748b;
+  --text-muted: #94a3b8;
 
   /* Brand colors (from design) */
+  --brand-50: #fff1ee;
+  --brand-100: #ffe9e1;
+  --brand-200: #ffd8cf;
   --brand-500: #fd5e4b;
   --brand-400: #fd8591;
   --brand-300: #fccf00;
@@ -50,6 +72,13 @@
   --form-bg-light: #f8fafc;
   --form-success: #15803d;
   --form-error: #dc2626;
+
+  --tone-success-bg: #ecfdf3;
+  --tone-success-fg: var(--form-success);
+  --tone-warning-bg: #fff8e6;
+  --tone-warning-fg: #b45309;
+  --tone-info-bg: #fff1f2;
+  --tone-info-fg: #e11d48;
 }
 
 @layer base {
