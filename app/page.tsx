@@ -1,12 +1,12 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Hero from "@/components/Hero";
 import Navbar from "@/components/Navbar";
 import ProjectFeed from "@/components/ProjectFeed";
 import SearchBar from "@/components/SearchBar";
 import Sidebar from "@/components/Sidebar";
-import { mockProjects } from "@/lib/simpleMockData";
+import { mockProjects, SimpleProject } from "@/lib/simpleMockData";
 
 const skillFilterKeywords: Record<string, string[]> = {
   frontend: [
@@ -27,7 +27,7 @@ const categoryFilterKeywords: Record<string, string[]> = {
   openhouse: ["open house", "openhouse", "โอเพ่นเฮาส์", "งานเปิดบ้าน"],
 };
 
-function getProjectSearchText(project: (typeof mockProjects)[number]) {
+function getProjectSearchText(project: SimpleProject) {
   return [
     project.title,
     project.org,
@@ -41,6 +41,7 @@ function getProjectSearchText(project: (typeof mockProjects)[number]) {
 }
 
 export default function Home() {
+  const [projects, setProjects] = useState<SimpleProject[]>(mockProjects);
   const [keyword, setKeyword] = useState("");
   const [resetSignal, setResetSignal] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
@@ -49,10 +50,34 @@ export default function Home() {
     "all",
   );
 
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchProjects() {
+      try {
+        const response = await fetch("/api/projects", { cache: "no-store" });
+        if (!response.ok) return;
+
+        const result = (await response.json()) as { data?: SimpleProject[] };
+        if (!mounted || !result.data) return;
+
+        setProjects(result.data);
+      } catch {
+        // Keep mock data as fallback when API is not ready.
+      }
+    }
+
+    fetchProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase();
 
-    return mockProjects.filter((project) => {
+    return projects.filter((project) => {
       const text = getProjectSearchText(project);
 
       const passKeyword = q === "" || text.includes(q);
@@ -76,7 +101,7 @@ export default function Home() {
 
       return passKeyword && passSkills && passCategories && passStatus;
     });
-  }, [keyword, selectedSkills, selectedCategories, statusFilter]);
+  }, [keyword, projects, selectedSkills, selectedCategories, statusFilter]);
 
   function handleSearch(nextKeyword: string) {
     setKeyword(nextKeyword);
