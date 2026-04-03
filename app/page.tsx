@@ -42,6 +42,7 @@ function getProjectSearchText(project: (typeof mockProjects)[number]) {
 
 export default function Home() {
   const [keyword, setKeyword] = useState("");
+  const [resetSignal, setResetSignal] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
@@ -81,11 +82,25 @@ export default function Home() {
     setKeyword(nextKeyword);
   }
 
+  function handleResetFilters() {
+    setKeyword("");
+    setSelectedSkills([]);
+    setSelectedCategories([]);
+    setStatusFilter("all");
+    setResetSignal((prev) => prev + 1);
+  }
+
+  const canReset =
+    keyword.trim() !== "" ||
+    selectedSkills.length > 0 ||
+    selectedCategories.length > 0 ||
+    statusFilter !== "all";
+
   return (
     <>
       <Navbar />
       <Hero />
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar key={`search-${resetSignal}`} onSearch={handleSearch} />
 
       {/* ===== Main Layout ===== */}
       <main className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[280px_1fr]">
@@ -96,6 +111,8 @@ export default function Home() {
           onCategoriesChange={setSelectedCategories}
           status={statusFilter}
           onStatusChange={setStatusFilter}
+          onReset={handleResetFilters}
+          canReset={canReset}
         />
         <ProjectFeed projects={filtered} />
       </main>

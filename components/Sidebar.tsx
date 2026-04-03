@@ -9,6 +9,8 @@ type SidebarProps = {
   onCategoriesChange: (next: string[]) => void;
   status: "all" | "open" | "closed";
   onStatusChange: (next: "all" | "open" | "closed") => void;
+  onReset: () => void;
+  canReset: boolean;
 };
 
 const skillOptions = [
@@ -41,6 +43,8 @@ export default function Sidebar({
   onCategoriesChange,
   status,
   onStatusChange,
+  onReset,
+  canReset,
 }: SidebarProps) {
   return (
     <aside className="overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
@@ -103,6 +107,15 @@ export default function Sidebar({
             </label>
           ))}
         </div>
+
+        <button
+          type="button"
+          onClick={onReset}
+          disabled={!canReset}
+          className="mt-5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
+        >
+          ล้างตัวกรอง
+        </button>
       </div>
     </aside>
   );
