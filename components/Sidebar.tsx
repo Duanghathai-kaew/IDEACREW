@@ -47,7 +47,7 @@ export default function Sidebar({
   canReset,
 }: SidebarProps) {
   return (
-    <aside className="sidebar-enter overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
+    <aside className="sidebar-enter overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px] lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
       <div className="flex items-center gap-3 bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-[18px] py-4 font-semibold text-white">
         <Image
           src="/logo.png"
