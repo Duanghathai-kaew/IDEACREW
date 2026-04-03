@@ -91,8 +91,7 @@ export default function ProjectCard({
         </div>
         <Link href={`/project/${project.id}`}>
           <button
-            className="mt-4 w-full box-border rounded-xl bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-4 py-2.5 text-sm text-white transition-transform duration-200 hover:scale-[1.02] disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:scale-100"
-            disabled={!isOpen}
+            className="mt-4 w-full box-border rounded-xl bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-4 py-2.5 text-sm text-white transition-transform duration-200 hover:scale-[1.02]"
           >
             ดูรายละเอียด →
           </button>

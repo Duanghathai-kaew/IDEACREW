@@ -17,17 +17,194 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { Benefit, Project } from "@/types/project";
 
 interface ProjectDetailPageProps {
   params: Promise<{
     id: string;
   }>;
 }
+
+type DbProject = {
+  id: string;
+  owner_id: string;
+  title: string;
+  summary: string | null;
+  description: string | null;
+  work_mode: string | null;
+  working_hours: string | null;
+  application_start_date: string | null;
+  application_end_date: string | null;
+  benefits: string[] | null;
+  compensation_detail: string | null;
+  status: string | null;
+  created_at: string | null;
+};
+
+type DbProfile = {
+  name: string | null;
+};
+
+type DbPosition = {
+  id: string;
+  project_id: string;
+  title: string;
+  needed_count: number;
+  preferred_qualifications: string | null;
+};
+
+type DbCategory = {
+  category_name: string;
+};
+
+type DbPositionSkill = {
+  position_id: string;
+  skill_name: string;
+};
+
+type DbBasicQualification = {
+  position_id: string;
+  qualification_text: string;
+};
+
+const allowedBenefits: Benefit[] = [
+  "certificate",
+  "experience",
+  "portfolio",
+  "compensation",
+  "network",
+];
+
+function mapBenefitArray(raw: string[] | null): Benefit[] {
+  if (!raw) return [];
+  return raw.filter((item): item is Benefit =>
+    allowedBenefits.includes(item as Benefit),
+  );
+}
+
+function mapProjectStatus(status: string | null): Project["status"] {
+  switch (status) {
+    case "draft":
+    case "pending_approval":
+    case "rejected_by_admin":
+    case "approved":
+    case "open":
+    case "reviewing":
+    case "closed":
+      return status;
+    default:
+      return "closed";
+  }
+}
+
+function mapWorkMode(mode: string | null): Project["workMode"] {
+  if (mode === "onsite" || mode === "hybrid" || mode === "online") return mode;
+  return "online";
+}
+
+async function getProjectFromDb(id: string): Promise<Project | null> {
+  const { data: project, error } = await supabaseAdmin
+    .from("projects")
+    .select(
+      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,created_at",
+    )
+    .eq("id", id)
+    .maybeSingle();
+
+  if (error || !project) return null;
+
+  const projectRow = project as DbProject;
+
+  const [{ data: profile }, { data: categories }, { data: positions }] =
+    await Promise.all([
+    supabaseAdmin
+      .from("profiles")
+      .select("name")
+      .eq("id", projectRow.owner_id)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("project_categories")
+      .select("category_name")
+      .eq("project_id", id),
+    supabaseAdmin
+      .from("project_positions")
+      .select("id,project_id,title,needed_count,preferred_qualifications")
+      .eq("project_id", id),
+  ]);
+
+  const positionRows = (positions as DbPosition[] | null) ?? [];
+  const positionIds = positionRows.map((p) => p.id);
+
+  const [positionSkillsResult, basicQualificationsResult] =
+    positionIds.length === 0
+      ? [{ data: [] }, { data: [] }]
+      : await Promise.all([
+          supabaseAdmin
+            .from("project_position_skills")
+            .select("position_id,skill_name")
+            .in("position_id", positionIds),
+          supabaseAdmin
+            .from("project_position_basic_qualifications")
+            .select("position_id,qualification_text")
+            .in("position_id", positionIds),
+        ]);
+
+  const profileRow = (profile as DbProfile | null) ?? null;
+  const skillRows =
+    (positionSkillsResult.data as DbPositionSkill[] | null) ?? [];
+  const qualificationRows =
+    (basicQualificationsResult.data as DbBasicQualification[] | null) ?? [];
+
+  const skillsByPosition = new Map<string, string[]>();
+  for (const row of skillRows) {
+    const curr = skillsByPosition.get(row.position_id) ?? [];
+    curr.push(row.skill_name);
+    skillsByPosition.set(row.position_id, curr);
+  }
+
+  const qualificationsByPosition = new Map<string, string[]>();
+  for (const row of qualificationRows) {
+    const curr = qualificationsByPosition.get(row.position_id) ?? [];
+    curr.push(row.qualification_text);
+    qualificationsByPosition.set(row.position_id, curr);
+  }
+
+  return {
+    id: projectRow.id,
+    title: projectRow.title,
+    categories: ((categories as DbCategory[] | null) ?? []).map(
+      (row) => row.category_name,
+    ),
+    summary: projectRow.summary ?? "",
+    description: projectRow.description ?? "",
+    workMode: mapWorkMode(projectRow.work_mode),
+    workingHours: projectRow.working_hours ?? undefined,
+    applicationStartDate: projectRow.application_start_date ?? "2025-01-01",
+    applicationEndDate: projectRow.application_end_date ?? "2025-01-01",
+    benefits: mapBenefitArray(projectRow.benefits),
+    compensationDetail: projectRow.compensation_detail ?? "",
+    status: mapProjectStatus(projectRow.status),
+    positions: positionRows.map((pos) => ({
+      id: pos.id,
+      projectId: pos.project_id,
+      title: pos.title,
+      neededCount: pos.needed_count,
+      skills: skillsByPosition.get(pos.id) ?? [],
+      basicQualifications: qualificationsByPosition.get(pos.id) ?? [],
+      preferredQualifications: pos.preferred_qualifications ?? undefined,
+    })),
+    createdBy: profileRow?.name ?? "Unknown Team",
+    createdAt: projectRow.created_at ?? new Date().toISOString(),
+  };
+}
+
 export default async function ProjectDetailPage({
   params,
 }: ProjectDetailPageProps) {
   const { id } = await params;
-  const project = getDetailedProjectById(id);
+  const dbProject = await getProjectFromDb(id);
+  const project = dbProject ?? getDetailedProjectById(id);
 
   if (!project) {
     notFound();
@@ -35,6 +212,9 @@ export default async function ProjectDetailPage({
 
   const avatar = project.createdBy.slice(0, 2).toUpperCase();
   const isOpen = project.status === "open";
+  const projectSkills = Array.from(
+    new Set(project.positions.flatMap((position) => position.skills)),
+  );
 
   return (
     <>
@@ -45,7 +225,6 @@ export default async function ProjectDetailPage({
           background: "linear-gradient(135deg, #f8fafc 0%, #e8f4ff 100%)",
         }}
       >
-        {/* Header */}
         <div
           className="bg-white border-b"
           style={{ borderColor: "rgba(0, 0, 0, 0.06)" }}
@@ -62,11 +241,11 @@ export default async function ProjectDetailPage({
             <div className="flex items-start gap-4">
               <div
                 className="w-16 h-16 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                  style={{
-                    background:
-                      "linear-gradient(90deg, var(--brand-500) 0%, var(--brand-400) 50%, var(--brand-300) 100%)",
-                  }}
-                >
+                style={{
+                  background:
+                    "linear-gradient(90deg, var(--brand-500) 0%, var(--brand-400) 50%, var(--brand-300) 100%)",
+                }}
+              >
                 {avatar}
               </div>
               <div className="flex-1">
@@ -89,24 +268,22 @@ export default async function ProjectDetailPage({
                 </div>
               </div>
               <div className="text-sm text-gray-500">
-                  <span
-                    className={`inline-block rounded-full px-2.5 py-1 text-xs ${
-                      isOpen
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-rose-100 text-rose-700"
-                    }`}
-                  >
-                    {isOpen ? "เปิดรับสมัคร" : "ปิดรับสมัครแล้ว"}
-                  </span>
+                <span
+                  className={`inline-block rounded-full px-2.5 py-1 text-xs ${
+                    isOpen
+                      ? "bg-emerald-100 text-emerald-700"
+                      : "bg-rose-100 text-rose-700"
+                  }`}
+                >
+                  {isOpen ? "เปิดรับสมัคร" : "ปิดรับสมัครแล้ว"}
+                </span>
               </div>
             </div>
           </div>
 
           <div className="max-w-6xl mx-auto px-6 py-6">
             <div className="grid grid-cols-1 lg:grid-cols-10 gap-6">
-              {/* Main Content */}
               <div className="lg:col-span-7 space-y-6">
-                {/* Project Description */}
                 <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     รายละเอียดโปรเจกต์
@@ -116,7 +293,6 @@ export default async function ProjectDetailPage({
                   </p>
                 </div>
 
-                {/* Positions */}
                 <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ตำแหน่งงานที่เปิดรับ
@@ -146,7 +322,6 @@ export default async function ProjectDetailPage({
                           </p>
                         </div>
 
-                        {/* Skills */}
                         <div className="mb-4">
                           <h4 className="mb-2 block text-sm font-medium text-slate-700">
                             ทักษะที่ต้องการ:
@@ -163,7 +338,6 @@ export default async function ProjectDetailPage({
                           </div>
                         </div>
 
-                        {/* Basic Qualifications */}
                         <div className="mb-4">
                           <h4 className="mb-2 block text-sm font-medium text-slate-700">
                             คุณสมบัติพื้นฐาน:
@@ -190,7 +364,6 @@ export default async function ProjectDetailPage({
                           </ul>
                         </div>
 
-                        {/* Preferred Qualifications */}
                         {position.preferredQualifications && (
                           <div className="mb-4">
                             <h4 className="mb-2 block text-sm font-medium text-slate-700">
@@ -213,7 +386,6 @@ export default async function ProjectDetailPage({
                   </div>
                 </div>
 
-                {/* Work Information */}
                 <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ข้อมูลการทำงาน
@@ -270,7 +442,6 @@ export default async function ProjectDetailPage({
                   </div>
                 </div>
 
-                {/* Benefits */}
                 <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
                     ผลตอบแทนและสิ่งที่จะได้รับ
@@ -324,9 +495,7 @@ export default async function ProjectDetailPage({
                 </div>
               </div>
 
-              {/* Sidebar */}
               <div className="lg:col-span-3 space-y-6">
-                {/* พร้อมข้าร่วมหรือยัง widget */}
                 <div
                   className="rounded-2xl p-6 text-white"
                   style={{
@@ -364,9 +533,7 @@ export default async function ProjectDetailPage({
                   )}
                 </div>
 
-                {/* ส่วน 2 คอลัมน์ */}
                 <div className="space-y-6">
-                  {/* ตำแหน่งที่ใดอีก widget */}
                   <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
                       <FileText className="h-4 w-4 text-(--form-primary)" />
@@ -397,7 +564,6 @@ export default async function ProjectDetailPage({
                     </div>
                   </div>
 
-                  {/* ทักษะที่ต้องการ */}
                   <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                     <div className="flex items-center gap-2 mb-4">
                       <Settings className="h-4 w-4 text-(--form-primary)" />
@@ -409,15 +575,14 @@ export default async function ProjectDetailPage({
                       </h3>
                     </div>
                     <div className="flex flex-wrap gap-2">
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
-                        พากย์ไทย
-                      </span>
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
-                        เสียงพากย์
-                      </span>
-                      <span className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)">
-                        กล้อง
-                      </span>
+                      {projectSkills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="rounded-full bg-orange-50 px-2.5 py-1 text-xs text-(--brand-500)"
+                        >
+                          {skill}
+                        </span>
+                      ))}
                     </div>
                   </div>
                 </div>
