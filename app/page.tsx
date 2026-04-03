@@ -96,6 +96,13 @@ export default function Home() {
     selectedCategories.length > 0 ||
     statusFilter !== "all";
 
+  const feedAnimationKey = [
+    keyword.trim().toLowerCase(),
+    selectedSkills.slice().sort().join(","),
+    selectedCategories.slice().sort().join(","),
+    statusFilter,
+  ].join("|");
+
   return (
     <>
       <Navbar />
@@ -114,7 +121,7 @@ export default function Home() {
           onReset={handleResetFilters}
           canReset={canReset}
         />
-        <ProjectFeed projects={filtered} />
+        <ProjectFeed key={feedAnimationKey} projects={filtered} />
       </main>
     </>
   );

@@ -47,7 +47,7 @@ export default function Sidebar({
   canReset,
 }: SidebarProps) {
   return (
-    <aside className="overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
+    <aside className="sidebar-enter overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
       <div className="flex items-center gap-3 bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-[18px] py-4 font-semibold text-white">
         <Image
           src="/logo.png"
@@ -63,7 +63,14 @@ export default function Sidebar({
         <div className="mb-7 border-b border-slate-200 pb-5">
           <p className="mb-2.5 block font-medium">ทักษะที่ต้องการ</p>
           {skillOptions.map((option) => (
-            <label key={option.id} className="mb-2 flex cursor-pointer gap-2.5 text-sm">
+            <label
+              key={option.id}
+              className={`mb-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-200 ${
+                selectedSkills.includes(option.id)
+                  ? "bg-rose-50 text-rose-700"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
               <input
                 className="accent-(--brand-500)"
                 type="checkbox"
@@ -78,7 +85,14 @@ export default function Sidebar({
         <div className="mb-7 border-b border-slate-200 pb-5">
           <p className="mb-2.5 block font-medium">หมวดหมู่</p>
           {categoryOptions.map((option) => (
-            <label key={option.id} className="mb-2 flex cursor-pointer gap-2.5 text-sm">
+            <label
+              key={option.id}
+              className={`mb-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-200 ${
+                selectedCategories.includes(option.id)
+                  ? "bg-amber-50 text-amber-700"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
               <input
                 className="accent-(--brand-500)"
                 type="checkbox"
@@ -95,7 +109,14 @@ export default function Sidebar({
         <div>
           <p className="mb-2.5 block font-medium">สถานะ</p>
           {statusOptions.map((option) => (
-            <label key={option.id} className="mb-2 flex cursor-pointer gap-2.5 text-sm">
+            <label
+              key={option.id}
+              className={`mb-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-200 ${
+                status === option.id
+                  ? "bg-emerald-50 text-emerald-700"
+                  : "text-slate-700 hover:bg-slate-50"
+              }`}
+            >
               <input
                 className="accent-(--brand-500)"
                 type="radio"

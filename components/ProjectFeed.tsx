@@ -8,8 +8,8 @@ export default function ProjectFeed({
 }) {
   return (
     <section className="flex flex-col gap-6 space-y-6">
-      {projects.map((p) => (
-        <ProjectCard key={p.id} project={p} />
+      {projects.map((p, index) => (
+        <ProjectCard key={p.id} project={p} index={index} />
       ))}
     </section>
   );
