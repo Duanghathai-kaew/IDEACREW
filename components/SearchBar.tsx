@@ -16,6 +16,11 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
     onSearch(keyword.trim());
   }
 
+  function handleKeywordChange(value: string) {
+    setKeyword(value);
+    onSearch(value.trim());
+  }
+
   return (
     <div className="w-full">
       <div className="mx-auto max-w-4xl flex flex-col gap-3 md:flex-row md:items-center">
@@ -24,7 +29,7 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
+            onChange={(e) => handleKeywordChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             placeholder="ค้นหาโปรเจกต์ ตำแหน่ง หรือทักษะที่ต้องการ..."
             className="h-12 pl-11 rounded-xl bg-white"
