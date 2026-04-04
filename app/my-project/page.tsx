@@ -35,9 +35,9 @@ const statusMeta = {
     border: "border-sky-400",
   },
   reviewing: {
-    label: "กำลังคัดเลือก",
-    pill: "bg-purple-100 text-purple-700",
-    border: "border-purple-400",
+    label: "กำลังดำเนินการ",
+    pill: "bg-emerald-100 text-emerald-700",
+    border: "border-emerald-400",
   },
   closed: {
     label: "ปิดรับแล้ว",
@@ -302,7 +302,8 @@ export default function MyProjectPage() {
                         </span>
                       </div>
 
-                      {project.status === "open" ? (
+                      {project.status === "open" ||
+                      project.status === "reviewing" ? (
                         <Link
                           href={`/project/${project.detailId ?? project.id}`}
                           className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 shadow"
@@ -316,10 +317,6 @@ export default function MyProjectPage() {
                       ) : project.status === "approved" ? (
                         <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-sky-700 bg-sky-100">
                           พร้อมเปิดรับสมัคร
-                        </button>
-                      ) : project.status === "reviewing" ? (
-                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-purple-700 bg-purple-100">
-                          กำลังคัดเลือกผู้สมัคร
                         </button>
                       ) : project.status === "draft" ? (
                         <Link
