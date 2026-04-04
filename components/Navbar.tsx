@@ -1,6 +1,7 @@
 "use client";
 
 import AddProjectModal from "@/app/add-project/page";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
@@ -15,6 +16,7 @@ export default function Navbar() {
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const { user, isLoading, signInForDevelopment, signOut } = useAuth();
   const notiRef = useRef<HTMLDivElement | null>(null);
   const active: "home" | "my-project" = pathname?.startsWith("/my-project")
     ? "my-project"
@@ -36,6 +38,18 @@ export default function Navbar() {
     { key: "home", label: "หน้าหลัก" },
     { key: "my-project", label: "โปรเจกต์ของฉัน" },
   ];
+
+  async function handleLogout() {
+    await signOut();
+    setOpen(false);
+    router.push("/login");
+  }
+
+  async function handleMockLogin() {
+    await signInForDevelopment();
+    setOpen(false);
+    router.push("/");
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full overflow-visible border-b border-slate-200 bg-white">
@@ -106,15 +120,23 @@ export default function Navbar() {
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
+            <span className="text-sm text-slate-600">
+              {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
+            </span>
             <Button
               className="rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
               onClick={() => setIsModalOpen(true)}
             >
               เพิ่มโปรเจกต์
             </Button>
-            <div className="icon-btn">
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={user ? handleLogout : handleMockLogin}
+              aria-label={user ? "Logout" : "Login with mock user"}
+            >
               <LogOut className="icon-sm text-orange-500" />
-            </div>
+            </button>
           </div>
 
           {/* Mobile Toggle */}
@@ -159,7 +181,17 @@ export default function Navbar() {
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
-            <LogOut className="icon-sm text-orange-500" />
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={user ? handleLogout : handleMockLogin}
+              aria-label={user ? "Logout" : "Login with mock user"}
+            >
+              <LogOut className="icon-sm text-orange-500" />
+            </button>
+            <span className="text-sm text-slate-600">
+              {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
+            </span>
           </div>
         </div>
       )}
