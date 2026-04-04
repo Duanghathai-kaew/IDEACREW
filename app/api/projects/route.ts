@@ -319,5 +319,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 
-  return NextResponse.json({ data: { id: projectId } }, { status: 201 });
+  return NextResponse.json(
+    {
+      data: {
+        id: projectId,
+        title,
+        status,
+        ownerId,
+      },
+    },
+    { status: 201 },
+  );
 }
