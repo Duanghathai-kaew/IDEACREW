@@ -312,7 +312,7 @@ export default function MyProjectPage() {
                         </button>
                       ) : project.status === "draft" ? (
                         <Link
-                          href={`/my-project/${project.id}/edit`}
+                          href={`/my-project?draftId=${project.id}`}
                           className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100"
                         >
                           แก้ไขแบบร่าง

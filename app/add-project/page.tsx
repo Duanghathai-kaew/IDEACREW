@@ -7,40 +7,51 @@ import { PositionsSection } from "@/components/forms/PositionsSection";
 import { ScheduleSection } from "@/components/forms/ScheduleSection";
 import { Benefit, ProjectFormData, ProjectStatus } from "@/types/project";
 import { ArrowLeft, Shield } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface AddProjectModalProps {
   isOpen: boolean;
   onClose: () => void;
+  initialDraftProjectId?: string | null;
 }
+
+type ProjectDetailResponse = {
+  data?: {
+    id: string;
+    formData?: ProjectFormData;
+  };
+};
+
+const initialFormData: ProjectFormData = {
+  title: "",
+  categories: [],
+  summary: "",
+  description: "",
+  workMode: "onsite",
+  workingHours: "",
+  applicationStartDate: "",
+  applicationEndDate: "",
+  benefits: [],
+  compensationDetail: "",
+  positions: [
+    {
+      title: "",
+      neededCount: 1,
+      skills: [],
+      basicQualifications: [],
+      preferredQualifications: "",
+    },
+  ],
+};
 
 export default function AddProjectModal({
   isOpen,
   onClose,
+  initialDraftProjectId = null,
 }: AddProjectModalProps) {
   const { user } = useAuth();
 
-  const [formData, setFormData] = useState<ProjectFormData>({
-    title: "",
-    categories: [],
-    summary: "",
-    description: "",
-    workMode: "onsite",
-    workingHours: "",
-    applicationStartDate: "",
-    applicationEndDate: "",
-    benefits: [],
-    compensationDetail: "",
-    positions: [
-      {
-        title: "",
-        neededCount: 1,
-        skills: [],
-        basicQualifications: [],
-        preferredQualifications: "",
-      },
-    ],
-  });
+  const [formData, setFormData] = useState<ProjectFormData>(initialFormData);
 
   const [newCategory, setNewCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -48,6 +59,61 @@ export default function AddProjectModal({
   const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
   const [draftProjectId, setDraftProjectId] = useState<string | null>(null);
   type PositionForm = ProjectFormData["positions"][number];
+
+  useEffect(() => {
+    if (isOpen) return;
+    setSubmitError(null);
+    setSubmitSuccess(null);
+    setDraftProjectId(null);
+    setFormData(initialFormData);
+    setNewCategory("");
+  }, [isOpen]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadDraftIntoForm() {
+      if (!isOpen || !initialDraftProjectId || !user?.id) return;
+
+      setIsSubmitting(true);
+      setSubmitError(null);
+      setSubmitSuccess(null);
+
+      try {
+        const response = await fetch(
+          `/api/my-projects/${initialDraftProjectId}?ownerId=${encodeURIComponent(user.id)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) {
+          throw new Error("Failed to load draft");
+        }
+
+        const result = (await response.json()) as ProjectDetailResponse;
+        if (!mounted) return;
+
+        const nextFormData = result.data?.formData;
+        if (!nextFormData) {
+          throw new Error("Draft data is missing");
+        }
+
+        setDraftProjectId(initialDraftProjectId);
+        setFormData(nextFormData);
+      } catch {
+        if (!mounted) return;
+        setSubmitError("ไม่สามารถโหลดข้อมูลแบบร่างได้");
+      } finally {
+        if (mounted) {
+          setIsSubmitting(false);
+        }
+      }
+    }
+
+    loadDraftIntoForm();
+
+    return () => {
+      mounted = false;
+    };
+  }, [initialDraftProjectId, isOpen, user?.id]);
 
   if (!isOpen) return null;
 
@@ -161,7 +227,7 @@ export default function AddProjectModal({
       try {
         const createdProjectId = await requestCreateProject("draft");
         setDraftProjectId(createdProjectId);
-        setSubmitSuccess("บันทึกร่างแล้ว กดส่งโปรเจกต์ได้ทันที");
+        setSubmitSuccess("บันทึกร่างแล้ว กรอกต่อได้เลย แล้วค่อยกดส่งโปรเจกต์");
       } catch {
         // Error state is already handled in requestCreateProject.
       }
@@ -181,10 +247,8 @@ export default function AddProjectModal({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            title: formData.title,
-            summary: formData.summary,
             status: "draft",
-            applicationEndDate: formData.applicationEndDate,
+            formData,
           }),
         },
       );
@@ -192,7 +256,6 @@ export default function AddProjectModal({
       if (!response.ok) {
         throw new Error("Update draft failed");
       }
-
       setSubmitSuccess("อัปเดตร่างเรียบร้อย");
     } catch {
       setSubmitError("ไม่สามารถบันทึกโปรเจกต์ได้ กรุณาลองใหม่");
@@ -230,10 +293,8 @@ export default function AddProjectModal({
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            title: formData.title,
-            summary: formData.summary,
             status: "pending_approval",
-            applicationEndDate: formData.applicationEndDate,
+            formData,
           }),
         },
       );

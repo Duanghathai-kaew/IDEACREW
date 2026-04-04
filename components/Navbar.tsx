@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
 
@@ -16,6 +16,8 @@ export default function Navbar() {
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const draftIdFromQuery = searchParams.get("draftId");
   const { user, isLoading, signOut } = useAuth();
   const notiRef = useRef<HTMLDivElement | null>(null);
   const active: "home" | "my-project" = pathname?.startsWith("/my-project")
@@ -33,6 +35,9 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const shouldAutoOpenDraftModal =
+    Boolean(user) && pathname?.startsWith("/my-project") && Boolean(draftIdFromQuery);
 
   const menuItems: Array<{ key: "home" | "my-project"; label: string }> = user
     ? [
@@ -55,6 +60,13 @@ export default function Navbar() {
       return;
     }
     action();
+  }
+
+  function handleCloseModal() {
+    setIsModalOpen(false);
+    if (shouldAutoOpenDraftModal) {
+      router.replace("/my-project");
+    }
   }
 
   return (
@@ -220,8 +232,9 @@ export default function Navbar() {
 
       {/* Add Project Modal */}
       <AddProjectModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isModalOpen || shouldAutoOpenDraftModal}
+        onClose={handleCloseModal}
+        initialDraftProjectId={pathname?.startsWith("/my-project") ? draftIdFromQuery : null}
       />
     </nav>
   );
