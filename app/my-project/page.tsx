@@ -146,6 +146,11 @@ export default function MyProjectPage() {
   async function handleDeleteProject(projectId: string) {
     if (!user?.id || deletingProjectId) return;
 
+    const targetProject = projects.find((project) => project.id === projectId);
+    if (!targetProject || targetProject.status === "pending_approval") {
+      return;
+    }
+
     const isConfirmed = window.confirm("ยืนยันการลบโปรเจกต์นี้?");
     if (!isConfirmed) return;
 
@@ -255,14 +260,16 @@ export default function MyProjectPage() {
                             โพสต์เมื่อ {project.createdAt}
                           </span>
                         </div>
-                        <button
-                          type="button"
-                          className="text-rose-400 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
-                          onClick={() => handleDeleteProject(project.id)}
-                          disabled={deletingProjectId === project.id}
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {project.status !== "pending_approval" && (
+                          <button
+                            type="button"
+                            className="text-rose-400 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                            onClick={() => handleDeleteProject(project.id)}
+                            disabled={deletingProjectId === project.id}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
 
                       <div>
