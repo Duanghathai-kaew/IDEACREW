@@ -8,9 +8,9 @@ export type AuthUser = {
 const STORAGE_KEY = "mock_auth_user";
 
 const defaultMockUser: AuthUser = {
-  id: "mock-student-001",
-  name: "Demo Student",
-  email: "demo.student@university.ac.th",
+  id: "e68cc396-34e4-4a9f-aa8b-8819c07812ca",
+  name: "CSTU Web Team",
+  email: "cstu.web.team@university.ac.th",
   role: "student",
 };
 
