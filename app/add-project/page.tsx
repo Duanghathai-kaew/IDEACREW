@@ -1,10 +1,11 @@
 "use client";
 
+import { useAuth } from "@/components/auth/AuthProvider";
 import { BasicInfoSection } from "@/components/forms/BasicInfoSection";
 import { BenefitsSection } from "@/components/forms/BenefitsSection";
 import { PositionsSection } from "@/components/forms/PositionsSection";
 import { ScheduleSection } from "@/components/forms/ScheduleSection";
-import { Benefit, ProjectFormData } from "@/types/project";
+import { Benefit, ProjectFormData, ProjectStatus } from "@/types/project";
 import { ArrowLeft, Shield } from "lucide-react";
 import { useState } from "react";
 
@@ -17,6 +18,7 @@ export default function AddProjectModal({
   isOpen,
   onClose,
 }: AddProjectModalProps) {
+  const { user } = useAuth();
 
   const [formData, setFormData] = useState<ProjectFormData>({
     title: "",
@@ -41,6 +43,9 @@ export default function AddProjectModal({
   });
 
   const [newCategory, setNewCategory] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submitStatus, setSubmitStatus] = useState<ProjectStatus>("draft");
   type PositionForm = ProjectFormData["positions"][number];
 
   if (!isOpen) return null;
@@ -112,6 +117,40 @@ export default function AddProjectModal({
     updateFormData({ positions: newPositions });
   };
 
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+
+    if (!user?.id || isSubmitting) {
+      setSubmitError("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ownerId: user.id,
+          status: submitStatus,
+          formData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Create project failed");
+      }
+
+      onClose();
+    } catch {
+      setSubmitError("ไม่สามารถบันทึกโปรเจกต์ได้ กรุณาลองใหม่");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <>
       {/* Modal Overlay */}
@@ -149,12 +188,7 @@ export default function AddProjectModal({
                 </div>
               </div>
 
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  console.log("Form Data:", formData);
-                }}
-              >
+              <form onSubmit={handleSubmit}>
                 {/* ข้อมูลโปรเจกต์ */}
                 <BasicInfoSection
                   formData={formData}
@@ -186,18 +220,28 @@ export default function AddProjectModal({
                   onUpdatePosition={updatePosition}
                 />
 
+                {submitError && (
+                  <div className="rounded-lg border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">
+                    {submitError}
+                  </div>
+                )}
+
                 <div className="flex flex-wrap justify-end gap-4 pt-6 max-[480px]:flex-col">
                   <button
-                    type="button"
+                    type="submit"
+                    onClick={() => setSubmitStatus("draft")}
+                    disabled={isSubmitting}
                     className="h-fit whitespace-nowrap rounded-lg border border-(--form-border) bg-white px-4 py-2 text-sm font-medium text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light) max-[480px]:w-full"
                   >
                     บันทึกร่าง
                   </button>
                   <button
                     type="submit"
+                    onClick={() => setSubmitStatus("pending_approval")}
+                    disabled={isSubmitting}
                     className="cursor-pointer rounded-[10px] bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-8 py-3 text-base font-semibold text-white shadow-[0_4px_12px_rgb(253_94_75/0.22)] transition hover:-translate-y-px hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)] max-[480px]:w-full"
                   >
-                    ส่งโปรเจกต์
+                    {isSubmitting ? "กำลังบันทึก..." : "ส่งโปรเจกต์"}
                   </button>
                 </div>
               </form>
