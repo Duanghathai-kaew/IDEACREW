@@ -73,6 +73,7 @@ export default function MyProjectPage() {
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [projects, setProjects] = useState<MyProject[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -137,6 +138,32 @@ export default function MyProjectPage() {
       done: countByFilter("done"),
     };
   }, [projects]);
+
+  async function handleDeleteProject(projectId: string) {
+    if (!user?.id || deletingProjectId) return;
+
+    const isConfirmed = window.confirm("ยืนยันการลบโปรเจกต์นี้?");
+    if (!isConfirmed) return;
+
+    setDeletingProjectId(projectId);
+
+    try {
+      const response = await fetch(
+        `/api/my-projects/${projectId}?ownerId=${encodeURIComponent(user.id)}`,
+        { method: "DELETE" },
+      );
+
+      if (!response.ok) {
+        throw new Error("Delete failed");
+      }
+
+      setProjects((prev) => prev.filter((project) => project.id !== projectId));
+    } catch {
+      // Keep current data if delete request fails.
+    } finally {
+      setDeletingProjectId(null);
+    }
+  }
 
   return (
     <>
@@ -224,7 +251,12 @@ export default function MyProjectPage() {
                             โพสต์เมื่อ {project.createdAt}
                           </span>
                         </div>
-                        <button className="text-rose-400 hover:text-rose-500">
+                        <button
+                          type="button"
+                          className="text-rose-400 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                          onClick={() => handleDeleteProject(project.id)}
+                          disabled={deletingProjectId === project.id}
+                        >
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
@@ -279,9 +311,12 @@ export default function MyProjectPage() {
                           กำลังคัดเลือกผู้สมัคร
                         </button>
                       ) : project.status === "draft" ? (
-                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100">
+                        <Link
+                          href={`/my-project/${project.id}/edit`}
+                          className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100"
+                        >
                           แก้ไขแบบร่าง
-                        </button>
+                        </Link>
                       ) : project.status === "closed" ? (
                         <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-800 bg-slate-200">
                           ปิดรับสมัครแล้ว
