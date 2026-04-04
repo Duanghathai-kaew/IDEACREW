@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { SimpleProject } from "@/lib/simpleMockData";
-import { Benefit, ProjectFormData, ProjectStatus } from "@/types/project";
+import { ProjectFormData, ProjectStatus } from "@/types/project";
 
 type DbProject = {
   id: string;
@@ -40,23 +40,10 @@ type CreateProjectBody = {
   status?: ProjectStatus;
 };
 
-const allowedBenefits: Benefit[] = [
-  "certificate",
-  "experience",
-  "portfolio",
-  "compensation",
-  "network",
-];
-
 export const runtime = "nodejs";
 
 function mapStatus(status: string | null): "open" | "closed" {
   return status === "open" ? "open" : "closed";
-}
-
-function mapWorkMode(mode: ProjectFormData["workMode"]) {
-  if (mode === "onsite" || mode === "hybrid" || mode === "online") return mode;
-  return "online";
 }
 
 export async function GET() {
@@ -176,153 +163,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
   }
 
-  const today = new Date().toISOString().slice(0, 10);
-  const normalizedBenefits = formData.benefits.filter((benefit): benefit is Benefit =>
-    allowedBenefits.includes(benefit),
+  const { data: projectId, error: rpcError } = await supabaseAdmin.rpc(
+    "create_project_with_relations",
+    {
+      p_owner_id: ownerId,
+      p_status: status,
+      p_form_data: formData,
+    },
   );
 
-  const { data: insertedProject, error: insertProjectError } = await supabaseAdmin
-    .from("projects")
-    .insert({
-      owner_id: ownerId,
-      title,
-      summary: formData.summary.trim() || null,
-      description: formData.description.trim() || null,
-      work_mode: mapWorkMode(formData.workMode),
-      working_hours: formData.workingHours?.trim() || null,
-      application_start_date: formData.applicationStartDate || today,
-      application_end_date: formData.applicationEndDate || today,
-      benefits: normalizedBenefits,
-      compensation_detail: formData.compensationDetail?.trim() || null,
-      status,
-    })
-    .select("id")
-    .single();
-
-  if (insertProjectError) {
+  if (rpcError) {
     return NextResponse.json(
-      { error: insertProjectError.message },
+      { error: rpcError.message },
       { status: 500 },
     );
-  }
-
-  const projectId = insertedProject.id as string;
-
-  try {
-    const categories = Array.from(
-      new Set(
-        formData.categories
-          .map((category) => category.trim())
-          .filter((category) => category.length > 0),
-      ),
-    );
-
-    if (categories.length > 0) {
-      const { error: categoriesError } = await supabaseAdmin
-        .from("project_categories")
-        .insert(
-          categories.map((category) => ({
-            project_id: projectId,
-            category_name: category,
-          })),
-        );
-
-      if (categoriesError) throw categoriesError;
-    }
-
-    const normalizedPositions = formData.positions
-      .map((position) => ({
-        title: position.title.trim(),
-        neededCount: Math.max(1, Number(position.neededCount || 1)),
-        preferredQualifications: position.preferredQualifications?.trim() || null,
-        skills: Array.from(
-          new Set(
-            position.skills
-              .map((skill) => skill.trim())
-              .filter((skill) => skill.length > 0),
-          ),
-        ),
-        basicQualifications: Array.from(
-          new Set(
-            position.basicQualifications
-              .map((qualification) => qualification.trim())
-              .filter((qualification) => qualification.length > 0),
-          ),
-        ),
-      }))
-      .filter((position) => position.title.length > 0);
-
-    if (normalizedPositions.length > 0) {
-      const { data: insertedPositions, error: positionsError } = await supabaseAdmin
-        .from("project_positions")
-        .insert(
-          normalizedPositions.map((position) => ({
-            project_id: projectId,
-            title: position.title,
-            needed_count: position.neededCount,
-            preferred_qualifications: position.preferredQualifications,
-          })),
-        )
-        .select("id,title");
-
-      if (positionsError) throw positionsError;
-
-      const positionIdByTitle = new Map(
-        (insertedPositions ?? []).map((position) => [
-          position.title as string,
-          position.id as string,
-        ]),
-      );
-
-      const positionSkillsPayload: Array<{ position_id: string; skill_name: string }> = [];
-      const positionQualificationsPayload: Array<{
-        position_id: string;
-        qualification_text: string;
-      }> = [];
-
-      for (const position of normalizedPositions) {
-        const positionId = positionIdByTitle.get(position.title);
-        if (!positionId) continue;
-
-        for (const skill of position.skills) {
-          positionSkillsPayload.push({ position_id: positionId, skill_name: skill });
-        }
-
-        for (const qualification of position.basicQualifications) {
-          positionQualificationsPayload.push({
-            position_id: positionId,
-            qualification_text: qualification,
-          });
-        }
-      }
-
-      if (positionSkillsPayload.length > 0) {
-        const { error: skillsError } = await supabaseAdmin
-          .from("project_position_skills")
-          .insert(positionSkillsPayload);
-        if (skillsError) throw skillsError;
-      }
-
-      if (positionQualificationsPayload.length > 0) {
-        const { error: qualificationsError } = await supabaseAdmin
-          .from("project_position_basic_qualifications")
-          .insert(positionQualificationsPayload);
-        if (qualificationsError) throw qualificationsError;
-      }
-    }
-  } catch (error) {
-    await supabaseAdmin.from("projects").delete().eq("id", projectId);
-    const message =
-      error && typeof error === "object" && "message" in error
-        ? String(error.message)
-        : "Failed to create project";
-    return NextResponse.json({ error: message }, { status: 500 });
   }
 
   return NextResponse.json(
     {
       data: {
-        id: projectId,
+        id: String(projectId),
         title,
         status,
         ownerId,

@@ -274,198 +274,30 @@ export async function PATCH(
     return NextResponse.json({ error: "title is required" }, { status: 400 });
   }
 
-  const { data: project, error: projectError } = await supabaseAdmin
-    .from("projects")
-    .select("id")
-    .eq("id", id)
-    .eq("owner_id", ownerId)
-    .maybeSingle();
-
-  if (projectError) {
-    return NextResponse.json({ error: projectError.message }, { status: 500 });
-  }
-
-  if (!project) {
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
-  }
-
-  const normalizedBenefits = nextFormData.benefits.filter((benefit): benefit is Benefit =>
-    allowedBenefits.includes(benefit),
-  );
-
-  const { data, error } = await supabaseAdmin
-    .from("projects")
-    .update({
-      title,
-      summary: nextFormData.summary.trim() || null,
-      description: nextFormData.description.trim() || null,
-      work_mode: mapWorkMode(nextFormData.workMode),
-      working_hours: nextFormData.workingHours?.trim() || null,
-      status,
-      application_start_date: nextFormData.applicationStartDate || null,
-      application_end_date: nextFormData.applicationEndDate || null,
-      benefits: normalizedBenefits,
-      compensation_detail: nextFormData.compensationDetail?.trim() || null,
-    })
-    .eq("id", id)
-    .eq("owner_id", ownerId)
-    .select("id")
-    .maybeSingle();
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  if (!data) {
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
-  }
-
-  const { data: existingPositions } = await supabaseAdmin
-    .from("project_positions")
-    .select("id")
-    .eq("project_id", id);
-
-  const positionIds = (existingPositions ?? []).map(
-    (position) => position.id as string,
-  );
-
-  if (positionIds.length > 0) {
-    await Promise.all([
-      supabaseAdmin
-        .from("project_position_skills")
-        .delete()
-        .in("position_id", positionIds),
-      supabaseAdmin
-        .from("project_position_basic_qualifications")
-        .delete()
-        .in("position_id", positionIds),
-    ]);
-  }
-
-  await Promise.all([
-    supabaseAdmin.from("project_positions").delete().eq("project_id", id),
-    supabaseAdmin.from("project_categories").delete().eq("project_id", id),
-  ]);
-
-  const categories = Array.from(
-    new Set(
-      nextFormData.categories
-        .map((category) => category.trim())
-        .filter((category) => category.length > 0),
+  const filteredFormData: ProjectFormData = {
+    ...nextFormData,
+    benefits: nextFormData.benefits.filter((benefit): benefit is Benefit =>
+      allowedBenefits.includes(benefit),
     ),
+    workMode: mapWorkMode(nextFormData.workMode),
+  };
+
+  const { data: updated, error: updateError } = await supabaseAdmin.rpc(
+    "update_my_project_with_relations",
+    {
+      p_project_id: id,
+      p_owner_id: ownerId,
+      p_status: status,
+      p_form_data: filteredFormData,
+    },
   );
 
-  if (categories.length > 0) {
-    const { error: categoryInsertError } = await supabaseAdmin
-      .from("project_categories")
-      .insert(
-        categories.map((category) => ({
-          project_id: id,
-          category_name: category,
-        })),
-      );
-
-    if (categoryInsertError) {
-      return NextResponse.json(
-        { error: categoryInsertError.message },
-        { status: 500 },
-      );
-    }
+  if (updateError) {
+    return NextResponse.json({ error: updateError.message }, { status: 500 });
   }
 
-  const normalizedPositions = nextFormData.positions
-    .map((position) => ({
-      title: position.title.trim(),
-      neededCount: Math.max(1, Number(position.neededCount || 1)),
-      preferredQualifications: position.preferredQualifications?.trim() || null,
-      skills: Array.from(
-        new Set(
-          position.skills
-            .map((skill) => skill.trim())
-            .filter((skill) => skill.length > 0),
-        ),
-      ),
-      basicQualifications: Array.from(
-        new Set(
-          position.basicQualifications
-            .map((qualification) => qualification.trim())
-            .filter((qualification) => qualification.length > 0),
-        ),
-      ),
-    }))
-    .filter((position) => position.title.length > 0);
-
-  if (normalizedPositions.length > 0) {
-    const { data: insertedPositions, error: positionInsertError } = await supabaseAdmin
-      .from("project_positions")
-      .insert(
-        normalizedPositions.map((position) => ({
-          project_id: id,
-          title: position.title,
-          needed_count: position.neededCount,
-          preferred_qualifications: position.preferredQualifications,
-        })),
-      )
-      .select("id,title");
-
-    if (positionInsertError) {
-      return NextResponse.json(
-        { error: positionInsertError.message },
-        { status: 500 },
-      );
-    }
-
-    const positionIdByTitle = new Map(
-      (insertedPositions ?? []).map((position) => [
-        position.title as string,
-        position.id as string,
-      ]),
-    );
-
-    const skillsPayload: Array<{ position_id: string; skill_name: string }> = [];
-    const qualificationsPayload: Array<{
-      position_id: string;
-      qualification_text: string;
-    }> = [];
-
-    for (const position of normalizedPositions) {
-      const positionId = positionIdByTitle.get(position.title);
-      if (!positionId) continue;
-
-      for (const skill of position.skills) {
-        skillsPayload.push({ position_id: positionId, skill_name: skill });
-      }
-      for (const qualification of position.basicQualifications) {
-        qualificationsPayload.push({
-          position_id: positionId,
-          qualification_text: qualification,
-        });
-      }
-    }
-
-    if (skillsPayload.length > 0) {
-      const { error: skillsInsertError } = await supabaseAdmin
-        .from("project_position_skills")
-        .insert(skillsPayload);
-      if (skillsInsertError) {
-        return NextResponse.json(
-          { error: skillsInsertError.message },
-          { status: 500 },
-        );
-      }
-    }
-
-    if (qualificationsPayload.length > 0) {
-      const { error: qualificationsInsertError } = await supabaseAdmin
-        .from("project_position_basic_qualifications")
-        .insert(qualificationsPayload);
-      if (qualificationsInsertError) {
-        return NextResponse.json(
-          { error: qualificationsInsertError.message },
-          { status: 500 },
-        );
-      }
-    }
+  if (!updated) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
   return NextResponse.json({ ok: true });
