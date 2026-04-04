@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import { MyProject } from "@/lib/myProjectMockData";
 import { CalendarDays, Gift, Trash2, Users } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 const statusMeta = {
@@ -70,6 +71,9 @@ const filterRules: Record<FilterKey, (status: MyProject["status"]) => boolean> =
 
 export default function MyProjectPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const routeRefreshKey = `${pathname}?${searchParams.toString()}`;
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [projects, setProjects] = useState<MyProject[]>([]);
   const [isFetching, setIsFetching] = useState(true);
@@ -119,7 +123,7 @@ export default function MyProjectPage() {
     return () => {
       mounted = false;
     };
-  }, [isAuthLoading, user?.id]);
+  }, [isAuthLoading, routeRefreshKey, user?.id]);
 
   const filteredProjects = useMemo(() => {
     const rule = filterRules[activeFilter];
