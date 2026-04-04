@@ -1,5 +1,8 @@
-import Link from "next/link";
+"use client";
+
+import { useAuth } from "@/components/auth/AuthProvider";
 import { SimpleProject } from "@/lib/simpleMockData";
+import { useRouter } from "next/navigation";
 
 export default function ProjectCard({
   project,
@@ -8,6 +11,8 @@ export default function ProjectCard({
   project: SimpleProject;
   index: number;
 }) {
+  const router = useRouter();
+  const { user } = useAuth();
   const avatar = project.org.slice(0, 2).toUpperCase();
   const isOpen = project.status === "open";
 
@@ -89,13 +94,13 @@ export default function ProjectCard({
             </div>
           )}
         </div>
-        <Link href={`/project/${project.id}`}>
-          <button
-            className="mt-4 w-full box-border rounded-xl bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-4 py-2.5 text-sm text-white transition-transform duration-200 hover:scale-[1.02]"
-          >
-            ดูรายละเอียด →
-          </button>
-        </Link>
+        <button
+          type="button"
+          className="mt-4 w-full box-border rounded-xl bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-4 py-2.5 text-sm text-white transition-transform duration-200 hover:scale-[1.02]"
+          onClick={() => router.push(user ? `/project/${project.id}` : "/login")}
+        >
+          ดูรายละเอียด →
+        </button>
       </div>
     </div>
   );

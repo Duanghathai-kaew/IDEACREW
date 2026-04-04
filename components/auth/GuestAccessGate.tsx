@@ -9,20 +9,20 @@ export function GuestAccessGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const isHomePage = pathname === "/";
+  const isGuestAllowedPath = pathname === "/" || pathname === "/login";
 
   useEffect(() => {
     if (isLoading) return;
-    if (!user && !isHomePage) {
-      router.replace("/");
+    if (!user && !isGuestAllowedPath) {
+      router.replace("/login");
     }
-  }, [isHomePage, isLoading, router, user]);
+  }, [isGuestAllowedPath, isLoading, router, user]);
 
-  if (isLoading && !isHomePage) {
+  if (isLoading && !isGuestAllowedPath) {
     return null;
   }
 
-  if (!user && !isHomePage) {
+  if (!user && !isGuestAllowedPath) {
     return null;
   }
 

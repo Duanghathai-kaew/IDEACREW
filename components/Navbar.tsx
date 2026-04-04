@@ -16,7 +16,7 @@ export default function Navbar() {
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isLoading, signInForDevelopment, signOut } = useAuth();
+  const { user, isLoading, signOut } = useAuth();
   const notiRef = useRef<HTMLDivElement | null>(null);
   const active: "home" | "my-project" = pathname?.startsWith("/my-project")
     ? "my-project"
@@ -47,10 +47,14 @@ export default function Navbar() {
     router.push("/login");
   }
 
-  async function handleMockLogin() {
-    await signInForDevelopment();
-    setOpen(false);
-    router.push("/");
+  function requireAuth(action: () => void) {
+    if (!user) {
+      setOpen(false);
+      setIsNotiOpen(false);
+      router.push("/login");
+      return;
+    }
+    action();
   }
 
   return (
@@ -104,7 +108,11 @@ export default function Navbar() {
               <button
                 type="button"
                 className="icon-btn"
-                onClick={() => setIsNotiOpen((prev) => !prev)}
+                onClick={() =>
+                  requireAuth(() => {
+                    setIsNotiOpen((prev) => !prev);
+                  })
+                }
               >
                 <Bell className="icon-sm text-gray-600" />
               </button>
@@ -118,7 +126,7 @@ export default function Navbar() {
             <button
               type="button"
               className="icon-btn"
-              onClick={() => (user ? router.push("/profile") : router.push("/"))}
+              onClick={() => requireAuth(() => router.push("/profile"))}
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
@@ -127,15 +135,15 @@ export default function Navbar() {
             </span>
             <Button
               className="rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
-              onClick={() => setIsModalOpen(true)}
+              onClick={() => requireAuth(() => setIsModalOpen(true))}
             >
               เพิ่มโปรเจกต์
             </Button>
             <button
               type="button"
               className="icon-btn"
-              onClick={user ? handleLogout : handleMockLogin}
-              aria-label={user ? "Logout" : "Login with mock user"}
+              onClick={user ? handleLogout : () => router.push("/login")}
+              aria-label={user ? "Logout" : "Go to login"}
             >
               <LogOut className="icon-sm text-orange-500" />
             </button>
@@ -164,7 +172,7 @@ export default function Navbar() {
           ))}
           <Button
             className="w-full rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => requireAuth(() => setIsModalOpen(true))}
           >
             เพิ่มโปรเจกต์
           </Button>
@@ -172,22 +180,26 @@ export default function Navbar() {
             <button
               type="button"
               className="icon-btn"
-              onClick={() => setIsNotiOpen((prev) => !prev)}
+              onClick={() =>
+                requireAuth(() => {
+                  setIsNotiOpen((prev) => !prev);
+                })
+              }
             >
               <Bell className="icon-sm text-gray-600" />
             </button>
             <button
               type="button"
               className="icon-btn"
-              onClick={() => (user ? router.push("/profile") : router.push("/"))}
+              onClick={() => requireAuth(() => router.push("/profile"))}
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
             <button
               type="button"
               className="icon-btn"
-              onClick={user ? handleLogout : handleMockLogin}
-              aria-label={user ? "Logout" : "Login with mock user"}
+              onClick={user ? handleLogout : () => router.push("/login")}
+              aria-label={user ? "Logout" : "Go to login"}
             >
               <LogOut className="icon-sm text-orange-500" />
             </button>
