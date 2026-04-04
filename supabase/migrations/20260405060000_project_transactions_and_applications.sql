@@ -66,7 +66,7 @@ begin
       '{}'::text[]
     ),
     nullif(trim(coalesce(p_form_data->>'compensationDetail', '')), ''),
-    p_status
+    p_status::public.project_status
   )
   returning id into v_project_id;
 
@@ -170,7 +170,7 @@ begin
       '{}'::text[]
     ),
     compensation_detail = nullif(trim(coalesce(p_form_data->>'compensationDetail', '')), ''),
-    status = p_status
+    status = p_status::public.project_status
   where id = p_project_id
     and owner_id = p_owner_id;
 
