@@ -45,7 +45,8 @@ export default function AddProjectModal({
   const [newCategory, setNewCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [submitStatus, setSubmitStatus] = useState<ProjectStatus>("draft");
+  const [submitSuccess, setSubmitSuccess] = useState<string | null>(null);
+  const [draftProjectId, setDraftProjectId] = useState<string | null>(null);
   type PositionForm = ProjectFormData["positions"][number];
 
   if (!isOpen) return null;
@@ -117,8 +118,101 @@ export default function AddProjectModal({
     updateFormData({ positions: newPositions });
   };
 
-  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function requestCreateProject(status: ProjectStatus): Promise<string> {
+    if (!user?.id || isSubmitting) {
+      setSubmitError("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
+      throw new Error("Missing user");
+    }
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
+    try {
+      const response = await fetch("/api/projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ownerId: user.id,
+          status,
+          formData,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Create project failed");
+      }
+      const result = (await response.json()) as { data?: { id?: string } };
+      const createdProjectId = result.data?.id;
+      if (!createdProjectId) {
+        throw new Error("Project id is missing");
+      }
+      return createdProjectId;
+    } catch {
+      setSubmitError("ไม่สามารถบันทึกโปรเจกต์ได้ กรุณาลองใหม่");
+      throw new Error("Create project failed");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleSaveDraft() {
+    if (!draftProjectId) {
+      try {
+        const createdProjectId = await requestCreateProject("draft");
+        setDraftProjectId(createdProjectId);
+        setSubmitSuccess("บันทึกร่างแล้ว กดส่งโปรเจกต์ได้ทันที");
+      } catch {
+        // Error state is already handled in requestCreateProject.
+      }
+      return;
+    }
+
+    if (!user?.id || isSubmitting) return;
+
+    setIsSubmitting(true);
+    setSubmitError(null);
+    setSubmitSuccess(null);
+
+    try {
+      const response = await fetch(
+        `/api/my-projects/${draftProjectId}?ownerId=${encodeURIComponent(user.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: formData.title,
+            summary: formData.summary,
+            status: "draft",
+            applicationEndDate: formData.applicationEndDate,
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Update draft failed");
+      }
+
+      setSubmitSuccess("อัปเดตร่างเรียบร้อย");
+    } catch {
+      setSubmitError("ไม่สามารถบันทึกโปรเจกต์ได้ กรุณาลองใหม่");
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleSubmitProject(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
+    if (!draftProjectId) {
+      try {
+        await requestCreateProject("pending_approval");
+        onClose();
+      } catch {
+        // Error state is already handled in requestCreateProject.
+      }
+      return;
+    }
 
     if (!user?.id || isSubmitting) {
       setSubmitError("ไม่พบข้อมูลผู้ใช้ กรุณาเข้าสู่ระบบใหม่");
@@ -127,25 +221,30 @@ export default function AddProjectModal({
 
     setIsSubmitting(true);
     setSubmitError(null);
+    setSubmitSuccess(null);
 
     try {
-      const response = await fetch("/api/projects", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ownerId: user.id,
-          status: submitStatus,
-          formData,
-        }),
-      });
+      const response = await fetch(
+        `/api/my-projects/${draftProjectId}?ownerId=${encodeURIComponent(user.id)}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: formData.title,
+            summary: formData.summary,
+            status: "pending_approval",
+            applicationEndDate: formData.applicationEndDate,
+          }),
+        },
+      );
 
       if (!response.ok) {
-        throw new Error("Create project failed");
+        throw new Error("Submit project failed");
       }
 
       onClose();
     } catch {
-      setSubmitError("ไม่สามารถบันทึกโปรเจกต์ได้ กรุณาลองใหม่");
+      setSubmitError("ไม่สามารถส่งโปรเจกต์ได้ กรุณาลองใหม่");
     } finally {
       setIsSubmitting(false);
     }
@@ -188,7 +287,7 @@ export default function AddProjectModal({
                 </div>
               </div>
 
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmitProject}>
                 {/* ข้อมูลโปรเจกต์ */}
                 <BasicInfoSection
                   formData={formData}
@@ -225,19 +324,23 @@ export default function AddProjectModal({
                     {submitError}
                   </div>
                 )}
+                {submitSuccess && (
+                  <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">
+                    {submitSuccess}
+                  </div>
+                )}
 
                 <div className="flex flex-wrap justify-end gap-4 pt-6 max-[480px]:flex-col">
                   <button
-                    type="submit"
-                    onClick={() => setSubmitStatus("draft")}
+                    type="button"
+                    onClick={handleSaveDraft}
                     disabled={isSubmitting}
                     className="h-fit whitespace-nowrap rounded-lg border border-(--form-border) bg-white px-4 py-2 text-sm font-medium text-(--form-text-secondary) transition hover:border-(--form-primary) hover:bg-(--form-bg-light) max-[480px]:w-full"
                   >
-                    บันทึกร่าง
+                    {isSubmitting ? "กำลังบันทึก..." : "บันทึกร่าง"}
                   </button>
                   <button
                     type="submit"
-                    onClick={() => setSubmitStatus("pending_approval")}
                     disabled={isSubmitting}
                     className="cursor-pointer rounded-[10px] bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-8 py-3 text-base font-semibold text-white shadow-[0_4px_12px_rgb(253_94_75/0.22)] transition hover:-translate-y-px hover:shadow-[0_4px_12px_rgb(253_94_75/0.3)] max-[480px]:w-full"
                   >
