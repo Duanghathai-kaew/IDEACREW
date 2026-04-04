@@ -143,9 +143,13 @@ export default function Navbar() {
               type="button"
               className="icon-btn"
               onClick={user ? handleLogout : () => router.push("/login")}
-              aria-label={user ? "Logout" : "Go to login"}
+              aria-label={user ? "Logout" : "Login"}
             >
-              <LogOut className="icon-sm text-orange-500" />
+              {user ? (
+                <LogOut className="icon-sm text-orange-500" />
+              ) : (
+                <span className="text-xs font-semibold text-orange-500">LOGIN</span>
+              )}
             </button>
           </div>
 
@@ -199,9 +203,13 @@ export default function Navbar() {
               type="button"
               className="icon-btn"
               onClick={user ? handleLogout : () => router.push("/login")}
-              aria-label={user ? "Logout" : "Go to login"}
+              aria-label={user ? "Logout" : "Login"}
             >
-              <LogOut className="icon-sm text-orange-500" />
+              {user ? (
+                <LogOut className="icon-sm text-orange-500" />
+              ) : (
+                <span className="text-xs font-semibold text-orange-500">LOGIN</span>
+              )}
             </button>
             <span className="text-sm text-slate-600">
               {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
