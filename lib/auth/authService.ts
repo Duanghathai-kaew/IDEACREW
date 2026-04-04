@@ -19,15 +19,15 @@ function canUseStorage() {
 }
 
 function readStoredUser(): AuthUser | null {
-  if (!canUseStorage()) return defaultMockUser;
+  if (!canUseStorage()) return null;
 
   const raw = window.localStorage.getItem(STORAGE_KEY);
-  if (!raw) return defaultMockUser;
+  if (!raw) return null;
 
   try {
     return JSON.parse(raw) as AuthUser | null;
   } catch {
-    return defaultMockUser;
+    return null;
   }
 }
 

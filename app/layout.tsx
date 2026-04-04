@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/auth/AuthProvider";
+import { GuestAccessGate } from "@/components/auth/GuestAccessGate";
 import { Prompt } from "next/font/google";
 import "./globals.css";
 
@@ -27,7 +28,9 @@ export default function RootLayout({
   return (
     <html lang="th" className={prompt.variable}>
       <body className="font-sans antialiased bg-[#FFF9F6]">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <GuestAccessGate>{children}</GuestAccessGate>
+        </AuthProvider>
       </body>
     </html>
   );

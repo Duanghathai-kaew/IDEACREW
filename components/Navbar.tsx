@@ -34,10 +34,12 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const menuItems = [
-    { key: "home", label: "หน้าหลัก" },
-    { key: "my-project", label: "โปรเจกต์ของฉัน" },
-  ];
+  const menuItems: Array<{ key: "home" | "my-project"; label: string }> = user
+    ? [
+        { key: "home", label: "หน้าหลัก" },
+        { key: "my-project", label: "โปรเจกต์ของฉัน" },
+      ]
+    : [{ key: "home", label: "หน้าหลัก" }];
 
   async function handleLogout() {
     await signOut();
@@ -116,7 +118,7 @@ export default function Navbar() {
             <button
               type="button"
               className="icon-btn"
-              onClick={() => router.push("/profile")}
+              onClick={() => (user ? router.push("/profile") : router.push("/"))}
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
@@ -177,7 +179,7 @@ export default function Navbar() {
             <button
               type="button"
               className="icon-btn"
-              onClick={() => router.push("/profile")}
+              onClick={() => (user ? router.push("/profile") : router.push("/"))}
             >
               <CircleUserRound className="icon-sm text-gray-600" />
             </button>
