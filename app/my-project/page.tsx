@@ -1,9 +1,11 @@
 "use client";
 
+import { useAuth } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/Navbar";
+import { MyProject } from "@/lib/myProjectMockData";
 import { CalendarDays, Gift, Trash2, Users } from "lucide-react";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const statusMeta = {
   draft: {
@@ -43,116 +45,6 @@ const statusMeta = {
   },
 } as const;
 
-type ProjectStatus = keyof typeof statusMeta;
-
-type MyProject = {
-  id: string;
-  detailId?: string;
-  title: string;
-  status: ProjectStatus;
-  createdAt: string;
-  summary: string;
-  tags: string[];
-  applicants: number;
-  deadline: string;
-};
-
-const myProjects: MyProject[] = [
-  {
-    id: "p101",
-    detailId: "p1",
-    title: "Social Media Content ทีม CSTU Innovation Week",
-    status: "open",
-    createdAt: "20 พฤศจิกายน 2567",
-    summary:
-      "ต้องการทีมสร้างคอนเทนต์สั้นสำหรับประชาสัมพันธ์ผ่าน TikTok, Instagram และ Facebook",
-    tags: ["สื่อสังคม", "Content Creator"],
-    applicants: 4,
-    deadline: "15 ธ.ค. 2568",
-  },
-  {
-    id: "p102",
-    title: "ระบบติดตามฟังก์ชันสหกิจฯ",
-    status: "pending_approval",
-    createdAt: "26 พฤศจิกายน 2567",
-    summary: "พัฒนาเว็บแอปติดตามเอกสารสหกิจฯ และระบบแจ้งเตือนสถานะ",
-    tags: ["Frontend Dev", "React"],
-    applicants: 3,
-    deadline: "1 ธ.ค. 2568",
-  },
-  {
-    id: "p103",
-    title: "ออกแบบ Key Visual งาน Freshy Night 2025",
-    status: "rejected_by_admin",
-    createdAt: "18 พฤศจิกายน 2567",
-    summary: "ออกแบบสื่อภาพนิ่งและชุดคีย์วิชวลสำหรับงานใหญ่ประจำปี",
-    tags: ["กราฟิก/ดีไซน์"],
-    applicants: 2,
-    deadline: "30 พ.ย. 2568",
-  },
-  {
-    id: "p104",
-    title: "MC and Host สำหรับงาน CSTU Talent Show",
-    status: "pending_approval",
-    createdAt: "27 พฤศจิกายน 2567",
-    summary: "คัดเลือกพิธีกรหลักและพิธีกรร่วมดูแลบรรยากาศบนเวที",
-    tags: ["MC/ดำเนินรายการ"],
-    applicants: 2,
-    deadline: "10 ธ.ค. 2568",
-  },
-  {
-    id: "p105",
-    detailId: "p2",
-    title: "Open House University Tour",
-    status: "open",
-    createdAt: "22 พฤศจิกายน 2567",
-    summary: "ดูแลกิจกรรมทัวร์คณะและการจัดคิวผู้เข้าร่วมงาน",
-    tags: ["กิจกรรม/ประสานงาน", "Open House"],
-    applicants: 5,
-    deadline: "20 ธ.ค. 2568",
-  },
-  {
-    id: "p106",
-    title: "CSTU Mentorship Portal",
-    status: "approved",
-    createdAt: "23 พฤศจิกายน 2567",
-    summary: "อนุมัติแล้ว รอตั้งเวลาเปิดรับสมัคร",
-    tags: ["Mentor", "Community"],
-    applicants: 0,
-    deadline: "1 ม.ค. 2569",
-  },
-  {
-    id: "p107",
-    title: "CSTU Hackathon 2026",
-    status: "reviewing",
-    createdAt: "24 พฤศจิกายน 2567",
-    summary: "อยู่ช่วงคัดเลือกผู้สมัครให้ตรงตำแหน่ง",
-    tags: ["Hackathon", "Event"],
-    applicants: 12,
-    deadline: "5 ม.ค. 2569",
-  },
-  {
-    id: "p108",
-    title: "Prototype ระบบจองห้องประชุม",
-    status: "draft",
-    createdAt: "25 พฤศจิกายน 2567",
-    summary: "ยังไม่ส่งตรวจ กำลังเขียนรายละเอียดโครงงาน",
-    tags: ["Internal Tool"],
-    applicants: 0,
-    deadline: "ยังไม่กำหนด",
-  },
-  {
-    id: "p109",
-    title: "CSTU Orientation Buddy Program",
-    status: "closed",
-    createdAt: "10 พฤศจิกายน 2567",
-    summary: "ปิดรับสมัครและสิ้นสุดโปรเจกต์เรียบร้อย",
-    tags: ["Student Activity"],
-    applicants: 18,
-    deadline: "31 พ.ย. 2568",
-  },
-];
-
 const filters = [
   { key: "all", label: "ทั้งหมด" },
   { key: "draft", label: "แบบร่าง" },
@@ -163,7 +55,12 @@ const filters = [
 
 type FilterKey = "all" | "draft" | "queue" | "active" | "done";
 
-const filterRules: Record<FilterKey, (status: ProjectStatus) => boolean> = {
+type MyProjectResponse = {
+  data?: MyProject[];
+  error?: string;
+};
+
+const filterRules: Record<FilterKey, (status: MyProject["status"]) => boolean> = {
   all: () => true,
   draft: (status) => status === "draft",
   queue: (status) => status === "pending_approval" || status === "approved",
@@ -172,16 +69,65 @@ const filterRules: Record<FilterKey, (status: ProjectStatus) => boolean> = {
 };
 
 export default function MyProjectPage() {
+  const { user, isLoading: isAuthLoading } = useAuth();
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
+  const [projects, setProjects] = useState<MyProject[]>([]);
+  const [isFetching, setIsFetching] = useState(true);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchMyProjects() {
+      if (isAuthLoading) return;
+
+      if (!user?.id) {
+        if (!mounted) return;
+        setProjects([]);
+        setIsFetching(false);
+        return;
+      }
+
+      setIsFetching(true);
+
+      try {
+        const response = await fetch(
+          `/api/my-projects?ownerId=${encodeURIComponent(user.id)}`,
+          { cache: "no-store" },
+        );
+
+        if (!response.ok) {
+          throw new Error("Request failed");
+        }
+
+        const result = (await response.json()) as MyProjectResponse;
+        if (!mounted) return;
+
+        setProjects(result.data ?? []);
+      } catch {
+        if (!mounted) return;
+        setProjects([]);
+      } finally {
+        if (mounted) {
+          setIsFetching(false);
+        }
+      }
+    }
+
+    fetchMyProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthLoading, user?.id]);
 
   const filteredProjects = useMemo(() => {
     const rule = filterRules[activeFilter];
-    return myProjects.filter((project) => rule(project.status));
-  }, [activeFilter]);
+    return projects.filter((project) => rule(project.status));
+  }, [activeFilter, projects]);
 
   const counts = useMemo(() => {
     const countByFilter = (key: FilterKey) =>
-      myProjects.filter((project) => filterRules[key](project.status)).length;
+      projects.filter((project) => filterRules[key](project.status)).length;
 
     return {
       all: countByFilter("all"),
@@ -190,7 +136,7 @@ export default function MyProjectPage() {
       active: countByFilter("active"),
       done: countByFilter("done"),
     };
-  }, []);
+  }, [projects]);
 
   return (
     <>
@@ -242,7 +188,11 @@ export default function MyProjectPage() {
           </div>
 
           <div className="space-y-6">
-            {filteredProjects.length === 0 ? (
+            {isFetching ? (
+              <div className="bg-white border border-slate-200 rounded-2xl px-6 py-10 text-center text-slate-500">
+                กำลังโหลดรายการโปรเจกต์...
+              </div>
+            ) : filteredProjects.length === 0 ? (
               <div className="bg-amber-100 border border-amber-200 rounded-2xl px-6 py-10 text-center">
                 <div className="mx-auto w-12 h-12 rounded-full border-2 border-amber-400 flex items-center justify-center text-amber-700">
                   <Gift className="w-6 h-6" />
@@ -338,8 +288,7 @@ export default function MyProjectPage() {
                         </button>
                       ) : (
                         <div className="bg-rose-100 text-rose-700 text-xs rounded-lg p-3">
-                          เหตุผลที่ปฏิเสธ:
-                          ข้อมูลไม่ครบถ้วนและรายละเอียดไม่ชัดเจน
+                          เหตุผลที่ปฏิเสธ: ข้อมูลไม่ครบถ้วนและรายละเอียดไม่ชัดเจน
                         </div>
                       )}
                     </div>
