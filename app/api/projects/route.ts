@@ -180,14 +180,7 @@ export async function POST(request: Request) {
     );
   }
 
-  if (
-    status === "pending_approval" ||
-    status === "approved" ||
-    status === "open" ||
-    status === "reviewing" ||
-    status === "rejected_by_admin" ||
-    status === "closed"
-  ) {
+  if (status === "approved" || status === "rejected_by_admin") {
     await createMyProjectStatusNotification({
       userId: ownerId,
       projectId: String(projectId),

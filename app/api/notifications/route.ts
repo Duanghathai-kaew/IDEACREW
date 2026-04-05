@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
-import { syncAppliedNotificationsForUser } from "@/lib/server/notifications";
+import {
+  syncAppliedNotificationsForUser,
+  syncMyProjectNewApplicantNotificationsForOwner,
+} from "@/lib/server/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NotificationCategory, NotificationItem } from "@/types/notification";
 
@@ -45,6 +48,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    await syncMyProjectNewApplicantNotificationsForOwner(userId);
     await syncAppliedNotificationsForUser(userId);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Failed to sync notifications";

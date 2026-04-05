@@ -11,37 +11,18 @@ function getStatusNotificationContent(
   projectTitle: string,
 ) {
   switch (status) {
-    case "draft":
-      return {
-        title: "โปรเจกต์ยังเป็นแบบร่าง",
-        message: `โปรเจกต์ ${projectTitle} ถูกบันทึกเป็นแบบร่าง`,
-      };
-    case "pending_approval":
-      return {
-        title: "โปรเจกต์อยู่ระหว่างรออนุมัติ",
-        message: `โปรเจกต์ ${projectTitle} ถูกส่งรอการตรวจสอบแล้ว`,
-      };
     case "approved":
       return {
         title: "โปรเจกต์ได้รับการอนุมัติแล้ว",
         message: `โปรเจกต์ ${projectTitle} พร้อมเปิดรับสมัคร`,
-      };
-    case "open":
-    case "reviewing":
-      return {
-        title: "โปรเจกต์กำลังดำเนินการ",
-        message: `โปรเจกต์ ${projectTitle} อยู่ในสถานะกำลังดำเนินการ`,
       };
     case "rejected_by_admin":
       return {
         title: "โปรเจกต์ถูกตีกลับโดยแอดมิน",
         message: `โปรเจกต์ ${projectTitle} ต้องแก้ไขข้อมูลก่อนส่งใหม่`,
       };
-    case "closed":
-      return {
-        title: "โปรเจกต์ปิดรับสมัครแล้ว",
-        message: `โปรเจกต์ ${projectTitle} ถูกปิดรับสมัคร`,
-      };
+    default:
+      return null;
   }
 }
 
@@ -80,6 +61,7 @@ export async function createMyProjectStatusNotification(input: {
   status: CreatorProjectStatus;
 }) {
   const content = getStatusNotificationContent(input.status, input.projectTitle);
+  if (!content) return;
 
   const { error } = await supabaseAdmin.from("notifications").insert({
     user_id: input.userId,
@@ -94,6 +76,108 @@ export async function createMyProjectStatusNotification(input: {
 
   if (error && !isMissingTableError(error.message)) {
     throw error;
+  }
+}
+
+export async function syncMyProjectNewApplicantNotificationsForOwner(
+  ownerId: string,
+) {
+  const { data: ownedProjects, error: ownedProjectsError } = await supabaseAdmin
+    .from("projects")
+    .select("id,title")
+    .eq("owner_id", ownerId);
+
+  if (ownedProjectsError) {
+    if (isMissingTableError(ownedProjectsError.message)) return;
+    throw ownedProjectsError;
+  }
+
+  const projects = (ownedProjects ?? []) as Array<{ id: string; title: string }>;
+  if (projects.length === 0) return;
+
+  const projectIds = projects.map((project) => project.id);
+  const [{ data: applications, error: applicationsError }, { data: existing, error: existingError }] =
+    await Promise.all([
+      supabaseAdmin
+        .from("project_applications")
+        .select("project_id,applicant_id")
+        .in("project_id", projectIds),
+      supabaseAdmin
+        .from("notifications")
+        .select("event_type")
+        .eq("user_id", ownerId)
+        .eq("category", "my-project"),
+    ]);
+
+  if (applicationsError) {
+    if (isMissingTableError(applicationsError.message)) return;
+    throw applicationsError;
+  }
+
+  if (existingError) {
+    if (isMissingTableError(existingError.message)) return;
+    throw existingError;
+  }
+
+  const appRows = (applications ?? []) as Array<{
+    project_id: string;
+    applicant_id: string;
+  }>;
+  if (appRows.length === 0) return;
+
+  const applicantIds = Array.from(new Set(appRows.map((item) => item.applicant_id)));
+  const { data: profiles, error: profilesError } = await supabaseAdmin
+    .from("profiles")
+    .select("id,name")
+    .in("id", applicantIds);
+
+  if (profilesError) {
+    throw profilesError;
+  }
+
+  const projectTitleById = new Map(projects.map((project) => [project.id, project.title]));
+  const applicantNameById = new Map(
+    ((profiles ?? []) as Array<{ id: string; name: string | null }>).map((profile) => [
+      profile.id,
+      profile.name?.trim() || "มีผู้สมัครใหม่",
+    ]),
+  );
+
+  const existingEventTypes = new Set(
+    ((existing ?? []) as Array<{ event_type: string | null }>)
+      .map((row) => row.event_type ?? "")
+      .filter(Boolean),
+  );
+
+  const toInsert = appRows
+    .map((application) => {
+      const eventType = `new_applicant:${application.project_id}:${application.applicant_id}`;
+      if (existingEventTypes.has(eventType)) return null;
+
+      const projectTitle = projectTitleById.get(application.project_id) ?? "โปรเจกต์";
+      const applicantName = applicantNameById.get(application.applicant_id) ?? "มีผู้สมัครใหม่";
+
+      return {
+        user_id: ownerId,
+        project_id: application.project_id,
+        category: "my-project",
+        event_type: eventType,
+        title: "มีผู้สมัครเข้ามาใหม่",
+        message: `${applicantName} สมัครเข้าร่วมโปรเจกต์ ${projectTitle}`,
+        status: "open",
+        is_read: false,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => Boolean(item));
+
+  if (toInsert.length === 0) return;
+
+  const { error: insertError } = await supabaseAdmin
+    .from("notifications")
+    .insert(toInsert);
+
+  if (insertError && !isMissingTableError(insertError.message)) {
+    throw insertError;
   }
 }
 

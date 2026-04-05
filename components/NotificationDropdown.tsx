@@ -41,7 +41,6 @@ const creatorStatusOrder: CreatorProjectStatus[] = [
   "pending_approval",
   "approved",
   "open",
-  "reviewing",
   "closed",
   "rejected_by_admin",
 ];
@@ -53,15 +52,14 @@ const applicantStatusOrder: ApplicantApplicationStatus[] = [
   "rejected",
 ];
 
-type StatusTone = "gray" | "yellow" | "blue" | "green" | "red" | "purple" | "dark_gray";
+type StatusTone = "gray" | "yellow" | "blue" | "green" | "red" | "dark_gray";
 
 function getStatusTone(status: NotificationItem["status"]): StatusTone {
   if (status === "draft") return "gray";
   if (status === "pending_approval" || status === "in_review") return "yellow";
   if (status === "approved" || status === "applied") return "blue";
-  if (status === "open" || status === "accepted") return "green";
+  if (status === "open" || status === "reviewing" || status === "accepted") return "green";
   if (status === "rejected_by_admin" || status === "rejected") return "red";
-  if (status === "reviewing") return "purple";
   return "dark_gray";
 }
 
@@ -71,7 +69,6 @@ function getStatusStyles(status: NotificationItem["status"]) {
   if (tone === "yellow") return "bg-amber-100 text-amber-700";
   if (tone === "blue") return "bg-sky-100 text-sky-700";
   if (tone === "red") return "bg-rose-100 text-rose-700";
-  if (tone === "purple") return "bg-purple-100 text-purple-700";
   if (tone === "gray") return "bg-slate-100 text-slate-700";
   return "bg-slate-200 text-slate-800";
 }
@@ -82,7 +79,6 @@ function getStatusTextStyles(status: NotificationItem["status"]) {
   if (tone === "yellow") return "text-amber-700";
   if (tone === "blue") return "text-sky-700";
   if (tone === "red") return "text-rose-700";
-  if (tone === "purple") return "text-purple-700";
   if (tone === "gray") return "text-slate-700";
   return "text-slate-800";
 }
@@ -93,7 +89,6 @@ function getStatusDotStyles(status: NotificationItem["status"]) {
   if (tone === "yellow") return "bg-amber-500";
   if (tone === "blue") return "bg-sky-500";
   if (tone === "red") return "bg-rose-500";
-  if (tone === "purple") return "bg-purple-500";
   if (tone === "gray") return "bg-slate-500";
   return "bg-slate-700";
 }
@@ -104,7 +99,6 @@ function getUnreadHighlightStyles(status: NotificationItem["status"]) {
   if (tone === "yellow") return "bg-amber-50/70";
   if (tone === "blue") return "bg-sky-50/70";
   if (tone === "red") return "bg-rose-50/70";
-  if (tone === "purple") return "bg-purple-50/70";
   if (tone === "gray") return "bg-slate-50/80";
   return "bg-slate-100/70";
 }
@@ -196,7 +190,11 @@ export default function NotificationDropdown({
 
   const statusSummary = useMemo(() => {
     const counts = filtered.reduce<Record<string, number>>((acc, item) => {
-      acc[item.status] = (acc[item.status] ?? 0) + 1;
+      const normalizedStatus =
+        activeTab === "my-project" && item.status === "reviewing"
+          ? "open"
+          : item.status;
+      acc[normalizedStatus] = (acc[normalizedStatus] ?? 0) + 1;
       return acc;
     }, {});
 
