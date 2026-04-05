@@ -41,6 +41,25 @@ function parseBody(request: NextRequest) {
   }>;
 }
 
+function getAcademicThaiYear(now = new Date()) {
+  const buddhistYear = now.getFullYear() + 543;
+  const month = now.getMonth() + 1;
+  return month >= 8 ? buddhistYear : buddhistYear - 1;
+}
+
+function deriveYearFromStudentId(studentId: string) {
+  if (!/^\d{10}$/.test(studentId)) return "";
+
+  const intakeYearShort = Number(studentId.slice(0, 2));
+  const currentYearShort = getAcademicThaiYear() % 100;
+  let year = currentYearShort - intakeYearShort + 1;
+
+  while (year < 1) year += 8;
+  while (year > 8) year -= 8;
+
+  return `ชั้นปีที่ ${year}`;
+}
+
 export async function GET(request: NextRequest) {
   const userId = request.nextUrl.searchParams.get("userId")?.trim();
   if (!userId) {
@@ -96,7 +115,7 @@ export async function GET(request: NextRequest) {
     status: row.status ?? "",
     faculty: row.faculty ?? "",
     major: row.major ?? "",
-    year: row.year ?? "",
+    year: deriveYearFromStudentId(row.student_id ?? "") || (row.year ?? ""),
     studentId: row.student_id ?? "",
     email: row.email ?? "",
     phone: row.phone ?? "",
@@ -135,6 +154,16 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: "profile is required" }, { status: 400 });
   }
 
+  const studentId = profile.studentId.trim();
+  if (!/^\d{10}$/.test(studentId)) {
+    return NextResponse.json(
+      { error: "studentId must be exactly 10 numeric digits" },
+      { status: 400 },
+    );
+  }
+
+  const computedYear = deriveYearFromStudentId(studentId);
+
   const { error: updateProfileError } = await supabaseAdmin
     .from("profiles")
     .update({
@@ -143,8 +172,8 @@ export async function PATCH(request: NextRequest) {
       status: profile.status.trim(),
       faculty: profile.faculty.trim(),
       major: profile.major.trim(),
-      year: profile.year.trim(),
-      student_id: profile.studentId.trim(),
+      year: computedYear,
+      student_id: studentId,
       email: profile.email.trim(),
       phone: profile.phone.trim(),
       location: profile.location.trim(),

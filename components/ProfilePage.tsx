@@ -16,6 +16,25 @@ function cloneProfile(data: ProfileData) {
   return JSON.parse(JSON.stringify(data)) as ProfileData;
 }
 
+function getAcademicThaiYear(now = new Date()) {
+  const buddhistYear = now.getFullYear() + 543;
+  const month = now.getMonth() + 1;
+  return month >= 8 ? buddhistYear : buddhistYear - 1;
+}
+
+function deriveYearFromStudentId(studentId: string) {
+  if (!/^\d{10}$/.test(studentId)) return "";
+
+  const intakeYearShort = Number(studentId.slice(0, 2));
+  const currentYearShort = getAcademicThaiYear() % 100;
+  let year = currentYearShort - intakeYearShort + 1;
+
+  while (year < 1) year += 8;
+  while (year > 8) year -= 8;
+
+  return `ชั้นปีที่ ${year}`;
+}
+
 type ProfilePageProps = {
   editable?: boolean;
   initialProfile?: ProfileData;
@@ -81,6 +100,11 @@ export default function ProfilePage({
 
   async function saveEdit() {
     if (isSaving) return;
+    if (!/^\d{10}$/.test(draft.studentId)) {
+      window.alert("รหัสนักศึกษาต้องเป็นตัวเลข 10 หลัก");
+      return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -248,9 +272,15 @@ export default function ProfilePage({
                     onChange={(e) =>
                       setDraft((prev) => ({
                         ...prev,
-                        studentId: e.target.value,
+                        studentId: e.target.value.replace(/\D/g, "").slice(0, 10),
+                        year: deriveYearFromStudentId(
+                          e.target.value.replace(/\D/g, "").slice(0, 10),
+                        ),
                       }))
                     }
+                    inputMode="numeric"
+                    maxLength={10}
+                    pattern="\d{10}"
                     className={inputBase}
                   />
                 ) : (
