@@ -535,25 +535,31 @@ export default function ProfilePage({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="flex flex-wrap gap-2">
-                {data.skills.map((skill) => (
-                  <span
-                    key={skill}
-                    className="rounded-full bg-brand-50 px-3 py-1 text-xs text-brand-500"
-                  >
-                    {skill}
-                  </span>
-                ))}
+              <div className="space-y-2">
+                <p className="text-xs text-text-muted">ทักษะ</p>
+                <div className="flex flex-wrap gap-2">
+                  {data.skills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="rounded-full bg-brand-50 px-3 py-1 text-xs text-brand-500"
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {data.interests.map((interest) => (
-                  <span
-                    key={interest}
-                    className="px-3 py-1 text-xs rounded-full bg-brand-50 text-brand-500"
-                  >
-                    {interest}
-                  </span>
-                ))}
+              <div className="space-y-2">
+                <p className="text-xs text-text-muted">ความสนใจ</p>
+                <div className="flex flex-wrap gap-2">
+                  {data.interests.map((interest) => (
+                    <span
+                      key={interest}
+                      className="px-3 py-1 text-xs rounded-full bg-brand-50 text-brand-500"
+                    >
+                      {interest}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           )}
