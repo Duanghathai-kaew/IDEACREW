@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Mail, MapPin, Phone } from "lucide-react";
 import { mockProfile, ProfileData, ProfileLink } from "@/lib/mockData";
 
@@ -19,15 +19,46 @@ function cloneProfile(data: ProfileData) {
 type ProfilePageProps = {
   editable?: boolean;
   initialProfile?: ProfileData;
+  userId: string;
 };
 
 export default function ProfilePage({
   editable = false,
   initialProfile = mockProfile,
+  userId,
 }: ProfilePageProps) {
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [draft, setDraft] = useState<ProfileData>(initialProfile);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchProfile() {
+      try {
+        const response = await fetch(
+          `/api/profile?userId=${encodeURIComponent(userId)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) return;
+
+        const result = (await response.json()) as { data?: ProfileData };
+        if (!mounted || !result.data) return;
+
+        setProfile(result.data);
+        setDraft(result.data);
+      } catch {
+        // Keep current data when request fails.
+      }
+    }
+
+    fetchProfile();
+
+    return () => {
+      mounted = false;
+    };
+  }, [userId]);
 
   const data = isEditing ? draft : profile;
 
@@ -48,9 +79,31 @@ export default function ProfilePage({
     setIsEditing(false);
   }
 
-  function saveEdit() {
-    setProfile(cloneProfile(draft));
-    setIsEditing(false);
+  async function saveEdit() {
+    if (isSaving) return;
+    setIsSaving(true);
+
+    try {
+      const response = await fetch("/api/profile", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          profile: draft,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to save profile");
+      }
+
+      setProfile(cloneProfile(draft));
+      setIsEditing(false);
+    } catch {
+      // Keep draft values so user can retry save.
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   function updateLink(
@@ -92,9 +145,10 @@ export default function ProfilePage({
                 <button
                   type="button"
                   onClick={saveEdit}
-                  className="px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-300 shadow"
+                  disabled={isSaving}
+                  className="px-4 py-2 rounded-full text-sm font-medium text-white bg-gradient-to-r from-brand-500 to-brand-300 shadow disabled:opacity-60"
                 >
-                  บันทึก
+                  {isSaving ? "กำลังบันทึก..." : "บันทึก"}
                 </button>
               </>
             ) : (
