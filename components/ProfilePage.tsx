@@ -1,9 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { SerializedEditorState } from "lexical";
 import { CalendarDays, Mail, MapPin, Phone } from "lucide-react";
+import { Editor } from "@/components/blocks/editor-00/editor";
 import { mockProfile, ProfileData, ProfileLink } from "@/lib/mockData";
-import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 const inputBase =
   "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200";
@@ -17,13 +18,94 @@ function cloneProfile(data: ProfileData) {
   return JSON.parse(JSON.stringify(data)) as ProfileData;
 }
 
-function sanitizeRichText(html: string) {
-  return html
-    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
-    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
-    .replace(/\son\w+="[^"]*"/gi, "")
-    .replace(/\son\w+='[^']*'/gi, "")
-    .replace(/javascript:/gi, "");
+function buildSerializedEditorStateFromText(text: string): SerializedEditorState {
+  return {
+    root: {
+      children: [
+        {
+          children: [
+            {
+              detail: 0,
+              format: 0,
+              mode: "normal",
+              style: "",
+              text,
+              type: "text",
+              version: 1,
+            },
+          ],
+          direction: "ltr",
+          format: "",
+          indent: 0,
+          type: "paragraph",
+          version: 1,
+        },
+      ],
+      direction: "ltr",
+      format: "",
+      indent: 0,
+      type: "root",
+      version: 1,
+    },
+  } as unknown as SerializedEditorState;
+}
+
+function isSerializedEditorState(value: unknown): value is SerializedEditorState {
+  if (!value || typeof value !== "object") return false;
+  const root = (value as { root?: unknown }).root;
+  return !!root && typeof root === "object";
+}
+
+function parseBioToEditorState(bio: string): SerializedEditorState {
+  const value = bio.trim();
+  if (!value) return buildSerializedEditorStateFromText("");
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    if (isSerializedEditorState(parsed)) {
+      return parsed;
+    }
+  } catch {
+    // Fall through to plain text mode.
+  }
+
+  const plainText = value
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return buildSerializedEditorStateFromText(plainText);
+}
+
+function extractBioDisplayText(bio: string) {
+  const value = bio.trim();
+  if (!value) return "-";
+
+  try {
+    const parsed = JSON.parse(value) as {
+      root?: { children?: Array<{ children?: Array<{ text?: string }> }> };
+    };
+    const paragraphs = parsed.root?.children ?? [];
+    const lines = paragraphs
+      .map((paragraph) =>
+        (paragraph.children ?? [])
+          .map((child) => child.text ?? "")
+          .join(""),
+      )
+      .map((line) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length > 0) {
+      return lines.join("\n");
+    }
+  } catch {
+    // Fall back to non-JSON display.
+  }
+
+  return value
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
 }
 
 function getAcademicThaiYear(now = new Date()) {
@@ -371,16 +453,19 @@ export default function ProfilePage({
         <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
           <h3 className={sectionTitle}>เกี่ยวกับฉัน</h3>
           {isEditing ? (
-            <RichTextEditor
-              value={draft.bio}
-              onChange={(next) => setDraft((prev) => ({ ...prev, bio: next }))}
-              placeholder="เขียนเกี่ยวกับตัวเอง..."
+            <Editor
+              editorSerializedState={parseBioToEditorState(draft.bio)}
+              onSerializedChange={(value) =>
+                setDraft((prev) => ({
+                  ...prev,
+                  bio: JSON.stringify(value),
+                }))
+              }
             />
           ) : (
-            <div
-              className="prose prose-sm max-w-none text-text-secondary leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: sanitizeRichText(data.bio) }}
-            />
+            <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
+              {extractBioDisplayText(data.bio)}
+            </p>
           )}
         </div>
 
