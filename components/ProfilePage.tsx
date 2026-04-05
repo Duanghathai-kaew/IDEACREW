@@ -5,6 +5,7 @@ import { SerializedEditorState } from "lexical";
 import { CalendarDays, Mail, MapPin, Phone } from "lucide-react";
 import { Editor } from "@/components/blocks/editor-00/editor";
 import { mockProfile, ProfileData, ProfileLink } from "@/lib/mockData";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 
 const inputBase =
   "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200";
@@ -13,6 +14,34 @@ const textAreaBase =
   "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200 min-h-[110px]";
 
 const sectionTitle = "text-base font-semibold text-brand-500";
+
+const SKILL_OPTIONS = [
+  "Creative Design",
+  "Video Editing",
+  "Photography",
+  "Content Writing",
+  "Social Media",
+  "Brand Story",
+  "Figma",
+  "UI Design",
+  "Frontend",
+  "React",
+  "TypeScript",
+  "Project Management",
+];
+
+const INTEREST_OPTIONS = [
+  "Motion Design",
+  "Public Speaking",
+  "Podcast",
+  "UX Writing",
+  "UX/UI",
+  "Startups",
+  "AI",
+  "Product Design",
+  "Community Building",
+  "E-Sport",
+];
 
 function cloneProfile(data: ProfileData) {
   return JSON.parse(JSON.stringify(data)) as ProfileData;
@@ -475,34 +504,32 @@ export default function ProfilePage({
             <div className="space-y-3">
               <div>
                 <p className="text-xs text-text-muted mb-2">ทักษะ</p>
-                <textarea
-                  value={draft.skills.join(", ")}
-                  onChange={(e) =>
+                <MultiSelectCombobox
+                  value={draft.skills}
+                  onChange={(next) =>
                     setDraft((prev) => ({
                       ...prev,
-                      skills: e.target.value
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
+                      skills: next,
                     }))
                   }
-                  className={textAreaBase}
+                  options={SKILL_OPTIONS}
+                  placeholder="เลือกหรือพิมพ์ทักษะ"
+                  searchPlaceholder="ค้นหาทักษะ..."
                 />
               </div>
               <div>
                 <p className="text-xs text-text-muted mb-2">ความสนใจ</p>
-                <textarea
-                  value={draft.interests.join(", ")}
-                  onChange={(e) =>
+                <MultiSelectCombobox
+                  value={draft.interests}
+                  onChange={(next) =>
                     setDraft((prev) => ({
                       ...prev,
-                      interests: e.target.value
-                        .split(",")
-                        .map((item) => item.trim())
-                        .filter(Boolean),
+                      interests: next,
                     }))
                   }
-                  className={textAreaBase}
+                  options={INTEREST_OPTIONS}
+                  placeholder="เลือกหรือพิมพ์ความสนใจ"
+                  searchPlaceholder="ค้นหาความสนใจ..."
                 />
               </div>
             </div>
