@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Bell,
   CheckCircle2,
@@ -11,11 +11,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  mockNotifications,
-  NotificationCategory,
-  NotificationItem,
-} from "@/lib/mockData";
+import { NotificationCategory, NotificationItem } from "@/types/notification";
 import { ApplicantApplicationStatus, CreatorProjectStatus } from "@/types/status";
 
 const tabConfig: { key: NotificationCategory; label: string }[] = [
@@ -133,13 +129,44 @@ function getStatusIcon(status: NotificationItem["status"]) {
 
 export default function NotificationDropdown({
   onClose,
+  userId,
+  onUnreadCountChange,
 }: {
   onClose: () => void;
+  userId: string;
+  onUnreadCountChange: (count: number) => void;
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] =
     useState<NotificationCategory>("my-project");
-  const [items, setItems] = useState<NotificationItem[]>(mockNotifications);
+  const [items, setItems] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchNotifications() {
+      try {
+        const response = await fetch(
+          `/api/notifications?userId=${encodeURIComponent(userId)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) return;
+
+        const result = (await response.json()) as { data?: NotificationItem[] };
+        if (!mounted) return;
+
+        setItems(result.data ?? []);
+      } catch {
+        // Keep current data when request fails.
+      }
+    }
+
+    fetchNotifications();
+
+    return () => {
+      mounted = false;
+    };
+  }, [onUnreadCountChange, userId]);
 
   const counts = useMemo(() => {
     return {
@@ -153,6 +180,10 @@ export default function NotificationDropdown({
     () => items.filter((item) => item.category === activeTab),
     [items, activeTab],
   );
+
+  useEffect(() => {
+    onUnreadCountChange(items.filter((item) => !item.isRead).length);
+  }, [items, onUnreadCountChange]);
 
   const sortedItems = useMemo(
     () =>
@@ -183,21 +214,63 @@ export default function NotificationDropdown({
       }));
   }, [filtered, activeTab]);
 
-  function markAllRead() {
-    setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
+  async function markAllRead() {
+    try {
+      await fetch(
+        `/api/notifications/read-all?userId=${encodeURIComponent(userId)}`,
+        { method: "PATCH" },
+      );
+      setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
+    } catch {
+      // Keep previous state when request fails.
+    }
   }
 
-  function deleteAll() {
-    setItems((prev) => prev.filter((item) => item.category !== activeTab));
+  async function deleteAll() {
+    try {
+      await fetch(
+        `/api/notifications?userId=${encodeURIComponent(userId)}&category=${activeTab}`,
+        { method: "DELETE" },
+      );
+      setItems((prev) => prev.filter((item) => item.category !== activeTab));
+    } catch {
+      // Keep previous state when request fails.
+    }
   }
 
-  function handleClick(item: NotificationItem) {
-    setItems((prev) =>
-      prev.map((entry) =>
-        entry.id === item.id ? { ...entry, isRead: true } : entry,
-      ),
-    );
-    router.push(`/project/${item.projectId}`);
+  async function handleDeleteItem(id: string) {
+    try {
+      const response = await fetch(
+        `/api/notifications/${id}?userId=${encodeURIComponent(userId)}`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) return;
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    } catch {
+      // Keep previous state when request fails.
+    }
+  }
+
+  async function handleClick(item: NotificationItem) {
+    if (!item.isRead) {
+      try {
+        await fetch(
+          `/api/notifications/${item.id}/read?userId=${encodeURIComponent(userId)}`,
+          { method: "PATCH" },
+        );
+      } catch {
+        // Keep going to destination page even if read update fails.
+      }
+      setItems((prev) =>
+        prev.map((entry) =>
+          entry.id === item.id ? { ...entry, isRead: true } : entry,
+        ),
+      );
+    }
+
+    if (item.projectId) {
+      router.push(`/project/${item.projectId}`);
+    }
     onClose();
   }
 
@@ -272,9 +345,17 @@ export default function NotificationDropdown({
           sortedItems.map((item) => {
             const StatusIcon = getStatusIcon(item.status);
             return (
-              <button
+              <div
                 key={item.id}
                 onClick={() => handleClick(item)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    void handleClick(item);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
                 className={`w-full text-left px-5 py-4 border-b border-brand-100 hover:bg-white active:bg-white transition focus:outline-none ${
                   item.isRead ? "bg-white/70" : getUnreadHighlightStyles(item.status)
                 }`}
@@ -307,13 +388,26 @@ export default function NotificationDropdown({
                       <span>ดู</span>
                     </div>
                   </div>
-                  {!item.isRead && (
-                    <span
-                      className={`mt-2 h-2 w-2 rounded-full ${getStatusDotStyles(item.status)}`}
-                    />
-                  )}
+                  <div className="mt-1 flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Delete notification"
+                      className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-rose-500"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleDeleteItem(item.id);
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                    {!item.isRead && (
+                      <span
+                        className={`h-2 w-2 rounded-full ${getStatusDotStyles(item.status)}`}
+                      />
+                    )}
+                  </div>
                 </div>
-              </button>
+              </div>
             );
           })
         )}

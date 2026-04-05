@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 
+import { createMyProjectStatusNotification } from "@/lib/server/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { SimpleProject } from "@/lib/simpleMockData";
 import { ProjectFormData, ProjectStatus } from "@/types/project";
@@ -177,6 +178,22 @@ export async function POST(request: Request) {
       { error: rpcError.message },
       { status: 500 },
     );
+  }
+
+  if (
+    status === "pending_approval" ||
+    status === "approved" ||
+    status === "open" ||
+    status === "reviewing" ||
+    status === "rejected_by_admin" ||
+    status === "closed"
+  ) {
+    await createMyProjectStatusNotification({
+      userId: ownerId,
+      projectId: String(projectId),
+      projectTitle: title,
+      status,
+    });
   }
 
   return NextResponse.json(

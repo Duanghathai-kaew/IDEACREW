@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { createMyProjectStatusNotification } from "@/lib/server/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { MyProjectStatus } from "@/lib/myProjectMockData";
 import { Benefit, ProjectFormData } from "@/types/project";
+import { CreatorProjectStatus } from "@/types/status";
 
 export const runtime = "nodejs";
 
@@ -72,6 +74,21 @@ function getOwnerId(request: NextRequest) {
 function mapStatus(status: string | null): MyProjectStatus {
   if (status && allowedStatus.includes(status as MyProjectStatus)) {
     return status as MyProjectStatus;
+  }
+  return "draft";
+}
+
+function mapCreatorProjectStatus(status: string | null): CreatorProjectStatus {
+  if (
+    status === "draft" ||
+    status === "open" ||
+    status === "pending_approval" ||
+    status === "rejected_by_admin" ||
+    status === "approved" ||
+    status === "reviewing" ||
+    status === "closed"
+  ) {
+    return status;
   }
   return "draft";
 }
@@ -221,6 +238,24 @@ export async function PATCH(
     return NextResponse.json({ error: "ownerId is required" }, { status: 400 });
   }
 
+  const { data: currentProject, error: currentProjectError } = await supabaseAdmin
+    .from("projects")
+    .select("id,title,status")
+    .eq("id", id)
+    .eq("owner_id", ownerId)
+    .maybeSingle();
+
+  if (currentProjectError) {
+    return NextResponse.json(
+      { error: currentProjectError.message },
+      { status: 500 },
+    );
+  }
+
+  if (!currentProject) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
   const body = (await request.json()) as {
     title?: string;
     summary?: string;
@@ -266,6 +301,15 @@ export async function PATCH(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
+    if (currentProject.status !== status) {
+      await createMyProjectStatusNotification({
+        userId: ownerId,
+        projectId: id,
+        projectTitle: title,
+        status: mapCreatorProjectStatus(status),
+      });
+    }
+
     return NextResponse.json({ ok: true });
   }
 
@@ -298,6 +342,15 @@ export async function PATCH(
 
   if (!updated) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  if (currentProject.status !== status) {
+    await createMyProjectStatusNotification({
+      userId: ownerId,
+      projectId: id,
+      projectTitle: nextFormData.title.trim() || (currentProject.title as string),
+      status: mapCreatorProjectStatus(status),
+    });
   }
 
   return NextResponse.json({ ok: true });

@@ -23,7 +23,7 @@ const statusOptions: Array<{ value: MyProjectStatus; label: string }> = [
   { value: "pending_approval", label: "รอการอนุมัติ" },
   { value: "approved", label: "อนุมัติแล้ว" },
   { value: "open", label: "เปิดรับสมัคร" },
-  { value: "reviewing", label: "กำลังคัดเลือก" },
+  { value: "reviewing", label: "กำลังดำเนินการ" },
   { value: "closed", label: "ปิดรับแล้ว" },
   { value: "rejected_by_admin", label: "ตีกลับโดยแอดมิน" },
 ];

@@ -14,6 +14,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -35,6 +36,43 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchUnreadCount() {
+      if (!user?.id) {
+        if (mounted) setUnreadCount(0);
+        return;
+      }
+
+      try {
+        const response = await fetch(
+          `/api/notifications?userId=${encodeURIComponent(user.id)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) return;
+
+        const result = (await response.json()) as {
+          data?: Array<{ isRead: boolean }>;
+        };
+        if (!mounted) return;
+
+        const nextUnreadCount = (result.data ?? []).filter(
+          (item) => !item.isRead,
+        ).length;
+        setUnreadCount(nextUnreadCount);
+      } catch {
+        // Keep previous count when request fails.
+      }
+    }
+
+    fetchUnreadCount();
+
+    return () => {
+      mounted = false;
+    };
+  }, [user?.id]);
 
   const shouldAutoOpenDraftModal =
     Boolean(user) && pathname?.startsWith("/my-project") && Boolean(draftIdFromQuery);
@@ -129,10 +167,14 @@ export default function Navbar() {
                 <Bell className="icon-sm text-gray-600" />
               </button>
               <Badge className="pointer-events-none absolute -right-0.5 -top-1.5 z-[1] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-br from-(--brand-500) to-(--brand-400) px-1.5 text-[0.85rem] font-medium text-white shadow-[0_2px_8px_rgb(253_94_75/0.22)]">
-                4
+                {unreadCount}
               </Badge>
               {isNotiOpen && (
-                <NotificationDropdown onClose={() => setIsNotiOpen(false)} />
+                <NotificationDropdown
+                  onClose={() => setIsNotiOpen(false)}
+                  userId={user?.id ?? ""}
+                  onUnreadCountChange={setUnreadCount}
+                />
               )}
             </div>
             <button
