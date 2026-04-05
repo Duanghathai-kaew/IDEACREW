@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarDays, Mail, MapPin, Phone } from "lucide-react";
 import { mockProfile, ProfileData, ProfileLink } from "@/lib/mockData";
+import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
 const inputBase =
   "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200";
@@ -14,6 +15,15 @@ const sectionTitle = "text-base font-semibold text-brand-500";
 
 function cloneProfile(data: ProfileData) {
   return JSON.parse(JSON.stringify(data)) as ProfileData;
+}
+
+function sanitizeRichText(html: string) {
+  return html
+    .replace(/<script[\s\S]*?>[\s\S]*?<\/script>/gi, "")
+    .replace(/<style[\s\S]*?>[\s\S]*?<\/style>/gi, "")
+    .replace(/\son\w+="[^"]*"/gi, "")
+    .replace(/\son\w+='[^']*'/gi, "")
+    .replace(/javascript:/gi, "");
 }
 
 function getAcademicThaiYear(now = new Date()) {
@@ -194,10 +204,12 @@ export default function ProfilePage({
           <div className="flex-1 space-y-2">
             {isEditing ? (
               <input
+                type="text"
                 value={draft.name}
                 onChange={(e) =>
                   setDraft((prev) => ({ ...prev, name: e.target.value }))
                 }
+                autoComplete="name"
                 className={inputBase}
               />
             ) : (
@@ -207,10 +219,12 @@ export default function ProfilePage({
             )}
             {isEditing ? (
               <input
+                type="text"
                 value={draft.headline}
                 onChange={(e) =>
                   setDraft((prev) => ({ ...prev, headline: e.target.value }))
                 }
+                autoComplete="organization-title"
                 className={inputBase}
               />
             ) : (
@@ -357,15 +371,16 @@ export default function ProfilePage({
         <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
           <h3 className={sectionTitle}>เกี่ยวกับฉัน</h3>
           {isEditing ? (
-            <textarea
+            <RichTextEditor
               value={draft.bio}
-              onChange={(e) =>
-                setDraft((prev) => ({ ...prev, bio: e.target.value }))
-              }
-              className={textAreaBase}
+              onChange={(next) => setDraft((prev) => ({ ...prev, bio: next }))}
+              placeholder="เขียนเกี่ยวกับตัวเอง..."
             />
           ) : (
-            <p className="text-sm text-text-secondary leading-relaxed">{data.bio}</p>
+            <div
+              className="prose prose-sm max-w-none text-text-secondary leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: sanitizeRichText(data.bio) }}
+            />
           )}
         </div>
 
