@@ -240,10 +240,12 @@ export default function ProfilePage({
                 <p className="text-xs text-text-muted">คณะ</p>
                 {isEditing ? (
                   <input
+                    type="text"
                     value={draft.faculty}
                     onChange={(e) =>
                       setDraft((prev) => ({ ...prev, faculty: e.target.value }))
                     }
+                    autoComplete="organization"
                     className={inputBase}
                   />
                 ) : (
@@ -254,10 +256,12 @@ export default function ProfilePage({
                 <p className="text-xs text-text-muted">สาขา</p>
                 {isEditing ? (
                   <input
+                    type="text"
                     value={draft.major}
                     onChange={(e) =>
                       setDraft((prev) => ({ ...prev, major: e.target.value }))
                     }
+                    autoComplete="organization-title"
                     className={inputBase}
                   />
                 ) : (
@@ -268,6 +272,7 @@ export default function ProfilePage({
                 <p className="text-xs text-text-muted">รหัสนักศึกษา</p>
                 {isEditing ? (
                   <input
+                    type="text"
                     value={draft.studentId}
                     onChange={(e) =>
                       setDraft((prev) => ({
@@ -297,10 +302,12 @@ export default function ProfilePage({
                 <Mail className="w-4 h-4 text-brand-400" />
                 {isEditing ? (
                   <input
+                    type="email"
                     value={draft.email}
                     onChange={(e) =>
                       setDraft((prev) => ({ ...prev, email: e.target.value }))
                     }
+                    autoComplete="email"
                     className={inputBase}
                   />
                 ) : (
@@ -311,10 +318,13 @@ export default function ProfilePage({
                 <Phone className="w-4 h-4 text-brand-400" />
                 {isEditing ? (
                   <input
+                    type="tel"
                     value={draft.phone}
                     onChange={(e) =>
                       setDraft((prev) => ({ ...prev, phone: e.target.value }))
                     }
+                    inputMode="tel"
+                    autoComplete="tel"
                     className={inputBase}
                   />
                 ) : (
@@ -325,6 +335,7 @@ export default function ProfilePage({
                 <p className="text-xs text-text-muted">ที่อยู่/พื้นที่</p>
                 {isEditing ? (
                   <input
+                    type="text"
                     value={draft.location}
                     onChange={(e) =>
                       setDraft((prev) => ({
@@ -332,6 +343,7 @@ export default function ProfilePage({
                         location: e.target.value,
                       }))
                     }
+                    autoComplete="address-level2"
                     className={inputBase}
                   />
                 ) : (
