@@ -164,7 +164,7 @@ export async function syncMyProjectNewApplicantNotificationsForOwner(
         event_type: eventType,
         title: "มีผู้สมัครเข้ามาใหม่",
         message: `${applicantName} สมัครเข้าร่วมโปรเจกต์ ${projectTitle}`,
-        status: "open",
+        status: "pending_approval",
         is_read: false,
       };
     })

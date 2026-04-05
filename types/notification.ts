@@ -8,6 +8,7 @@ export type NotificationStatus = CreatorProjectStatus | ApplicantApplicationStat
 
 type NotificationBase = {
   id: string;
+  eventType: string;
   title: string;
   message: string;
   projectTitle: string;

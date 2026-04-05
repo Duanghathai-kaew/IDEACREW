@@ -21,12 +21,12 @@ const tabConfig: { key: NotificationCategory; label: string }[] = [
 
 const creatorStatusLabelMap: Record<CreatorProjectStatus, string> = {
   draft: "แบบร่าง",
-  pending_approval: "รอดำเนินการ",
-  rejected_by_admin: "จบแล้ว",
-  approved: "รอดำเนินการ",
-  open: "กำลังดำเนินการ",
+  pending_approval: "รอการอนุมัติ",
+  rejected_by_admin: "ตีกลับโดยแอดมิน",
+  approved: "อนุมัติแล้ว",
+  open: "เปิดรับสมัคร",
   reviewing: "กำลังดำเนินการ",
-  closed: "จบแล้ว",
+  closed: "ปิดรับแล้ว",
 };
 
 const applicantStatusLabelMap: Record<ApplicantApplicationStatus, string> = {
@@ -52,66 +52,113 @@ const applicantStatusOrder: ApplicantApplicationStatus[] = [
   "rejected",
 ];
 
-type StatusTone = "gray" | "yellow" | "blue" | "green" | "red" | "dark_gray";
+type StatusTone =
+  | "gray"
+  | "yellow"
+  | "blue"
+  | "green"
+  | "red"
+  | "purple"
+  | "dark_gray";
 
-function getStatusTone(status: NotificationItem["status"]): StatusTone {
+function isNewApplicantNotification(item: NotificationItem) {
+  return (
+    item.category === "my-project" &&
+    item.eventType.startsWith("new_applicant:")
+  );
+}
+
+function getStatusTone(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+): StatusTone {
+  if (isNewApplicant) return "purple";
   if (status === "draft") return "gray";
   if (status === "pending_approval" || status === "in_review") return "yellow";
-  if (status === "approved" || status === "applied") return "blue";
-  if (status === "open" || status === "reviewing" || status === "accepted") return "green";
+  if (status === "applied") return "blue";
+  if (
+    status === "approved" ||
+    status === "open" ||
+    status === "reviewing" ||
+    status === "accepted"
+  ) {
+    return "green";
+  }
   if (status === "rejected_by_admin" || status === "rejected") return "red";
   return "dark_gray";
 }
 
-function getStatusStyles(status: NotificationItem["status"]) {
-  const tone = getStatusTone(status);
+function getStatusStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
   if (tone === "green") return "bg-emerald-100 text-emerald-700";
   if (tone === "yellow") return "bg-amber-100 text-amber-700";
   if (tone === "blue") return "bg-sky-100 text-sky-700";
   if (tone === "red") return "bg-rose-100 text-rose-700";
+  if (tone === "purple") return "bg-purple-100 text-purple-700";
   if (tone === "gray") return "bg-slate-100 text-slate-700";
   return "bg-slate-200 text-slate-800";
 }
 
-function getStatusTextStyles(status: NotificationItem["status"]) {
-  const tone = getStatusTone(status);
+function getStatusTextStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
   if (tone === "green") return "text-emerald-700";
   if (tone === "yellow") return "text-amber-700";
   if (tone === "blue") return "text-sky-700";
   if (tone === "red") return "text-rose-700";
+  if (tone === "purple") return "text-purple-700";
   if (tone === "gray") return "text-slate-700";
   return "text-slate-800";
 }
 
-function getStatusDotStyles(status: NotificationItem["status"]) {
-  const tone = getStatusTone(status);
+function getStatusDotStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
   if (tone === "green") return "bg-emerald-500";
   if (tone === "yellow") return "bg-amber-500";
   if (tone === "blue") return "bg-sky-500";
   if (tone === "red") return "bg-rose-500";
+  if (tone === "purple") return "bg-purple-500";
   if (tone === "gray") return "bg-slate-500";
   return "bg-slate-700";
 }
 
-function getUnreadHighlightStyles(status: NotificationItem["status"]) {
-  const tone = getStatusTone(status);
+function getUnreadHighlightStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
   if (tone === "green") return "bg-emerald-50/70";
   if (tone === "yellow") return "bg-amber-50/70";
   if (tone === "blue") return "bg-sky-50/70";
   if (tone === "red") return "bg-rose-50/70";
+  if (tone === "purple") return "bg-purple-50/70";
   if (tone === "gray") return "bg-slate-50/80";
   return "bg-slate-100/70";
 }
 
 function getStatusLabel(item: NotificationItem) {
+  if (isNewApplicantNotification(item)) {
+    return "มีผู้สมัครเข้ามาใหม่";
+  }
   if (item.category === "my-project") {
     return creatorStatusLabelMap[item.status as CreatorProjectStatus];
   }
   return applicantStatusLabelMap[item.status as ApplicantApplicationStatus];
 }
 
-function getStatusIcon(status: NotificationItem["status"]) {
-  const tone = getStatusTone(status);
+function getStatusIcon(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
   if (tone === "green") return CheckCircle2;
   if (tone === "yellow") return Clock;
   if (tone === "blue") return Bell;
@@ -190,25 +237,31 @@ export default function NotificationDropdown({
 
   const statusSummary = useMemo(() => {
     const counts = filtered.reduce<Record<string, number>>((acc, item) => {
-      const normalizedStatus =
-        activeTab === "my-project" && item.status === "reviewing"
+      const key = isNewApplicantNotification(item)
+        ? "new_applicant"
+        : activeTab === "my-project" && item.status === "reviewing"
           ? "open"
           : item.status;
-      acc[normalizedStatus] = (acc[normalizedStatus] ?? 0) + 1;
+      acc[key] = (acc[key] ?? 0) + 1;
       return acc;
     }, {});
 
     const order =
-      activeTab === "my-project" ? creatorStatusOrder : applicantStatusOrder;
-    const labels =
-      activeTab === "my-project" ? creatorStatusLabelMap : applicantStatusLabelMap;
+      activeTab === "my-project"
+        ? (["new_applicant", ...creatorStatusOrder] as const)
+        : applicantStatusOrder;
 
     return order
-      .filter((status) => (counts[status] ?? 0) > 0)
-      .map((status) => ({
-        status,
-        label: labels[status as keyof typeof labels],
-        count: counts[status] ?? 0,
+      .filter((key) => (counts[key] ?? 0) > 0)
+      .map((key) => ({
+        key,
+        label:
+          key === "new_applicant"
+            ? "มีผู้สมัครเข้ามาใหม่"
+            : activeTab === "my-project"
+              ? creatorStatusLabelMap[key as CreatorProjectStatus]
+              : applicantStatusLabelMap[key as ApplicantApplicationStatus],
+        count: counts[key] ?? 0,
       }));
   }, [filtered, activeTab]);
 
@@ -321,9 +374,10 @@ export default function NotificationDropdown({
             <div className="flex flex-wrap gap-2">
               {statusSummary.map((item) => (
                 <span
-                  key={item.status}
+                  key={item.key}
                   className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ${getStatusStyles(
-                    item.status as NotificationItem["status"],
+                    item.key === "new_applicant" ? "open" : (item.key as NotificationItem["status"]),
+                    item.key === "new_applicant",
                   )}`}
                 >
                   <span>{item.label}</span>
@@ -341,7 +395,8 @@ export default function NotificationDropdown({
           </div>
         ) : (
           sortedItems.map((item) => {
-            const StatusIcon = getStatusIcon(item.status);
+            const isNewApplicant = isNewApplicantNotification(item);
+            const StatusIcon = getStatusIcon(item.status, isNewApplicant);
             return (
               <div
                 key={item.id}
@@ -355,13 +410,15 @@ export default function NotificationDropdown({
                 role="button"
                 tabIndex={0}
                 className={`w-full text-left px-5 py-4 border-b border-brand-100 hover:bg-white active:bg-white transition focus:outline-none ${
-                  item.isRead ? "bg-white/70" : getUnreadHighlightStyles(item.status)
+                  item.isRead
+                    ? "bg-white/70"
+                    : getUnreadHighlightStyles(item.status, isNewApplicant)
                 }`}
                 style={{ WebkitTapHighlightColor: "transparent" }}
               >
                 <div className="flex items-start gap-3">
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusStyles(item.status)}`}
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusStyles(item.status, isNewApplicant)}`}
                   >
                     <StatusIcon className="w-5 h-5" />
                   </div>
@@ -371,7 +428,7 @@ export default function NotificationDropdown({
                       <span>{item.date}</span>
                     </div>
                     <span
-                      className={`inline-flex rounded-full px-2 py-0.5 text-[11px] ${getStatusStyles(item.status)}`}
+                      className={`inline-flex rounded-full px-2 py-0.5 text-[11px] ${getStatusStyles(item.status, isNewApplicant)}`}
                     >
                       {getStatusLabel(item)}
                     </span>
@@ -380,7 +437,7 @@ export default function NotificationDropdown({
                     </span>
                     <p className="text-xs text-text-secondary">{item.message}</p>
                     <div
-                      className={`flex items-center gap-3 text-[11px] ${getStatusTextStyles(item.status)}`}
+                      className={`flex items-center gap-3 text-[11px] ${getStatusTextStyles(item.status, isNewApplicant)}`}
                     >
                       <span>{item.isRead ? "อ่านแล้ว" : "ยังไม่อ่าน"}</span>
                       <span>ดู</span>
@@ -400,7 +457,7 @@ export default function NotificationDropdown({
                     </button>
                     {!item.isRead && (
                       <span
-                        className={`h-2 w-2 rounded-full ${getStatusDotStyles(item.status)}`}
+                        className={`h-2 w-2 rounded-full ${getStatusDotStyles(item.status, isNewApplicant)}`}
                       />
                     )}
                   </div>

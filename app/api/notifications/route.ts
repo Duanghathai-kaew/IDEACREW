@@ -9,6 +9,7 @@ import { NotificationCategory, NotificationItem } from "@/types/notification";
 
 type DbNotification = {
   id: string;
+  event_type: string | null;
   title: string;
   message: string;
   project_id: string | null;
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await supabaseAdmin
     .from("notifications")
-    .select("id,title,message,project_id,created_at,is_read,status,category")
+    .select("id,event_type,title,message,project_id,created_at,is_read,status,category")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
@@ -94,6 +95,7 @@ export async function GET(request: NextRequest) {
 
   const items: NotificationItem[] = notificationRows.map((row) => ({
     id: row.id,
+    eventType: row.event_type ?? "",
     category: mapCategory(row.category),
     title: row.title,
     message: row.message,
