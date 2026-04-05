@@ -600,10 +600,14 @@ export default function ProfilePage({
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs text-text-muted">{link.label}</p>
-                      <p className="text-sm text-brand-500 truncate">
-                        {link.url}
-                      </p>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-brand-500 hover:underline"
+                      >
+                        {link.label}
+                      </a>
                     </div>
                   )}
                 </div>
@@ -645,10 +649,14 @@ export default function ProfilePage({
                     </div>
                   ) : (
                     <div>
-                      <p className="text-xs text-text-muted">{link.label}</p>
-                      <p className="text-sm text-brand-500 truncate">
-                        {link.url}
-                      </p>
+                      <a
+                        href={link.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-brand-500 hover:underline"
+                      >
+                        {link.label}
+                      </a>
                     </div>
                   )}
                 </div>
