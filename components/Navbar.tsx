@@ -1,12 +1,12 @@
 "use client";
 
-import AddProjectModal from "@/app/add-project/page";
+import AddProjectModal from "@/components/AddProjectModal";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
 
@@ -15,10 +15,9 @@ export default function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [draftIdFromQuery, setDraftIdFromQuery] = useState<string | null>(null);
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const draftIdFromQuery = searchParams.get("draftId");
   const { user, isLoading, signOut } = useAuth();
   const notiRef = useRef<HTMLDivElement | null>(null);
   const active: "home" | "my-project" = pathname?.startsWith("/my-project")
@@ -36,6 +35,11 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setDraftIdFromQuery(params.get("draftId"));
+  }, [pathname]);
 
   useEffect(() => {
     let mounted = true;
