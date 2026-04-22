@@ -6,6 +6,10 @@ import {
 } from "@/lib/server/notifications";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NotificationCategory, NotificationItem } from "@/types/notification";
+import {
+  ApplicantApplicationStatus,
+  CreatorProjectStatus,
+} from "@/types/status";
 
 type DbNotification = {
   id: string;
@@ -40,6 +44,31 @@ function formatShortThaiDate(dateIso: string) {
 
 function mapCategory(value: string): NotificationCategory {
   return value === "applied" ? "applied" : "my-project";
+}
+
+function mapCreatorStatus(value: string | null): CreatorProjectStatus {
+  switch (value) {
+    case "pending_approval":
+    case "rejected_by_admin":
+    case "approved":
+    case "open":
+    case "reviewing":
+    case "closed":
+      return value;
+    default:
+      return "draft";
+  }
+}
+
+function mapApplicantStatus(value: string | null): ApplicantApplicationStatus {
+  switch (value) {
+    case "in_review":
+    case "accepted":
+    case "rejected":
+      return value;
+    default:
+      return "applied";
+  }
 }
 
 export async function GET(request: NextRequest) {
@@ -93,20 +122,35 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  const items: NotificationItem[] = notificationRows.map((row) => ({
-    id: row.id,
-    eventType: row.event_type ?? "",
-    category: mapCategory(row.category),
-    title: row.title,
-    message: row.message,
-    projectTitle: row.project_id
-      ? projectTitleById.get(row.project_id) ?? "โปรเจกต์"
-      : "โปรเจกต์",
-    projectId: row.project_id ?? "",
-    date: formatShortThaiDate(row.created_at),
-    isRead: row.is_read,
-    status: (row.status ?? "draft") as NotificationItem["status"],
-  }));
+  const items: NotificationItem[] = notificationRows.map((row) => {
+    const category = mapCategory(row.category);
+    const common = {
+      id: row.id,
+      eventType: row.event_type ?? "",
+      title: row.title,
+      message: row.message,
+      projectTitle: row.project_id
+        ? projectTitleById.get(row.project_id) ?? "โปรเจกต์"
+        : "โปรเจกต์",
+      projectId: row.project_id ?? "",
+      date: formatShortThaiDate(row.created_at),
+      isRead: row.is_read,
+    };
+
+    if (category === "applied") {
+      return {
+        ...common,
+        category,
+        status: mapApplicantStatus(row.status),
+      };
+    }
+
+    return {
+      ...common,
+      category,
+      status: mapCreatorStatus(row.status),
+    };
+  });
 
   return NextResponse.json({ data: items });
 }
