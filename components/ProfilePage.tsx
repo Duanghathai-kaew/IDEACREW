@@ -156,6 +156,58 @@ function deriveYearFromStudentId(studentId: string) {
   return `ชั้นปีที่ ${year}`;
 }
 
+function parseUrl(input: string) {
+  const trimmed = input.trim();
+  if (!trimmed) return null;
+
+  try {
+    return new URL(trimmed.includes("://") ? trimmed : `https://${trimmed}`);
+  } catch {
+    return null;
+  }
+}
+
+function deriveAccountLabel(url: string) {
+  const parsed = parseUrl(url);
+  if (!parsed) return "";
+
+  const host = parsed.hostname.replace(/^www\./, "").toLowerCase();
+  const segments = parsed.pathname.split("/").filter(Boolean);
+  const first = segments[0] ?? "";
+  const second = segments[1] ?? "";
+
+  if (host.includes("instagram.com")) {
+    return first ? `@${first.replace(/^@/, "")}` : "";
+  }
+
+  if (host.includes("tiktok.com")) {
+    return first.startsWith("@") ? first : first ? `@${first}` : "";
+  }
+
+  if (host.includes("facebook.com")) {
+    if (!first) return "";
+    if (first === "profile.php") return "Facebook Profile";
+    return `@${first.replace(/^@/, "")}`;
+  }
+
+  if (host.includes("linkedin.com")) {
+    if (!first || !second) return "";
+    if (first === "in") return `@${second}`;
+    if (first === "company") return `@${second}`;
+    return "";
+  }
+
+  if (host.includes("behance.net") || host.includes("notion.so")) {
+    return first ? `@${first.replace(/^@/, "")}` : "";
+  }
+
+  if (first && !first.includes(".")) {
+    return `@${first.replace(/^@/, "")}`;
+  }
+
+  return "";
+}
+
 type ProfilePageProps = {
   editable?: boolean;
   initialProfile?: ProfileData;
@@ -599,7 +651,7 @@ export default function ProfilePage({
                       />
                     </div>
                   ) : (
-                    <div>
+                    <div className="flex items-center gap-2">
                       <a
                         href={link.url}
                         target="_blank"
@@ -608,6 +660,11 @@ export default function ProfilePage({
                       >
                         {link.label}
                       </a>
+                      {deriveAccountLabel(link.url) ? (
+                        <span className="text-xs text-text-muted">
+                          {deriveAccountLabel(link.url)}
+                        </span>
+                      ) : null}
                     </div>
                   )}
                 </div>
@@ -648,7 +705,7 @@ export default function ProfilePage({
                       />
                     </div>
                   ) : (
-                    <div>
+                    <div className="flex items-center gap-2">
                       <a
                         href={link.url}
                         target="_blank"
@@ -657,6 +714,11 @@ export default function ProfilePage({
                       >
                         {link.label}
                       </a>
+                      {deriveAccountLabel(link.url) ? (
+                        <span className="text-xs text-text-muted">
+                          {deriveAccountLabel(link.url)}
+                        </span>
+                      ) : null}
                     </div>
                   )}
                 </div>
