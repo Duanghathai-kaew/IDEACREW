@@ -1,14 +1,7 @@
 import type { Metadata } from "next";
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { GuestAccessGate } from "@/components/auth/GuestAccessGate";
-import { Prompt } from "next/font/google";
 import "./globals.css";
-
-const prompt = Prompt({
-  subsets: ["thai", "latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-prompt",
-});
 
 export const metadata: Metadata = {
   title: "IDEACREW",
@@ -26,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="th" className={prompt.variable}>
+    <html lang="th">
       <body className="font-sans antialiased bg-[#FFF9F6]">
         <AuthProvider>
           <GuestAccessGate>{children}</GuestAccessGate>

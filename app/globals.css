@@ -31,6 +31,7 @@
 
 :root {
   --radius: 0.625rem;
+  --font-prompt: "Prompt", "Noto Sans Thai", "Noto Sans", "Segoe UI", sans-serif;
 
   --background: #fff9f6;
   --foreground: #1e293b;
