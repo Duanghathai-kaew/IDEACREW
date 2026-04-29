@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import NotificationDropdown from "@/components/NotificationDropdown";
@@ -81,12 +82,12 @@ export default function Navbar() {
   const shouldAutoOpenDraftModal =
     Boolean(user) && pathname?.startsWith("/my-project") && Boolean(draftIdFromQuery);
 
-  const menuItems: Array<{ key: "home" | "my-project"; label: string }> = user
+  const menuItems: Array<{ key: "home" | "my-project"; label: string; href: string }> = user
     ? [
-        { key: "home", label: "หน้าหลัก" },
-        { key: "my-project", label: "โปรเจกต์ของฉัน" },
+        { key: "home", label: "หน้าหลัก", href: "/" },
+        { key: "my-project", label: "โปรเจกต์ของฉัน", href: "/my-project" },
       ]
-    : [{ key: "home", label: "หน้าหลัก" }];
+    : [{ key: "home", label: "หน้าหลัก", href: "/" }];
 
   async function handleLogout() {
     await signOut();
@@ -125,25 +126,25 @@ export default function Navbar() {
         <div className="flex items-center w-full">
           {/* Logo */}
           <div className="flex items-center">
-            <Image
-              src="/logo-text.png"
-              alt="IDEACREW"
-              width={193}
-              height={67}
-              priority
-              className="h-9 w-auto"
-            />
+            <Link href="/" aria-label="Go to home">
+              <Image
+                src="/logo-text.png"
+                alt="IDEACREW"
+                width={193}
+                height={67}
+                priority
+                className="h-9 w-auto"
+              />
+            </Link>
           </div>
 
           {/* Desktop Menu */}
           <div className="flex-1 flex justify-center">
             <div className="hidden gap-6 md:flex">
-              {menuItems.map(({ key, label }) => (
+              {menuItems.map(({ key, label, href }) => (
                 <button
                   key={key}
-                  onClick={() =>
-                    router.push(key === "home" ? "/" : "/my-project")
-                  }
+                  onClick={() => router.push(href)}
                   className={`text-nav pb-1 ${
                     active === key
                       ? "border-b-2 border-(--brand-500) text-(--brand-500)"
@@ -223,11 +224,14 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {open && (
         <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
-          {menuItems.map(({ key, label }) => (
+          {menuItems.map(({ label, href }) => (
             <button
               key={label}
               className="block w-full text-left text-nav"
-              onClick={() => router.push(key === "home" ? "/" : "/my-project")}
+              onClick={() => {
+                router.push(href);
+                setOpen(false);
+              }}
             >
               {label}
             </button>
