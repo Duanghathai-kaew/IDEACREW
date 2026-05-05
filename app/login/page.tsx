@@ -1,45 +1,32 @@
 "use client";
 
-import { useAuth } from "@/components/auth/AuthProvider";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { Star } from "lucide-react";
 
 export default function LoginPage() {
-  const router = useRouter();
-  const { signInForDevelopment } = useAuth();
-
-  async function handleMockSignIn() {
-    await signInForDevelopment();
-    router.push("/");
-  }
-
   return (
-    <main className="min-h-screen bg-[#FFF9F6] px-6 py-16">
-      <div className="mx-auto w-full max-w-xl rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-        <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-orange-500">
-          Login Placeholder
-        </p>
-        <h1 className="text-2xl font-bold text-slate-800">ยังไม่เปิดใช้งานระบบ Login</h1>
-        <p className="mt-3 text-sm text-slate-600">
-          หน้านี้เตรียมไว้สำหรับเชื่อมต่อ API มหาวิทยาลัยในลำดับถัดไป ตอนนี้สามารถพัฒนาหน้าอื่นได้ต่อทันที
-          โดยไม่บังคับเข้าสู่ระบบ
-        </p>
-
-        <div className="mt-6 flex flex-wrap gap-3">
-          <Button
-            className="rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-white"
-            onClick={handleMockSignIn}
-          >
-            เข้าใช้งานด้วย Mock User
-          </Button>
-          <Link
-            href="/"
-            className="inline-flex items-center rounded-xl border border-slate-200 px-6 py-2 text-sm font-medium text-slate-700"
-          >
-            กลับหน้าหลัก
-          </Link>
+    <main className="min-h-screen bg-gradient-to-br from-pink-50 via-pink-50 to-slate-50 px-4 py-12 sm:px-6 sm:py-16">
+      <div className="mx-auto w-full max-w-md">
+        {/* Logo Section */}
+        <div className="mb-8 text-center">
+          <div className="mx-auto mb-4 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-red-400 to-pink-400">
+            <Star className="h-8 w-8 text-white fill-white" />
+          </div>
+          <h1 className="text-3xl font-bold text-slate-900">IDEACREW</h1>
+          <p className="mt-2 text-sm text-slate-600">
+            แพลตฟอร์มสำหรับนักศึกษาค้นหาและเข้าร่วมโปรเจกต์
+          </p>
         </div>
+
+        {/* Card */}
+        <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-md">
+          <LoginForm />
+        </div>
+
+        {/* Footer */}
+        <p className="mt-8 text-center text-xs text-slate-500">
+          © 2025 IDEACREW. สงวนลิขสิทธิ์
+        </p>
       </div>
     </main>
   );
