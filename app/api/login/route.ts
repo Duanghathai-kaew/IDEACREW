@@ -170,11 +170,9 @@ function shouldRedirectToHome(request: NextRequest, body: TuLoginRequestBody) {
   return acceptHeader.includes("text/html");
 }
 
-export async function GET() {
-  return NextResponse.json(
-    { ok: true, message: "TU login endpoint is alive" },
-    { status: 200 },
-  );
+export async function GET(request: NextRequest) {
+  // Redirect direct browser access to /login page
+  return NextResponse.redirect(new URL("/login", request.url), 302);
 }
 
 export async function POST(request: NextRequest) {
