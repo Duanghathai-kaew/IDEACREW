@@ -159,32 +159,11 @@ export function LoginForm() {
       {/* Submit Button */}
       <Button
         type="submit"
-        className="w-full bg-gradient-to-r from-red-400 to-red-300 py-2.5 text-white hover:from-red-500 hover:to-red-400 transition-all rounded-xl font-medium"
+        className="w-full bg-linear-to-r from-red-400 to-red-300 py-2.5 text-white hover:from-red-500 hover:to-red-400 transition-all rounded-xl font-medium"
         disabled={isLoading}
       >
         {isLoading ? "กำลังเข้าสู่ระบบ..." : "เข้าสู่ระบบ"}
       </Button>
-
-      {/* Divider */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 border-t border-slate-200" />
-        <span className="text-xs text-slate-500">หรือ</span>
-        <div className="flex-1 border-t border-slate-200" />
-      </div>
-
-      {/* Register Section */}
-      <div className="space-y-3">
-        <p className="text-center text-sm text-slate-600">ยังไม่มีบัญชี?</p>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full border-red-400 text-red-400 hover:bg-red-50 rounded-xl font-medium"
-          onClick={() => router.push("/register")}
-          disabled={isLoading}
-        >
-          สมัครสมาชิกใหม่
-        </Button>
-      </div>
     </form>
   );
 }
