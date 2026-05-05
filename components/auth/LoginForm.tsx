@@ -14,7 +14,9 @@ export function LoginForm() {
 
   return (
     <div className="w-full">
-      <p className="mb-4 text-sm text-slate-600 text-center">เข้าสู่ระบบด้วยบัญชี TU</p>
+      <p className="mb-4 text-sm text-slate-600 text-center">
+        เข้าสู่ระบบด้วยบัญชี TU
+      </p>
       <Button
         onClick={handleTULogin}
         className="w-full rounded-xl bg-linear-to-r from-red-400 to-red-300 py-2.5 text-white font-medium"
