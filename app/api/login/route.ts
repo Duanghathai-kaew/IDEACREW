@@ -36,7 +36,10 @@ function normalizeText(value: string | undefined) {
 function getProvidedToken(request: NextRequest, body: TuLoginRequestBody) {
   const headerToken =
     request.headers.get("x-tu-token") ??
-    request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
+    request.headers
+      .get("authorization")
+      ?.replace(/^Bearer\s+/i, "")
+      .trim();
 
   return normalizeText(body.token ?? body.tuToken ?? headerToken);
 }
@@ -52,7 +55,9 @@ async function parseRequestBody(request: NextRequest) {
 async function readSupabaseRows<T>(response: Response) {
   const text = await response.text();
   if (!response.ok) {
-    throw new Error(text || `Supabase request failed with status ${response.status}`);
+    throw new Error(
+      text || `Supabase request failed with status ${response.status}`,
+    );
   }
 
   return (text ? (JSON.parse(text) as T) : []) as T;
@@ -89,7 +94,8 @@ async function syncUserToSupabase(input: {
     },
   );
 
-  const existingUsers = await readSupabaseRows<SupabaseUserRow[]>(lookupResponse);
+  const existingUsers =
+    await readSupabaseRows<SupabaseUserRow[]>(lookupResponse);
   const existingUser = existingUsers[0];
 
   if (existingUser) {
@@ -106,7 +112,8 @@ async function syncUserToSupabase(input: {
       },
     );
 
-    const updatedUsers = await readSupabaseRows<SupabaseUserRow[]>(updateResponse);
+    const updatedUsers =
+      await readSupabaseRows<SupabaseUserRow[]>(updateResponse);
     return updatedUsers[0] ?? existingUser;
   }
 
@@ -124,7 +131,8 @@ async function syncUserToSupabase(input: {
     ]),
   });
 
-  const insertedUsers = await readSupabaseRows<SupabaseUserRow[]>(insertResponse);
+  const insertedUsers =
+    await readSupabaseRows<SupabaseUserRow[]>(insertResponse);
   const insertedUser = insertedUsers[0];
 
   if (!insertedUser) {
@@ -173,7 +181,10 @@ export async function POST(request: NextRequest) {
   const body = await parseRequestBody(request);
 
   if (!body) {
-    return NextResponse.json({ ok: false, error: "Invalid JSON body" }, { status: 400 });
+    return NextResponse.json(
+      { ok: false, error: "Invalid JSON body" },
+      { status: 400 },
+    );
   }
 
   const email = normalizeEmail(body.email);
@@ -209,7 +220,10 @@ export async function POST(request: NextRequest) {
     const sessionToken = await buildSessionCookieValue(user);
 
     if (shouldRedirectToHome(request, body)) {
-      const response = NextResponse.redirect(new URL("/home", request.url), 303);
+      const response = NextResponse.redirect(
+        new URL("/home", request.url),
+        303,
+      );
       attachSessionCookie(response, sessionToken);
       return response;
     }
@@ -231,7 +245,8 @@ export async function POST(request: NextRequest) {
     attachSessionCookie(response, sessionToken);
     return response;
   } catch (error) {
-    const message = error instanceof Error ? error.message : "Failed to process TU login";
+    const message =
+      error instanceof Error ? error.message : "Failed to process TU login";
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
