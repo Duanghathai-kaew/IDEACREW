@@ -1,29 +1,91 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export function LoginForm() {
-  const TU_LOGIN_URL =
-    process.env.NEXT_PUBLIC_TU_LOGIN_URL ?? "/api/login?redirect=true";
+  const router = useRouter();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function handleTULogin() {
-    // Redirect the user to the TU login URL. This should initiate
-    // the university's auth flow which eventually POSTs to /api/login.
-    window.location.href = TU_LOGIN_URL;
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      // Call server-side route which hides TU API key and avoids CORS issues
+      const res = await fetch("/api/tu-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
+
+      const data = await res.json().catch(() => null);
+
+      if (!res.ok) {
+        setError(data?.error ?? "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      if (data?.redirect) {
+        router.push(data.location ?? "/home");
+        return;
+      }
+
+      // success without explicit redirect
+      router.push("/home");
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+    } finally {
+      setLoading(false);
+      setPassword("");
+    }
   }
 
   return (
-    <div className="w-full">
+    <form onSubmit={handleSubmit} className="w-full">
       <p className="mb-4 text-sm text-slate-600 text-center">
         เข้าสู่ระบบด้วยบัญชี TU
       </p>
+
+      <div className="mb-3">
+        <label className="block text-sm font-medium mb-1">Username</label>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          className="w-full rounded-md border px-3 py-2"
+          aria-label="username"
+        />
+      </div>
+
+      <div className="mb-4">
+        <label className="block text-sm font-medium mb-1">Password</label>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+          className="w-full rounded-md border px-3 py-2"
+          aria-label="password"
+        />
+      </div>
+
+      {error && <p className="text-sm text-red-600 mb-3">{error}</p>}
+
       <Button
-        onClick={handleTULogin}
-        className="w-full rounded-xl bg-linear-to-r from-red-400 to-red-300 py-2.5 text-white font-medium"
-        aria-label="Login with TU"
+        type="submit"
+        className="w-full rounded-xl py-2.5"
+        disabled={loading}
       >
-        Login with TU
+        {loading ? "Signing in..." : "Sign in"}
       </Button>
-    </div>
+    </form>
   );
 }
