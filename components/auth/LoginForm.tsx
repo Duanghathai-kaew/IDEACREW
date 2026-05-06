@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { authService } from "@/lib/auth/authService";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -32,13 +33,17 @@ export function LoginForm() {
         return;
       }
 
-      if (data?.redirect) {
-        router.push(data.location ?? "/home");
-        return;
+      const user = data?.user;
+      if (user) {
+        await authService.signInForDevelopment({
+          id: user.username,
+          name: user.displayname,
+          email: user.email,
+          role: "student",
+        });
       }
 
-      // success without explicit redirect
-      router.push("/home");
+      window.location.assign(data?.location ?? "/home");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
