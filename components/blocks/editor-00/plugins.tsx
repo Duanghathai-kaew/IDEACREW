@@ -162,7 +162,7 @@ function ToolbarPlugin() {
   )
 }
 
-export function Plugins() {
+export function Plugins({ placeholder = "Start typing ..." }: { placeholder?: string }) {
   return (
     <div className="relative">
       {/* toolbar plugins */}
@@ -172,7 +172,7 @@ export function Plugins() {
           contentEditable={
             <div className="">
               <div className="">
-                <ContentEditable placeholder={"Start typing ..."} />
+                <ContentEditable placeholder={placeholder} />
               </div>
             </div>
           }

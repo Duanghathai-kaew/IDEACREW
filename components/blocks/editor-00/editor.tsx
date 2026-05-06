@@ -27,11 +27,13 @@ export function Editor({
   editorSerializedState,
   onChange,
   onSerializedChange,
+  placeholder,
 }: {
   editorState?: EditorState
   editorSerializedState?: SerializedEditorState
   onChange?: (editorState: EditorState) => void
   onSerializedChange?: (editorSerializedState: SerializedEditorState) => void
+  placeholder?: string
 }) {
   return (
     <div className="bg-background overflow-hidden rounded-lg border shadow">
@@ -45,7 +47,7 @@ export function Editor({
         }}
       >
         <TooltipProvider>
-          <Plugins />
+          <Plugins placeholder={placeholder} />
 
           <OnChangePlugin
             ignoreSelectionChange={true}

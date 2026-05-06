@@ -401,6 +401,7 @@ export default function ProfilePage({
                   setDraft((prev) => ({ ...prev, name: e.target.value }))
                 }
                 autoComplete="name"
+                placeholder="ชื่อที่ต้องการแสดงบนโปรไฟล์"
                 className={inputBase}
               />
             ) : (
@@ -416,6 +417,7 @@ export default function ProfilePage({
                   setDraft((prev) => ({ ...prev, headline: e.target.value }))
                 }
                 autoComplete="organization-title"
+                placeholder="คำอธิบายสั้น ๆ เช่น Frontend Developer / Graphic Designer"
                 className={inputBase}
               />
             ) : (
@@ -451,6 +453,7 @@ export default function ProfilePage({
                       setDraft((prev) => ({ ...prev, faculty: e.target.value }))
                     }
                     autoComplete="organization"
+                    placeholder="เช่น วิทยาศาสตร์และเทคโนโลยี"
                     className={inputBase}
                   />
                 ) : (
@@ -467,6 +470,7 @@ export default function ProfilePage({
                       setDraft((prev) => ({ ...prev, major: e.target.value }))
                     }
                     autoComplete="organization-title"
+                    placeholder="เช่น วิทยาการคอมพิวเตอร์"
                     className={inputBase}
                   />
                 ) : (
@@ -491,6 +495,7 @@ export default function ProfilePage({
                     inputMode="numeric"
                     maxLength={10}
                     pattern="\d{10}"
+                    placeholder="รหัสนักศึกษา 10 หลัก"
                     className={inputBase}
                   />
                 ) : (
@@ -513,6 +518,7 @@ export default function ProfilePage({
                       setDraft((prev) => ({ ...prev, email: e.target.value }))
                     }
                     autoComplete="email"
+                    placeholder="อีเมลที่ติดต่อได้"
                     className={inputBase}
                   />
                 ) : (
@@ -530,6 +536,7 @@ export default function ProfilePage({
                     }
                     inputMode="tel"
                     autoComplete="tel"
+                    placeholder="เบอร์โทรศัพท์"
                     className={inputBase}
                   />
                 ) : (
@@ -549,6 +556,7 @@ export default function ProfilePage({
                       }))
                     }
                     autoComplete="address-level2"
+                    placeholder="เช่น กรุงเทพฯ / ปทุมธานี"
                     className={inputBase}
                   />
                 ) : (
@@ -562,15 +570,21 @@ export default function ProfilePage({
         <div className="bg-white rounded-2xl shadow-sm border border-brand-100 p-6 space-y-4">
           <h3 className={sectionTitle}>เกี่ยวกับฉัน</h3>
           {isEditing ? (
-            <Editor
-              editorSerializedState={parseBioToEditorState(draft.bio)}
-              onSerializedChange={(value) =>
-                setDraft((prev) => ({
-                  ...prev,
-                  bio: JSON.stringify(value),
-                }))
-              }
-            />
+            <div className="space-y-2">
+              <p className="text-xs text-text-muted">
+                แนะนำตัวสั้น ๆ: ความถนัด ประสบการณ์ หรือประเภทงานที่อยากทำ
+              </p>
+              <Editor
+                placeholder="พิมพ์แนะนำตัว เช่น ทักษะ ประสบการณ์ และงานที่สนใจ"
+                editorSerializedState={parseBioToEditorState(draft.bio)}
+                onSerializedChange={(value) =>
+                  setDraft((prev) => ({
+                    ...prev,
+                    bio: JSON.stringify(value),
+                  }))
+                }
+              />
+            </div>
           ) : (
             <p className="text-sm text-text-secondary leading-relaxed whitespace-pre-wrap">
               {extractBioDisplayText(data.bio)}
@@ -663,6 +677,7 @@ export default function ProfilePage({
                             e.target.value,
                           )
                         }
+                        placeholder="ชื่อผลงาน / ชื่อเว็บ"
                         className={inputBase}
                       />
                       <input
@@ -675,6 +690,7 @@ export default function ProfilePage({
                             e.target.value,
                           )
                         }
+                        placeholder="ลิงก์ผลงาน เช่น https://..."
                         className={inputBase}
                       />
                     </div>
@@ -726,6 +742,7 @@ export default function ProfilePage({
                             e.target.value,
                           )
                         }
+                        placeholder="ชื่อแพลตฟอร์ม เช่น Instagram, LinkedIn"
                         className={inputBase}
                       />
                       <input
@@ -738,6 +755,7 @@ export default function ProfilePage({
                             e.target.value,
                           )
                         }
+                        placeholder="ลิงก์โปรไฟล์ เช่น https://..."
                         className={inputBase}
                       />
                     </div>
@@ -802,6 +820,7 @@ export default function ProfilePage({
                           return next;
                         })
                       }
+                      placeholder="ชื่อผลงานหรือโปรเจกต์"
                       className={inputBase}
                     />
                   ) : (
@@ -820,6 +839,7 @@ export default function ProfilePage({
                             return next;
                           })
                         }
+                        placeholder="บทบาทของคุณ"
                         className={inputBase}
                       />
                     ) : (
@@ -836,6 +856,7 @@ export default function ProfilePage({
                             return next;
                           })
                         }
+                        placeholder="ปีที่ทำ เช่น 2025"
                         className={inputBase}
                       />
                     ) : (
@@ -852,6 +873,7 @@ export default function ProfilePage({
                           return next;
                         })
                       }
+                      placeholder="สรุปสิ่งที่ทำและผลลัพธ์ของโปรเจกต์นี้"
                       className={textAreaBase}
                     />
                   ) : (
@@ -873,6 +895,7 @@ export default function ProfilePage({
                             return next;
                           })
                         }
+                        placeholder="แท็กคั่นด้วย comma เช่น React, Node.js, UX"
                         className={inputBase}
                       />
                     ) : (
