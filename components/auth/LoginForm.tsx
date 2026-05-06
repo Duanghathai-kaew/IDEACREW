@@ -32,11 +32,13 @@ export function LoginForm() {
       }
 
       const user = data?.user;
+      const localUser = data?.localUser;
       if (user) {
         await authService.signInForDevelopment({
-          id: user.username,
+          id: localUser?.id ?? user.username,
           name: user.displayname,
           email: user.email,
+          tuId: localUser?.tuId ?? user.username,
           role: "student",
         });
       }

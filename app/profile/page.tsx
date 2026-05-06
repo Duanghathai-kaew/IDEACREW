@@ -3,6 +3,7 @@
 import Navbar from "@/components/Navbar";
 import ProfilePage from "@/components/ProfilePage";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { ProfileData } from "@/lib/mockData";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
@@ -20,7 +21,40 @@ export default function Profile() {
   return (
     <>
       <Navbar />
-      {user && <ProfilePage editable userId={user.id} />}
+      {user && (
+        <ProfilePage
+          editable
+          userId={user.id}
+          initialProfile={buildInitialProfileFromUser(user)}
+        />
+      )}
     </>
   );
+}
+
+function buildInitialProfileFromUser(user: {
+  id: string;
+  name: string;
+  email: string;
+  tuId?: string;
+}): ProfileData {
+  return {
+    id: user.id,
+    name: user.name ?? "",
+    headline: "",
+    status: "",
+    faculty: "",
+    major: "",
+    year: "",
+    studentId: user.tuId ?? "",
+    email: user.email ?? "",
+    phone: "",
+    location: "",
+    bio: "",
+    skills: [],
+    interests: [],
+    portfolioLinks: [],
+    socialLinks: [],
+    projects: [],
+  };
 }
