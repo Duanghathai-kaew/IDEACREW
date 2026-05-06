@@ -53,6 +53,7 @@ export async function GET() {
       supabaseAdmin
         .from("projects")
         .select("id,title,description,status,owner_id")
+        .in("status", ["open", "reviewing", "closed"])
         .order("created_at", { ascending: false }),
       supabaseAdmin.from("profiles").select("id,name"),
     ]);
