@@ -108,17 +108,24 @@ export function MultiSelectCombobox({
                     }}
                   >
                     {item}
-                    <button
-                      type="button"
+                    <span
+                      role="button"
+                      tabIndex={0}
                       aria-label={`Remove ${item}`}
-                      className="rounded-sm p-0.5 hover:bg-black/5"
+                      className="rounded-sm p-0.5 hover:bg-black/5 cursor-pointer"
                       onClick={(event) => {
+                        event.stopPropagation()
+                        onChange(value.filter((v) => v !== item))
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key !== "Enter" && event.key !== " ") return
+                        event.preventDefault()
                         event.stopPropagation()
                         onChange(value.filter((v) => v !== item))
                       }}
                     >
                       <X className="size-3" />
-                    </button>
+                    </span>
                   </Badge>
                 ))
               )}

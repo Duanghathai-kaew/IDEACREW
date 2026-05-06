@@ -5,6 +5,8 @@ import { ProfileData } from "@/lib/mockData";
 
 type DbProfileRow = {
   id: string;
+  username: string | null;
+  displayname: string | null;
   name: string | null;
   headline: string | null;
   status: string | null;
@@ -84,7 +86,7 @@ export async function GET(request: NextRequest) {
       supabaseAdmin
         .from("profiles")
         .select(
-          "id,name,headline,status,faculty,major,year,student_id,email,phone,location,bio,skills,interests",
+          "id,username,displayname,name,headline,status,faculty,major,year,student_id,email,phone,location,bio,skills,interests",
         )
         .eq("id", userId)
         .maybeSingle(),
@@ -115,7 +117,26 @@ export async function GET(request: NextRequest) {
 
   const row = profile as DbProfileRow | null;
   if (!row) {
-    return NextResponse.json({ error: "Profile not found" }, { status: 404 });
+    const emptyPayload: ProfileData = {
+      id: userId,
+      name: "",
+      headline: "",
+      status: "",
+      faculty: "",
+      major: "",
+      year: "",
+      studentId: "",
+      email: "",
+      phone: "",
+      location: "",
+      bio: "",
+      skills: [],
+      interests: [],
+      portfolioLinks: [],
+      socialLinks: [],
+      projects: [],
+    };
+    return NextResponse.json({ data: emptyPayload });
   }
 
   const linkRows = (links ?? []) as DbProfileLinkRow[];
@@ -123,7 +144,7 @@ export async function GET(request: NextRequest) {
 
   const payload: ProfileData = {
     id: row.id,
-    name: row.name ?? "",
+    name: row.displayname ?? row.name ?? row.username ?? "",
     headline: row.headline ?? "",
     status: row.status ?? "",
     faculty: row.faculty ?? "",
@@ -184,27 +205,31 @@ export async function PATCH(request: NextRequest) {
 
   const computedYear = deriveYearFromStudentId(studentId);
 
-  const { error: updateProfileError } = await supabaseAdmin
-    .from("profiles")
-    .update({
-      name: profile.name.trim(),
-      headline: profile.headline.trim(),
-      status: profile.status.trim(),
-      faculty: profile.faculty.trim(),
-      major: profile.major.trim(),
-      year: computedYear,
-      student_id: studentId,
-      email: profile.email.trim(),
-      phone: profile.phone.trim(),
-      location: profile.location.trim(),
-      bio: profile.bio.trim(),
-      skills: profile.skills,
-      interests: profile.interests,
-    })
-    .eq("id", userId);
+  const profilePayload = {
+    id: userId,
+    name: profile.name.trim(),
+    displayname: profile.name.trim(),
+    username: studentId,
+    headline: profile.headline.trim(),
+    status: profile.status.trim(),
+    faculty: profile.faculty.trim(),
+    major: profile.major.trim(),
+    year: computedYear,
+    student_id: studentId,
+    email: profile.email.trim(),
+    phone: profile.phone.trim(),
+    location: profile.location.trim(),
+    bio: profile.bio.trim(),
+    skills: profile.skills,
+    interests: profile.interests,
+  };
 
-  if (updateProfileError) {
-    return NextResponse.json({ error: updateProfileError.message }, { status: 500 });
+  const { error: upsertProfileError } = await supabaseAdmin
+    .from("profiles")
+    .upsert(profilePayload, { onConflict: "id" });
+
+  if (upsertProfileError) {
+    return NextResponse.json({ error: upsertProfileError.message }, { status: 500 });
   }
 
   const { error: deleteLinksError } = await supabaseAdmin

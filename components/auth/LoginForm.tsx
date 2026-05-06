@@ -1,10 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { authService } from "@/lib/auth/authService";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm() {
+  const { signInForDevelopment } = useAuth();
+  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -32,18 +35,17 @@ export function LoginForm() {
       }
 
       const user = data?.user;
-      const localUser = data?.localUser;
       if (user) {
-        await authService.signInForDevelopment({
-          id: localUser?.id ?? user.username,
+        await signInForDevelopment({
+          id: user.id,
           name: user.displayname,
           email: user.email,
-          tuId: localUser?.tuId ?? user.username,
+          tuId: user.username,
           role: "student",
         });
       }
 
-      window.location.assign(data?.location ?? "/");
+      router.push("/");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {

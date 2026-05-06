@@ -1,159 +1,184 @@
 import { NextResponse } from "next/server";
 
+import { supabaseAdmin } from "@/lib/supabase/admin";
+
 type Body = {
   username?: string;
   password?: string;
 };
 
+type TuVerifyResponse = {
+  status?: boolean;
+  message?: string;
+  username?: string;
+  displayname_en?: string;
+  email?: string;
+};
+
+function normalizeText(value: string | undefined) {
+  return value?.trim() ?? "";
+}
+
+function buildFallbackEmail(username: string) {
+  return `${username.toLowerCase()}@tu.local`;
+}
+
+async function verifyTuCredentials(input: {
+  username: string;
+  password: string;
+  tuApiKey: string;
+}) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+
+  try {
+    const response = await fetch("https://restapi.tu.ac.th/api/v1/auth/Ad/verify", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Application-Key": input.tuApiKey,
+      },
+      body: JSON.stringify({
+        UserName: input.username,
+        PassWord: input.password,
+      }),
+      signal: controller.signal,
+    });
+
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        return { ok: false as const, status: 401, error: "TU authentication failed" };
+      }
+      return { ok: false as const, status: 502, error: "TU API request failed" };
+    }
+
+    const payload = (await response.json().catch(() => null)) as TuVerifyResponse | null;
+    if (!payload || payload.status !== true) {
+      return {
+        ok: false as const,
+        status: 401,
+        error: payload?.message || "Invalid TU credentials",
+      };
+    }
+
+    return { ok: true as const, payload };
+  } catch (error) {
+    if (error instanceof Error && error.name === "AbortError") {
+      return { ok: false as const, status: 504, error: "TU API timeout (too slow)" };
+    }
+    return { ok: false as const, status: 500, error: "Network error" };
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function ensureAuthUser(input: {
+  email: string;
+  displayName: string;
+  username: string;
+}) {
+  const { data: profiles, error: profileLookupError } = await supabaseAdmin
+    .from("profiles")
+    .select("id")
+    .eq("username", input.username)
+    .limit(1);
+
+  if (profileLookupError) {
+    throw new Error(profileLookupError.message);
+  }
+
+  const existingProfileId = profiles?.[0]?.id as string | undefined;
+  if (existingProfileId) {
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(existingProfileId);
+    if (!error && data.user) {
+      return data.user.id;
+    }
+  }
+
+  const { data: created, error: createError } = await supabaseAdmin.auth.admin.createUser({
+    email: input.email,
+    email_confirm: true,
+    user_metadata: {
+      username: input.username,
+      displayname: input.displayName,
+    },
+  });
+
+  if (createError || !created.user) {
+    throw new Error(createError?.message || "Failed to create auth user");
+  }
+
+  return created.user.id;
+}
+
 export async function POST(req: Request) {
   try {
-    const body: Body = await req.json();
-    const username = body.username?.trim();
-    const password = body.password;
-    const tuApiKey = process.env.TU_API_KEY;
-    const tuLoginToken = process.env.TU_LOGIN_TOKEN;
-
-    console.log("TU_API_KEY present:", Boolean(tuApiKey));
-    console.log("TU_API_KEY length:", tuApiKey ? tuApiKey.length : 0);
+    const body = (await req.json()) as Body;
+    const username = normalizeText(body.username);
+    const password = body.password ?? "";
+    const tuApiKey = process.env.TU_API_KEY?.trim();
 
     if (!username || !password) {
       return NextResponse.json(
-        { error: "Missing username or password" },
+        { ok: false, error: "Missing username or password" },
         { status: 400 },
       );
     }
 
     if (!tuApiKey) {
       return NextResponse.json(
-        { error: "TU_API_KEY is not configured" },
+        { ok: false, error: "TU_API_KEY is not configured" },
         { status: 500 },
       );
     }
 
-    if (!tuLoginToken) {
-      return NextResponse.json(
-        { error: "TU_LOGIN_TOKEN is not configured" },
-        { status: 500 },
-      );
+    const tuResult = await verifyTuCredentials({ username, password, tuApiKey });
+    if (!tuResult.ok) {
+      return NextResponse.json({ ok: false, error: tuResult.error }, { status: tuResult.status });
     }
 
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5000);
+    const tuUsername = normalizeText(tuResult.payload.username) || username;
+    const displayName =
+      normalizeText(tuResult.payload.displayname_en) || tuUsername;
+    const email =
+      normalizeText(tuResult.payload.email) || buildFallbackEmail(tuUsername);
 
-    let tuRes;
-
-    try {
-      tuRes = await fetch("https://restapi.tu.ac.th/api/v1/auth/Ad/verify", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Application-Key": tuApiKey,
-        },
-        body: JSON.stringify({
-          UserName: username,
-          PassWord: password,
-        }),
-        signal: controller.signal,
-      });
-    } catch (err: any) {
-      if (err.name === "AbortError") {
-        return NextResponse.json(
-          { error: "TU API timeout (too slow)" },
-          { status: 504 },
-        );
-      }
-
-      console.error("Fetch error:", err);
-      return NextResponse.json({ error: "Network error" }, { status: 500 });
-    } finally {
-      clearTimeout(timeout);
-    }
-    if (!tuRes.ok) {
-      if (tuRes.status === 401 || tuRes.status === 403) {
-        return NextResponse.json(
-          { error: "TU authentication failed" },
-          { status: 401 },
-        );
-      }
-
-      return NextResponse.json(
-        { error: "TU API request failed" },
-        { status: 500 },
-      );
-    }
-    // Don't log or persist the password
-
-    const tuJson = await tuRes.json().catch(() => null);
-
-    // explicit failure handling
-    if (!tuJson || tuJson.status !== true) {
-      return NextResponse.json(
-        { error: tuJson?.message || "Invalid TU credentials" },
-        { status: 401 },
-      );
-    }
-
-    const tuUsername = tuJson.username ?? username;
-    const displayname = tuJson.displayname_en ?? "";
-    const email = tuJson.email ?? "";
-
-    // sanitize user object to return to client
-    const safeUser = {
-      username: tuUsername,
-      displayname: displayname,
+    const authUserId = await ensureAuthUser({
       email,
-    };
-
-    // Forward validated user to local /api/login using server-side token
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const loginRes = await fetch(`${baseUrl}/api/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-tu-token": tuLoginToken,
-      },
-      // request server-side should include redirect instruction
-      body: JSON.stringify({
-        username: tuUsername,
-        displayname,
-        email,
-      }),
-      redirect: "manual",
+      displayName,
+      username: tuUsername,
     });
 
-    // If /api/login redirected, instruct client to navigate to the main page
-    if (loginRes.redirected || loginRes.status === 302) {
-      return NextResponse.json({
-        ...safeUser,
-        redirect: true,
-        location: "/",
-      });
-    }
+    const { error: upsertProfileError } = await supabaseAdmin.from("profiles").upsert(
+      {
+        id: authUserId,
+        username: tuUsername,
+        displayname: displayName,
+        email,
+        name: displayName,
+        student_id: tuUsername,
+      },
+      { onConflict: "id" },
+    );
 
-    if (!loginRes.ok) {
-      const err = await loginRes.text().catch(() => "Login failed");
+    if (upsertProfileError) {
       return NextResponse.json(
-        { error: err || "Login failed" },
+        { ok: false, error: upsertProfileError.message },
         { status: 500 },
       );
     }
-
-    const loginJson = await loginRes
-      .json()
-      .catch(() => null as { user?: { id?: string; tuId?: string } } | null);
 
     return NextResponse.json({
-      success: true,
-      user: safeUser,
-      localUser: loginJson?.user
-        ? {
-            id: loginJson.user.id ?? "",
-            tuId: loginJson.user.tuId ?? tuUsername,
-          }
-        : null,
+      ok: true,
+      user: {
+        id: authUserId,
+        username: tuUsername,
+        displayname: displayName,
+        email,
+      },
     });
-  } catch (err) {
-    console.error("TU LOGIN ERROR:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Server error";
+    return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }

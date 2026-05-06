@@ -47,6 +47,14 @@ function cloneProfile(data: ProfileData) {
   return JSON.parse(JSON.stringify(data)) as ProfileData;
 }
 
+function emptyLink(): ProfileLink {
+  return { label: "", url: "" };
+}
+
+function emptyProject() {
+  return { title: "", role: "", year: "", description: "", tags: [] as string[] };
+}
+
 function buildSerializedEditorStateFromText(text: string): SerializedEditorState {
   return {
     root: {
@@ -262,7 +270,11 @@ export default function ProfilePage({
   }, [data.name]);
 
   function startEdit() {
-    setDraft(cloneProfile(profile));
+    const next = cloneProfile(profile);
+    if (next.portfolioLinks.length === 0) next.portfolioLinks.push(emptyLink());
+    if (next.socialLinks.length === 0) next.socialLinks.push(emptyLink());
+    if (next.projects.length === 0) next.projects.push(emptyProject());
+    setDraft(next);
     setIsEditing(true);
   }
 
@@ -312,6 +324,22 @@ export default function ProfilePage({
     setDraft((prev) => {
       const next = cloneProfile(prev);
       next[listKey][index][field] = value;
+      return next;
+    });
+  }
+
+  function addLink(listKey: "portfolioLinks" | "socialLinks") {
+    setDraft((prev) => {
+      const next = cloneProfile(prev);
+      next[listKey].push(emptyLink());
+      return next;
+    });
+  }
+
+  function addProject() {
+    setDraft((prev) => {
+      const next = cloneProfile(prev);
+      next.projects.push(emptyProject());
       return next;
     });
   }
@@ -669,6 +697,15 @@ export default function ProfilePage({
                   )}
                 </div>
               ))}
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => addLink("portfolioLinks")}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium border border-brand-200 text-brand-500 bg-white"
+                >
+                  เพิ่ม Portfolio URL
+                </button>
+              )}
             </div>
           </div>
 
@@ -723,12 +760,30 @@ export default function ProfilePage({
                   )}
                 </div>
               ))}
+              {isEditing && (
+                <button
+                  type="button"
+                  onClick={() => addLink("socialLinks")}
+                  className="px-3 py-1.5 rounded-full text-xs font-medium border border-brand-200 text-brand-500 bg-white"
+                >
+                  เพิ่ม Social Link
+                </button>
+              )}
             </div>
           </div>
         </div>
 
         <div className="space-y-4">
           <h3 className={sectionTitle}>ผลงานและโปรเจกต์</h3>
+          {isEditing && (
+            <button
+              type="button"
+              onClick={addProject}
+              className="px-3 py-1.5 rounded-full text-xs font-medium border border-brand-200 text-brand-500 bg-white"
+            >
+              เพิ่มผลงาน/โปรเจกต์
+            </button>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {data.projects.map((project, index) => (
               <article

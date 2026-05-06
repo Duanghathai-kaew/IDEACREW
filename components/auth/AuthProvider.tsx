@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useMemo, useState } from "react";
 type AuthContextValue = {
   user: AuthUser | null;
   isLoading: boolean;
-  signInForDevelopment: () => Promise<void>;
+  signInForDevelopment: (user?: AuthUser) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -38,8 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       isLoading,
-      signInForDevelopment: async () => {
-        const signedInUser = await authService.signInForDevelopment();
+      signInForDevelopment: async (nextUser?: AuthUser) => {
+        const signedInUser = await authService.signInForDevelopment(nextUser);
         setUser(signedInUser);
       },
       signOut: async () => {
