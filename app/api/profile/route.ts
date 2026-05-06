@@ -41,6 +41,12 @@ function parseBody(request: NextRequest) {
   }>;
 }
 
+function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+}
+
 function getAcademicThaiYear(now = new Date()) {
   const buddhistYear = now.getFullYear() + 543;
   const month = now.getMonth() + 1;
@@ -64,6 +70,13 @@ export async function GET(request: NextRequest) {
   const userId = request.nextUrl.searchParams.get("userId")?.trim();
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
+  }
+
+  if (!isUuid(userId)) {
+    return NextResponse.json(
+      { error: "Invalid session user id. Please login again." },
+      { status: 400 },
+    );
   }
 
   const [{ data: profile, error: profileError }, { data: links, error: linksError }, { data: projects, error: projectsError }] =
@@ -148,6 +161,13 @@ export async function PATCH(request: NextRequest) {
 
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
+  }
+
+  if (!isUuid(userId)) {
+    return NextResponse.json(
+      { error: "Invalid session user id. Please login again." },
+      { status: 400 },
+    );
   }
 
   if (!profile) {
