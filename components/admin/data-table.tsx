@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import * as React from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -53,35 +53,47 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   const pageNumbers = React.useMemo(() => {
     const current = Math.max(1, page);
-    const pages = new Set<number>([1, totalPages, current, current - 1, current + 1]);
+    const pages = new Set<number>([
+      1,
+      totalPages,
+      current,
+      current - 1,
+      current + 1,
+    ]);
     return Array.from(pages)
       .filter((num) => num > 0 && num <= totalPages)
       .sort((a, b) => a - b);
   }, [page, totalPages]);
 
-  const allChecked = rows.length > 0 && rows.every((row) => selectedIds.has(rowKey(row)));
+  const allChecked =
+    rows.length > 0 && rows.every((row) => selectedIds.has(rowKey(row)));
 
   return (
     <div className="space-y-4">
       <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
         <Table>
-          <TableHeader className="bg-gradient-to-r from-indigo-500 via-violet-500 to-blue-500 text-white">
+          <TableHeader className="bg-slate-50 border-b border-slate-200">
             <TableRow className="hover:bg-transparent">
               {selectable ? (
-                <TableHead className="w-11 text-center text-white">
+                <TableHead className="w-11 text-center">
                   <input
                     type="checkbox"
                     checked={allChecked}
-                    onChange={(event) => onToggleSelectAll?.(event.target.checked)}
+                    onChange={(event) =>
+                      onToggleSelectAll?.(event.target.checked)
+                    }
                     data-no-row-click="true"
-                    className="h-4 w-4 cursor-pointer rounded border-white/60 bg-transparent"
+                    className="h-4 w-4 cursor-pointer rounded border-slate-300 bg-white"
                   />
                 </TableHead>
               ) : null}
               {columns.map((column) => (
                 <TableHead
                   key={column.id}
-                  className={cn("text-white", column.headerClassName)}
+                  className={cn(
+                    "text-xs font-semibold text-slate-600 uppercase tracking-wider",
+                    column.headerClassName,
+                  )}
                 >
                   {column.header}
                 </TableHead>
@@ -92,7 +104,10 @@ export function DataTable<T>({
           <TableBody>
             {rows.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={columns.length + (selectable ? 1 : 0)} className="py-8 text-center text-slate-500">
+                <TableCell
+                  colSpan={columns.length + (selectable ? 1 : 0)}
+                  className="py-8 text-center text-slate-500"
+                >
                   {emptyText}
                 </TableCell>
               </TableRow>
@@ -102,7 +117,12 @@ export function DataTable<T>({
                 return (
                   <TableRow
                     key={key}
-                    className={cn(onRowClick ? "cursor-pointer" : "")}
+                    className={cn(
+                      "border-b border-slate-100",
+                      onRowClick
+                        ? "cursor-pointer hover:bg-slate-50 transition-colors"
+                        : "",
+                    )}
                     onClick={(event) => {
                       const target = event.target as HTMLElement;
                       if (target.closest("[data-no-row-click='true']")) return;
@@ -110,11 +130,16 @@ export function DataTable<T>({
                     }}
                   >
                     {selectable ? (
-                      <TableCell className="w-11 text-center" data-no-row-click="true">
+                      <TableCell
+                        className="w-11 text-center"
+                        data-no-row-click="true"
+                      >
                         <input
                           type="checkbox"
                           checked={selectedIds.has(key)}
-                          onChange={(event) => onToggleSelect?.(key, event.target.checked)}
+                          onChange={(event) =>
+                            onToggleSelect?.(key, event.target.checked)
+                          }
                           className="h-4 w-4 cursor-pointer rounded border-slate-300"
                         />
                       </TableCell>
@@ -132,48 +157,53 @@ export function DataTable<T>({
         </Table>
       </div>
 
-      <div className="flex items-center justify-end gap-1">
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => onPageChange(Math.max(1, page - 1))}
-          disabled={page <= 1}
-          className="text-slate-500"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          Previous
-        </Button>
-
-        {pageNumbers.map((num) => (
+      <div className="flex items-center justify-between gap-2 px-6 py-4">
+        <p className="text-sm text-slate-600">
+          Page {page} of {totalPages}
+        </p>
+        <div className="flex items-center justify-end gap-2">
           <Button
-            key={num}
             type="button"
-            variant={num === page ? "outline" : "ghost"}
+            variant="ghost"
             size="sm"
-            onClick={() => onPageChange(num)}
-            className={cn(
-              "min-w-8",
-              num === page
-                ? "border-slate-200 bg-white text-slate-900"
-                : "text-slate-500",
-            )}
+            onClick={() => onPageChange(Math.max(1, page - 1))}
+            disabled={page <= 1}
+            className="text-slate-500 hover:text-slate-700"
           >
-            {num}
+            <ChevronLeft className="h-4 w-4" />
+            Previous
           </Button>
-        ))}
 
-        <Button
-          type="button"
-          variant="ghost"
-          size="sm"
-          onClick={() => onPageChange(Math.min(totalPages, page + 1))}
-          disabled={page >= totalPages}
-          className="text-slate-500"
-        >
-          Next
-          <ChevronRight className="h-4 w-4" />
-        </Button>
+          {pageNumbers.map((num) => (
+            <Button
+              key={num}
+              type="button"
+              variant={num === page ? "outline" : "ghost"}
+              size="sm"
+              onClick={() => onPageChange(num)}
+              className={cn(
+                "min-w-8 h-8",
+                num === page
+                  ? "border-indigo-600 bg-indigo-50 text-indigo-600"
+                  : "text-slate-600 hover:bg-slate-100",
+              )}
+            >
+              {num}
+            </Button>
+          ))}
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => onPageChange(Math.min(totalPages, page + 1))}
+            disabled={page >= totalPages}
+            className="text-slate-500 hover:text-slate-700"
+          >
+            Next
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </div>
   );

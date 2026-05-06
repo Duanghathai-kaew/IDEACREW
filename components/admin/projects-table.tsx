@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { ArrowUpDown, Eye, MoreHorizontal } from "lucide-react";
+import * as React from "react";
 
 import { DataTable, DataTableColumn } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -27,13 +27,21 @@ export function ProjectsTable() {
   const [sortOrder, setSortOrder] = React.useState<SortOrder>("desc");
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [page, setPage] = React.useState(1);
-  const [activeProject, setActiveProject] = React.useState<AdminProject | null>(null);
+  const [activeProject, setActiveProject] = React.useState<AdminProject | null>(
+    null,
+  );
+  const [reviewDecision, setReviewDecision] = React.useState<
+    "approve" | "reject" | ""
+  >("");
+  const [reviewFeedback, setReviewFeedback] = React.useState("");
+  const [tagDraft, setTagDraft] = React.useState<Record<string, boolean>>({});
 
   const filtered = React.useMemo(() => {
     const keyword = query.trim().toLowerCase();
     return adminProjects
       .filter((project) => {
-        if (statusFilter !== "all" && project.status !== statusFilter) return false;
+        if (statusFilter !== "all" && project.status !== statusFilter)
+          return false;
         if (!keyword) return true;
         return (
           project.name.toLowerCase().includes(keyword) ||
@@ -53,6 +61,23 @@ export function ProjectsTable() {
   React.useEffect(() => {
     setPage((prev) => Math.min(prev, totalPages));
   }, [totalPages]);
+
+  React.useEffect(() => {
+    if (!activeProject) {
+      setReviewDecision("");
+      setReviewFeedback("");
+      setTagDraft({});
+      return;
+    }
+
+    const nextDraft: Record<string, boolean> = {};
+    activeProject.tags.forEach((tag) => {
+      nextDraft[tag.id] = tag.approved;
+    });
+    setTagDraft(nextDraft);
+    setReviewDecision("");
+    setReviewFeedback("");
+  }, [activeProject]);
 
   const paginated = React.useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -74,7 +99,9 @@ export function ProjectsTable() {
       header: "Project Name",
       cell: (project) => (
         <div className="space-y-1">
-          <p className="line-clamp-1 font-medium text-slate-700">{project.name}</p>
+          <p className="line-clamp-1 font-medium text-slate-700">
+            {project.name}
+          </p>
           <p className="text-xs text-slate-400">ID {project.id}</p>
         </div>
       ),
@@ -83,7 +110,9 @@ export function ProjectsTable() {
     {
       id: "submittedBy",
       header: "Submitted By",
-      cell: (project) => <span className="text-slate-600">{project.submittedBy}</span>,
+      cell: (project) => (
+        <span className="text-slate-600">{project.submittedBy}</span>
+      ),
     },
     {
       id: "submittedAt",
@@ -98,7 +127,11 @@ export function ProjectsTable() {
           <ArrowUpDown className="h-3.5 w-3.5" />
         </button>
       ),
-      cell: (project) => <span className="text-slate-600">{formatReadableDate(project.submittedAt)}</span>,
+      cell: (project) => (
+        <span className="text-slate-600">
+          {formatReadableDate(project.submittedAt)}
+        </span>
+      ),
     },
     {
       id: "deadline",
@@ -113,7 +146,11 @@ export function ProjectsTable() {
           <ArrowUpDown className="h-3.5 w-3.5" />
         </button>
       ),
-      cell: (project) => <span className="text-slate-600">{formatReadableDate(project.deadline)}</span>,
+      cell: (project) => (
+        <span className="text-slate-600">
+          {formatReadableDate(project.deadline)}
+        </span>
+      ),
     },
     {
       id: "status",
@@ -134,7 +171,12 @@ export function ProjectsTable() {
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button type="button" size="icon-sm" variant="ghost" className="text-slate-500">
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            className="text-slate-500"
+          >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
@@ -144,27 +186,27 @@ export function ProjectsTable() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 shadow-sm md:grid-cols-[1fr_220px]">
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-            Search
+    <div className="space-y-6">
+      <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[1fr_220px]">
+        <div className="space-y-3">
+          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            SEARCH
           </label>
           <Input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search project name or requester"
-            className="h-11 rounded-xl border-slate-200 bg-slate-50 shadow-none"
+            className="h-11 rounded-lg border-slate-200 bg-slate-50 shadow-none placeholder:text-slate-400"
           />
         </div>
-        <div className="space-y-2">
-          <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-            Status
+        <div className="space-y-3">
+          <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
+            STATUS
           </label>
           <Select
             value={statusFilter}
             onChange={(event) => setStatusFilter(event.target.value)}
-            className="h-11 rounded-xl border-slate-200 bg-slate-50"
+            className="h-11 rounded-lg border-slate-200 bg-slate-50"
           >
             {statusOptions.map((option) => (
               <option key={option.value} value={option.value}>
@@ -205,75 +247,240 @@ export function ProjectsTable() {
 
       {activeProject ? (
         <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/45 p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 p-4"
           onClick={() => setActiveProject(null)}
         >
           <div
-            className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+            className="max-h-[92vh] w-full max-w-4xl overflow-y-auto rounded-2xl border border-slate-200 bg-slate-100 shadow-2xl"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="mb-4 flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs text-slate-400">Project ID {activeProject.id}</p>
-                <h3 className="text-xl font-semibold text-slate-800">{activeProject.name}</h3>
-              </div>
-              <Button type="button" variant="outline" onClick={() => setActiveProject(null)}>
-                ปิด
-              </Button>
-            </div>
+            <div className="space-y-4 p-6">
+              <button
+                type="button"
+                onClick={() => setActiveProject(null)}
+                className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-600 hover:bg-slate-50"
+              >
+                &larr; กลับ
+              </button>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">ผู้ส่ง</p>
-                <p className="text-sm text-slate-700">{activeProject.submittedBy}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">สถานะ</p>
-                <StatusBadge status={activeProject.status} />
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">วันที่ส่ง</p>
-                <p className="text-sm text-slate-700">
-                  {formatReadableDate(activeProject.submittedAt)}
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <span className="inline-flex rounded-full bg-amber-100 px-2 py-1 text-[10px] font-semibold text-amber-700">
+                    {activeProject.status === "pending"
+                      ? "PENDING"
+                      : activeProject.status.toUpperCase()}
+                  </span>
+                  <p className="text-xs text-slate-500">
+                    Submitted: {formatReadableDate(activeProject.submittedAt)}
+                  </p>
+                </div>
+                <h2 className="text-2xl font-semibold text-slate-900">
+                  {activeProject.name}
+                </h2>
+                <p className="mt-2 text-sm text-slate-600">
+                  {activeProject.description}
                 </p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">วันสิ้นสุดรับสมัคร</p>
-                <p className="text-sm text-slate-700">
-                  {formatReadableDate(activeProject.deadline)}
+              </section>
+
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <h3 className="mb-3 text-base font-semibold text-slate-900">
+                  รายละเอียดโปรเจกต์
+                </h3>
+                <p className="text-sm text-slate-600">
+                  {activeProject.description}
                 </p>
-              </div>
-            </div>
+              </section>
 
-            <div className="mt-4 space-y-1">
-              <p className="text-xs text-slate-400">รายละเอียดโปรเจกต์</p>
-              <p className="text-sm leading-6 text-slate-700">{activeProject.description}</p>
-            </div>
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <h3 className="mb-3 text-base font-semibold text-slate-900">
+                  ข้อมูลผู้ส่งคำขอ
+                </h3>
+                <div className="grid gap-3 md:grid-cols-3">
+                  <div>
+                    <p className="text-xs text-slate-400">ชื่อผู้ส่งคำขอ</p>
+                    <p className="text-sm text-slate-700">
+                      {activeProject.requester.name}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">อีเมล</p>
+                    <p className="text-sm text-slate-700">
+                      {activeProject.requester.email}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">เบอร์โทร</p>
+                    <p className="text-sm text-slate-700">
+                      {activeProject.requester.phone}
+                    </p>
+                  </div>
+                </div>
+              </section>
 
-            <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">ผู้ติดต่อ</p>
-                <p className="text-sm text-slate-700">{activeProject.requester.name}</p>
-                <p className="text-sm text-slate-600">{activeProject.requester.email}</p>
-                <p className="text-sm text-slate-600">{activeProject.requester.phone}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-400">ข้อมูลการทำงาน</p>
-                <p className="text-sm text-slate-700">ทีม {activeProject.info.teamSize} คน</p>
-                <p className="text-sm text-slate-600">{activeProject.info.workType}</p>
-                <p className="text-sm text-slate-600">{activeProject.info.workingHours}</p>
-              </div>
-            </div>
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <h3 className="mb-3 text-base font-semibold text-slate-900">
+                  ข้อมูลโปรเจกต์
+                </h3>
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div>
+                    <p className="text-xs text-slate-400">จำนวนทีมที่ต้องการ</p>
+                    <p className="text-sm text-slate-700">
+                      {activeProject.info.teamSize} คน
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">ปิดรับสมัคร</p>
+                    <p className="text-sm text-slate-700">
+                      {formatReadableDate(activeProject.deadline)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">ชั่วโมง/สัปดาห์</p>
+                    <p className="text-sm text-slate-700">
+                      {activeProject.info.workingHours}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-400">รูปแบบการทำงาน</p>
+                    <p className="text-sm text-slate-700">
+                      {activeProject.info.workType}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4">
+                  <h4 className="mb-2 text-sm font-semibold text-slate-800">
+                    ผลตอบแทนและสิ่งที่จะได้รับ
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {activeProject.benefits.map((benefit) => (
+                      <span
+                        key={benefit}
+                        className="rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700"
+                      >
+                        {benefit}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </section>
 
-            <div className="mt-4 space-y-1">
-              <p className="text-xs text-slate-400">ตำแหน่งที่เปิด</p>
-              <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
-                {activeProject.positions.map((position) => (
-                  <li key={position.role}>
-                    <span className="font-medium">{position.role}</span>: {position.description}
-                  </li>
-                ))}
-              </ul>
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <h3 className="mb-3 text-base font-semibold text-slate-900">
+                  ตำแหน่งที่เปิดรับสมัคร
+                </h3>
+                <div className="space-y-2">
+                  {activeProject.positions.map((position) => (
+                    <div
+                      key={position.role}
+                      className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+                    >
+                      <p className="text-sm font-semibold text-slate-800">
+                        {position.role}
+                      </p>
+                      <p className="text-xs text-slate-600">
+                        {position.description}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <div className="mb-3 flex items-center justify-between">
+                  <h3 className="text-base font-semibold text-slate-900">
+                    Tag Management
+                  </h3>
+                  <Button type="button" size="sm">
+                    อนุมัติ
+                  </Button>
+                </div>
+                <div className="overflow-hidden rounded-lg border border-slate-200">
+                  <table className="min-w-full divide-y divide-slate-200">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                          Name
+                        </th>
+                        <th className="px-3 py-2 text-left text-xs font-semibold text-slate-500">
+                          Type
+                        </th>
+                        <th className="px-3 py-2 text-right text-xs font-semibold text-slate-500">
+                          อนุมัติ
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                      {activeProject.tags.map((tag) => (
+                        <tr key={tag.id}>
+                          <td className="px-3 py-2 text-sm text-slate-700">
+                            {tag.name}
+                          </td>
+                          <td className="px-3 py-2 text-sm text-slate-600">
+                            {tag.type}
+                          </td>
+                          <td className="px-3 py-2 text-right">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(tagDraft[tag.id])}
+                              onChange={(event) =>
+                                setTagDraft((prev) => ({
+                                  ...prev,
+                                  [tag.id]: event.target.checked,
+                                }))
+                              }
+                            />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section className="rounded-xl border border-slate-200 bg-white p-5">
+                <h3 className="mb-3 text-base font-semibold text-slate-900">
+                  Decision Section
+                </h3>
+                <div className="flex items-center gap-6 text-sm">
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="decision"
+                      value="approve"
+                      checked={reviewDecision === "approve"}
+                      onChange={() => setReviewDecision("approve")}
+                    />
+                    Approve Project
+                  </label>
+                  <label className="inline-flex items-center gap-2">
+                    <input
+                      type="radio"
+                      name="decision"
+                      value="reject"
+                      checked={reviewDecision === "reject"}
+                      onChange={() => setReviewDecision("reject")}
+                    />
+                    Reject Project
+                  </label>
+                </div>
+                <div className="mt-3">
+                  <label className="mb-1 block text-xs text-slate-500">
+                    Decision Rationale &amp; Feedback (Required for Rejection)
+                  </label>
+                  <textarea
+                    value={reviewFeedback}
+                    onChange={(event) => setReviewFeedback(event.target.value)}
+                    placeholder="Enter detailed comments for the project owner..."
+                    className="min-h-24 w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <p className="text-xs text-slate-500">
+                    Review Status: In Progress
+                  </p>
+                  <Button type="button">Confirm Decision</Button>
+                </div>
+              </section>
             </div>
           </div>
         </div>
