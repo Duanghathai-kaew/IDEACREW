@@ -10,8 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import {
   AdminProject,
-  adminProjects,
   formatReadableDate,
+  adminProjects,
   statusOptions,
 } from "@/lib/admin/mock-data";
 
@@ -21,6 +21,10 @@ type SortOrder = "asc" | "desc";
 const PAGE_SIZE = 8;
 
 export function ProjectsTable() {
+  const [projects, setProjects] = React.useState<AdminProject[]>(adminProjects);
+  const [isLoadingProjects, setIsLoadingProjects] = React.useState(false);
+  const [usingMockData, setUsingMockData] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
   const [query, setQuery] = React.useState("");
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [sortBy, setSortBy] = React.useState<SortBy>("submittedAt");
@@ -35,10 +39,44 @@ export function ProjectsTable() {
   >("");
   const [reviewFeedback, setReviewFeedback] = React.useState("");
   const [tagDraft, setTagDraft] = React.useState<Record<string, boolean>>({});
+  const [decisionError, setDecisionError] = React.useState<string | null>(null);
+  const [isDeciding, setIsDeciding] = React.useState(false);
+
+  React.useEffect(() => {
+    let mounted = true;
+    async function loadProjects() {
+      setIsLoadingProjects(true);
+      setLoadError(null);
+      try {
+        const response = await fetch("/api/admin/projects", { cache: "no-store" });
+        if (!response.ok) {
+          setUsingMockData(true);
+          setLoadError("โหลดข้อมูลจริงไม่สำเร็จ กำลังแสดงข้อมูลตัวอย่าง");
+          return;
+        }
+        const result = (await response.json()) as { data?: AdminProject[] };
+        if (!mounted || !result.data) {
+          setUsingMockData(true);
+          return;
+        }
+        setProjects(result.data);
+        setUsingMockData(false);
+      } catch {
+        setUsingMockData(true);
+        setLoadError("เชื่อม API ไม่สำเร็จ กำลังแสดงข้อมูลตัวอย่าง");
+      } finally {
+        if (mounted) setIsLoadingProjects(false);
+      }
+    }
+    loadProjects();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const filtered = React.useMemo(() => {
     const keyword = query.trim().toLowerCase();
-    return adminProjects
+    return projects
       .filter((project) => {
         if (statusFilter !== "all" && project.status !== statusFilter)
           return false;
@@ -54,7 +92,7 @@ export function ProjectsTable() {
         const result = valueA - valueB;
         return sortOrder === "asc" ? result : -result;
       });
-  }, [query, sortBy, sortOrder, statusFilter]);
+  }, [projects, query, sortBy, sortOrder, statusFilter]);
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
@@ -67,6 +105,7 @@ export function ProjectsTable() {
       setReviewDecision("");
       setReviewFeedback("");
       setTagDraft({});
+      setDecisionError(null);
       return;
     }
 
@@ -77,7 +116,77 @@ export function ProjectsTable() {
     setTagDraft(nextDraft);
     setReviewDecision("");
     setReviewFeedback("");
+    setDecisionError(null);
   }, [activeProject]);
+
+  function isUuid(value: string) {
+    return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+      value,
+    );
+  }
+
+  async function handleConfirmDecision() {
+    if (!activeProject || isDeciding) return;
+    if (usingMockData) {
+      setDecisionError("ยังไม่เชื่อมข้อมูลจริงกับ API (โหมดข้อมูลตัวอย่าง)");
+      return;
+    }
+    if (!reviewDecision) {
+      setDecisionError("กรุณาเลือกการตัดสินใจ");
+      return;
+    }
+    if (reviewDecision === "reject" && !reviewFeedback.trim()) {
+      setDecisionError("กรุณากรอกเหตุผลสำหรับการ Reject");
+      return;
+    }
+
+    setIsDeciding(true);
+    setDecisionError(null);
+
+    const nextStatus: AdminProject["status"] =
+      reviewDecision === "approve" ? "approved" : "rejected";
+
+    try {
+      if (!isUuid(activeProject.id)) {
+        throw new Error("Project id ไม่ใช่ UUID จึงยังส่ง API ไม่ได้");
+      }
+
+      const response = await fetch(
+        `/api/admin/projects/${activeProject.id}/decision`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            decision: reviewDecision,
+            feedback: reviewFeedback.trim(),
+          }),
+        },
+      );
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        throw new Error(payload?.error ?? "Failed to save decision");
+      }
+
+      setProjects((prev) =>
+        prev.map((project) =>
+          project.id === activeProject.id
+            ? {
+                ...project,
+                status: nextStatus,
+              }
+            : project,
+        ),
+      );
+      setActiveProject(null);
+    } catch (error) {
+      setDecisionError(
+        error instanceof Error ? error.message : "Failed to save decision",
+      );
+    } finally {
+      setIsDeciding(false);
+    }
+  }
 
   const paginated = React.useMemo(() => {
     const start = (page - 1) * PAGE_SIZE;
@@ -187,6 +296,11 @@ export function ProjectsTable() {
 
   return (
     <div className="space-y-6">
+      {loadError ? (
+        <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+          {loadError}
+        </div>
+      ) : null}
       <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm md:grid-cols-[1fr_220px]">
         <div className="space-y-3">
           <label className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -242,7 +356,7 @@ export function ProjectsTable() {
         totalPages={totalPages}
         onPageChange={setPage}
         onRowClick={(row) => setActiveProject(row)}
-        emptyText="No projects found"
+        emptyText={isLoadingProjects ? "Loading..." : "No projects found"}
       />
 
       {activeProject ? (
@@ -478,7 +592,14 @@ export function ProjectsTable() {
                   <p className="text-xs text-slate-500">
                     Review Status: In Progress
                   </p>
-                  <Button type="button">Confirm Decision</Button>
+                  <div className="flex items-center gap-3">
+                    {decisionError ? (
+                      <p className="text-xs text-rose-600">{decisionError}</p>
+                    ) : null}
+                    <Button type="button" disabled={isDeciding} onClick={handleConfirmDecision}>
+                      {isDeciding ? "กำลังบันทึก..." : "Confirm Decision"}
+                    </Button>
+                  </div>
                 </div>
               </section>
             </div>
