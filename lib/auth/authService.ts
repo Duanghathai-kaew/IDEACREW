@@ -2,6 +2,7 @@ export type AuthUser = {
   id: string;
   name: string;
   email: string;
+  tuId?: string;
   role: "student" | "staff";
 };
 
