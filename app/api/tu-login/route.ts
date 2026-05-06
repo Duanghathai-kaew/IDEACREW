@@ -68,19 +68,6 @@ export async function POST(req: Request) {
     } finally {
       clearTimeout(timeout);
     }
-    // Call TU verify API from the server to avoid CORS and hide the API key
-    tuRes = await fetch("https://restapi.tu.ac.th/api/v1/auth/Ad/verify", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Application-Key": tuApiKey,
-      },
-      body: JSON.stringify({
-        UserName: username,
-        PassWord: password,
-      }),
-    });
-
     if (!tuRes.ok) {
       if (tuRes.status === 401 || tuRes.status === 403) {
         return NextResponse.json(
@@ -97,8 +84,6 @@ export async function POST(req: Request) {
     // Don't log or persist the password
 
     const tuJson = await tuRes.json().catch(() => null);
-    console.log("TU response:", tuJson);
-    console.log("TU status code:", tuRes.status);
 
     // explicit failure handling
     if (!tuJson || tuJson.status !== true) {
@@ -136,7 +121,7 @@ export async function POST(req: Request) {
       redirect: "manual",
     });
 
-    // If /api/login redirected, instruct client to navigate to /home and include sanitized user
+    // If /api/login redirected, instruct client to navigate to the main page
     if (loginRes.redirected || loginRes.status === 302) {
       return NextResponse.json({
         ...safeUser,
