@@ -27,6 +27,7 @@ export function ProjectsTable() {
   const [sortOrder, setSortOrder] = React.useState<SortOrder>("desc");
   const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
   const [page, setPage] = React.useState(1);
+  const [activeProject, setActiveProject] = React.useState<AdminProject | null>(null);
 
   const filtered = React.useMemo(() => {
     const keyword = query.trim().toLowerCase();
@@ -122,13 +123,14 @@ export function ProjectsTable() {
     {
       id: "actions",
       header: "Actions",
-      cell: () => (
+      cell: (project) => (
         <div data-no-row-click="true" className="flex items-center gap-1">
           <Button
             type="button"
             size="icon-sm"
             variant="ghost"
             className="text-slate-500"
+            onClick={() => setActiveProject(project)}
           >
             <Eye className="h-4 w-4" />
           </Button>
@@ -197,8 +199,85 @@ export function ProjectsTable() {
         page={page}
         totalPages={totalPages}
         onPageChange={setPage}
+        onRowClick={(row) => setActiveProject(row)}
         emptyText="No projects found"
       />
+
+      {activeProject ? (
+        <div
+          className="fixed inset-0 z-[1000] flex items-center justify-center bg-slate-900/45 p-4"
+          onClick={() => setActiveProject(null)}
+        >
+          <div
+            className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs text-slate-400">Project ID {activeProject.id}</p>
+                <h3 className="text-xl font-semibold text-slate-800">{activeProject.name}</h3>
+              </div>
+              <Button type="button" variant="outline" onClick={() => setActiveProject(null)}>
+                ปิด
+              </Button>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">ผู้ส่ง</p>
+                <p className="text-sm text-slate-700">{activeProject.submittedBy}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">สถานะ</p>
+                <StatusBadge status={activeProject.status} />
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">วันที่ส่ง</p>
+                <p className="text-sm text-slate-700">
+                  {formatReadableDate(activeProject.submittedAt)}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">วันสิ้นสุดรับสมัคร</p>
+                <p className="text-sm text-slate-700">
+                  {formatReadableDate(activeProject.deadline)}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-1">
+              <p className="text-xs text-slate-400">รายละเอียดโปรเจกต์</p>
+              <p className="text-sm leading-6 text-slate-700">{activeProject.description}</p>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">ผู้ติดต่อ</p>
+                <p className="text-sm text-slate-700">{activeProject.requester.name}</p>
+                <p className="text-sm text-slate-600">{activeProject.requester.email}</p>
+                <p className="text-sm text-slate-600">{activeProject.requester.phone}</p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-400">ข้อมูลการทำงาน</p>
+                <p className="text-sm text-slate-700">ทีม {activeProject.info.teamSize} คน</p>
+                <p className="text-sm text-slate-600">{activeProject.info.workType}</p>
+                <p className="text-sm text-slate-600">{activeProject.info.workingHours}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 space-y-1">
+              <p className="text-xs text-slate-400">ตำแหน่งที่เปิด</p>
+              <ul className="list-disc space-y-1 pl-5 text-sm text-slate-700">
+                {activeProject.positions.map((position) => (
+                  <li key={position.role}>
+                    <span className="font-medium">{position.role}</span>: {position.description}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }
