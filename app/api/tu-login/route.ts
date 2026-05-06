@@ -138,7 +138,20 @@ export async function POST(req: Request) {
       );
     }
 
-    return NextResponse.json({ success: true, user: safeUser });
+    const loginJson = await loginRes
+      .json()
+      .catch(() => null as { user?: { id?: string; tuId?: string } } | null);
+
+    return NextResponse.json({
+      success: true,
+      user: safeUser,
+      localUser: loginJson?.user
+        ? {
+            id: loginJson.user.id ?? "",
+            tuId: loginJson.user.tuId ?? tuUsername,
+          }
+        : null,
+    });
   } catch (err) {
     console.error("TU LOGIN ERROR:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
