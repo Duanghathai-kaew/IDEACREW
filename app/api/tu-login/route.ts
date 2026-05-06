@@ -141,7 +141,7 @@ export async function POST(req: Request) {
       return NextResponse.json({
         ...safeUser,
         redirect: true,
-        location: "/home",
+        location: "/",
       });
     }
 

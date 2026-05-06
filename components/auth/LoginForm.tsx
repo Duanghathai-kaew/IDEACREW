@@ -2,11 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { authService } from "@/lib/auth/authService";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm() {
-  const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -43,7 +41,7 @@ export function LoginForm() {
         });
       }
 
-      window.location.assign(data?.location ?? "/home");
+      window.location.assign(data?.location ?? "/");
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
     } finally {
