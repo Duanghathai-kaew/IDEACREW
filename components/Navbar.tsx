@@ -90,9 +90,17 @@ export default function Navbar() {
     : [{ key: "home", label: "หน้าหลัก", href: "/" }];
 
   async function handleLogout() {
+    try {
+      await fetch("/api/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch {
+      // Continue local sign out even if network request fails.
+    }
     await signOut();
     setOpen(false);
-    router.push("/login");
+    router.push("/");
   }
 
   function requireAuth(action: () => void) {
