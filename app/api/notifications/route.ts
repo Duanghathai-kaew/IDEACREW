@@ -63,11 +63,12 @@ function mapCreatorStatus(value: string | null): CreatorProjectStatus {
 function mapApplicantStatus(value: string | null): ApplicantApplicationStatus {
   switch (value) {
     case "in_review":
+    case "pending":
     case "accepted":
     case "rejected":
       return value;
     default:
-      return "applied";
+      return "pending";
   }
 }
 
