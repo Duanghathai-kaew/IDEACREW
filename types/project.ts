@@ -13,6 +13,7 @@ export type ProjectStatus = CreatorProjectStatus;
 
 export interface Project {
   id: string;
+  ownerId?: string;
   title: string;
   categories: string[];
   summary: string;

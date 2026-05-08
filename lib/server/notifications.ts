@@ -32,6 +32,7 @@ function getAppliedStatusNotificationContent(
 ) {
   switch (status) {
     case "applied":
+    case "pending":
       return {
         title: "สมัครโปรเจกต์สำเร็จ",
         message: `คุณได้สมัครโปรเจกต์ ${projectTitle} แล้ว`,
@@ -183,6 +184,7 @@ export async function syncMyProjectNewApplicantNotificationsForOwner(
 
 function mapApplicationStatus(status: string | null): ApplicantApplicationStatus {
   if (
+    status === "pending" ||
     status === "applied" ||
     status === "in_review" ||
     status === "accepted" ||
@@ -190,7 +192,7 @@ function mapApplicationStatus(status: string | null): ApplicantApplicationStatus
   ) {
     return status;
   }
-  return "applied";
+  return "pending";
 }
 
 export async function syncAppliedNotificationsForUser(userId: string) {

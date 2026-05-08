@@ -17,6 +17,7 @@ export type CreatorProjectStatus =
   | "closed";
 
 export type ApplicantApplicationStatus =
+  | "pending"
   | "applied"
   | "in_review"
   | "rejected"
@@ -41,6 +42,7 @@ export const APPLICANT_APPLICATION_STATUS_META: Record<
   ApplicantApplicationStatus,
   { label: string; color: StatusColor }
 > = {
+  pending: { label: "Pending", color: "yellow" },
   applied: { label: "Applied", color: "blue" },
   in_review: { label: "In Review", color: "yellow" },
   rejected: { label: "Rejected", color: "red" },
