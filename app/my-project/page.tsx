@@ -8,7 +8,13 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/Navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MyProject } from "@/lib/myProjectMockData";
 import { CalendarDays, Gift, Mail, Trash2, Users } from "lucide-react";
@@ -69,13 +75,14 @@ type MyProjectResponse = {
   error?: string;
 };
 
-const filterRules: Record<FilterKey, (status: MyProject["status"]) => boolean> = {
-  all: () => true,
-  draft: (status) => status === "draft",
-  queue: (status) => status === "pending_approval" || status === "approved",
-  active: (status) => status === "open" || status === "reviewing",
-  done: (status) => status === "closed" || status === "rejected_by_admin",
-};
+const filterRules: Record<FilterKey, (status: MyProject["status"]) => boolean> =
+  {
+    all: () => true,
+    draft: (status) => status === "draft",
+    queue: (status) => status === "pending_approval" || status === "approved",
+    active: (status) => status === "open" || status === "reviewing",
+    done: (status) => status === "closed" || status === "rejected_by_admin",
+  };
 
 export default function MyProjectPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -87,7 +94,9 @@ export default function MyProjectPage() {
   const [applications, setApplications] = useState<AppliedProjectCard[]>([]);
   const [isFetching, setIsFetching] = useState(true);
   const [isFetchingApplications, setIsFetchingApplications] = useState(true);
-  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
+  const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
+    null,
+  );
 
   useEffect(() => {
     let mounted = true;
@@ -288,101 +297,102 @@ export default function MyProjectPage() {
                   </div>
                 ) : (
                   filteredProjects.map((project) => {
-                const meta = statusMeta[project.status];
-                return (
-                  <article
-                    key={project.id}
-                    className={`bg-white rounded-2xl shadow-sm border-t-4 ${meta.border} p-6`}
-                  >
-                    <div className="flex flex-col gap-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${meta.pill}`}
-                          >
-                            {meta.label}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            โพสต์เมื่อ {project.createdAt}
-                          </span>
-                        </div>
-                        {project.status !== "pending_approval" && (
-                          <button
-                            type="button"
-                            className="text-rose-400 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
-                            onClick={() => handleDeleteProject(project.id)}
-                            disabled={deletingProjectId === project.id}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
+                    const meta = statusMeta[project.status];
+                    return (
+                      <article
+                        key={project.id}
+                        className={`bg-white rounded-2xl shadow-sm border-t-4 ${meta.border} p-6`}
+                      >
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex items-center gap-3">
+                              <span
+                                className={`px-3 py-1 text-xs font-semibold rounded-full ${meta.pill}`}
+                              >
+                                {meta.label}
+                              </span>
+                              <span className="text-xs text-slate-500">
+                                โพสต์เมื่อ {project.createdAt}
+                              </span>
+                            </div>
+                            {project.status !== "pending_approval" && (
+                              <button
+                                type="button"
+                                className="text-rose-400 hover:text-rose-500 disabled:cursor-not-allowed disabled:opacity-50"
+                                onClick={() => handleDeleteProject(project.id)}
+                                disabled={deletingProjectId === project.id}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
 
-                      <div>
-                        <h3 className="text-lg font-semibold text-slate-800 mb-2">
-                          {project.title}
-                        </h3>
-                        <div className="flex flex-wrap gap-2 mb-3">
-                          {project.tags.map((tag) => (
-                            <span
-                              key={tag}
-                              className="px-3 py-1 text-xs rounded-full bg-amber-100 text-slate-700"
-                            >
-                              {tag}
+                          <div>
+                            <h3 className="text-lg font-semibold text-slate-800 mb-2">
+                              {project.title}
+                            </h3>
+                            <div className="flex flex-wrap gap-2 mb-3">
+                              {project.tags.map((tag) => (
+                                <span
+                                  key={tag}
+                                  className="px-3 py-1 text-xs rounded-full bg-amber-100 text-slate-700"
+                                >
+                                  {tag}
+                                </span>
+                              ))}
+                            </div>
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              {project.summary}
+                            </p>
+                          </div>
+
+                          <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500">
+                            <span className="inline-flex items-center gap-2">
+                              <Users className="w-4 h-4" />
+                              ผู้สมัคร {project.applicants} คน
                             </span>
-                          ))}
-                        </div>
-                        <p className="text-sm text-slate-600 leading-relaxed">
-                          {project.summary}
-                        </p>
-                      </div>
+                            <span className="inline-flex items-center gap-2">
+                              <CalendarDays className="w-4 h-4" />
+                              ปิดรับ {project.deadline}
+                            </span>
+                          </div>
 
-                      <div className="flex flex-wrap items-center gap-6 text-xs text-slate-500">
-                        <span className="inline-flex items-center gap-2">
-                          <Users className="w-4 h-4" />
-                          ผู้สมัคร {project.applicants} คน
-                        </span>
-                        <span className="inline-flex items-center gap-2">
-                          <CalendarDays className="w-4 h-4" />
-                          ปิดรับ {project.deadline}
-                        </span>
-                      </div>
-
-                      {project.status === "open" ||
-                      project.status === "reviewing" ? (
-                        <Link
-                          href={`/project/${project.detailId ?? project.id}`}
-                          className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 shadow"
-                        >
-                          ดูรายละเอียดโปรเจกต์
-                        </Link>
-                      ) : project.status === "pending_approval" ? (
-                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-amber-700 bg-amber-100">
-                          รออนุมัติจากแอดมิน
-                        </button>
-                      ) : project.status === "approved" ? (
-                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-sky-700 bg-sky-100">
-                          พร้อมเปิดรับสมัคร
-                        </button>
-                      ) : project.status === "draft" ? (
-                        <Link
-                          href={`/my-project?draftId=${project.id}`}
-                          className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100"
-                        >
-                          แก้ไขแบบร่าง
-                        </Link>
-                      ) : project.status === "closed" ? (
-                        <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-800 bg-slate-200">
-                          ปิดรับสมัครแล้ว
-                        </button>
-                      ) : (
-                        <div className="bg-rose-100 text-rose-700 text-xs rounded-lg p-3">
-                          เหตุผลที่ปฏิเสธ: ข้อมูลไม่ครบถ้วนและรายละเอียดไม่ชัดเจน
+                          {project.status === "open" ||
+                          project.status === "reviewing" ? (
+                            <Link
+                              href={`/project/${project.detailId ?? project.id}`}
+                              className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 shadow"
+                            >
+                              ดูรายละเอียดโปรเจกต์
+                            </Link>
+                          ) : project.status === "pending_approval" ? (
+                            <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-amber-700 bg-amber-100">
+                              รออนุมัติจากแอดมิน
+                            </button>
+                          ) : project.status === "approved" ? (
+                            <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-sky-700 bg-sky-100">
+                              พร้อมเปิดรับสมัคร
+                            </button>
+                          ) : project.status === "draft" ? (
+                            <Link
+                              href={`/my-project?draftId=${project.id}`}
+                              className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-700 bg-slate-100"
+                            >
+                              แก้ไขแบบร่าง
+                            </Link>
+                          ) : project.status === "closed" ? (
+                            <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-slate-800 bg-slate-200">
+                              ปิดรับสมัครแล้ว
+                            </button>
+                          ) : (
+                            <div className="bg-rose-100 text-rose-700 text-xs rounded-lg p-3">
+                              เหตุผลที่ปฏิเสธ:
+                              ข้อมูลไม่ครบถ้วนและรายละเอียดไม่ชัดเจน
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </article>
-                );
+                      </article>
+                    );
                   })
                 )}
               </div>
@@ -440,7 +450,9 @@ function ApplicationHistoryCard({
         {application.status === "rejected" && (
           <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
             <p className="font-semibold">เหตุผลที่ปฏิเสธ</p>
-            <p className="mt-1">{application.rejectionReason || "ไม่ได้ระบุเหตุผล"}</p>
+            <p className="mt-1">
+              {application.rejectionReason || "ไม่ได้ระบุเหตุผล"}
+            </p>
           </div>
         )}
 
@@ -469,31 +481,51 @@ function ApplicationHistoryCard({
           </div>
         )}
       </CardContent>
-      <CardFooter className="grid gap-2 sm:grid-cols-2">
+
+      <CardFooter
+        className={`grid gap-2 ${
+          application.status === "accepted"
+            ? "sm:grid-cols-2"
+            : "sm:grid-cols-1"
+        }`}
+      >
         <Button variant="outline" asChild>
           <Link href={`/project/${application.projectId}`}>View Project</Link>
         </Button>
-        <Button
-          asChild={Boolean(application.ownerEmail || application.ownerContactLink)}
-          disabled={!application.ownerEmail && !application.ownerContactLink}
-          className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
-        >
-          {application.ownerContactLink ? (
-            <a href={application.ownerContactLink} target="_blank" rel="noreferrer">
-              Contact Team
-            </a>
-          ) : application.ownerEmail ? (
-            <a href={`mailto:${application.ownerEmail}`}>Contact Team</a>
-          ) : (
-            <span>Contact Team</span>
-          )}
-        </Button>
+
+        {application.status === "accepted" && (
+          <Button
+            asChild={Boolean(
+              application.ownerEmail || application.ownerContactLink,
+            )}
+            disabled={!application.ownerEmail && !application.ownerContactLink}
+            className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
+          >
+            {application.ownerContactLink ? (
+              <a
+                href={application.ownerContactLink}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Contact Team
+              </a>
+            ) : application.ownerEmail ? (
+              <a href={`mailto:${application.ownerEmail}`}>Contact Team</a>
+            ) : (
+              <span>Contact Team</span>
+            )}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
 }
 
-function ApplicationStatusBadge({ status }: { status: AppliedProjectCard["status"] }) {
+function ApplicationStatusBadge({
+  status,
+}: {
+  status: AppliedProjectCard["status"];
+}) {
   const className =
     status === "accepted"
       ? "bg-emerald-100 text-emerald-700"
@@ -501,7 +533,11 @@ function ApplicationStatusBadge({ status }: { status: AppliedProjectCard["status
         ? "bg-rose-100 text-rose-700"
         : "bg-amber-100 text-amber-700";
   const label =
-    status === "accepted" ? "Accepted" : status === "rejected" ? "Rejected" : "Pending";
+    status === "accepted"
+      ? "Accepted"
+      : status === "rejected"
+        ? "Rejected"
+        : "Pending";
 
   return <Badge className={className}>{label}</Badge>;
 }

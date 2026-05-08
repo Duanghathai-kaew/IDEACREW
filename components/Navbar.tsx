@@ -16,7 +16,7 @@ export default function Navbar() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-
+  const [mounted, setMounted] = useState(false);
   const searchParams = useSearchParams();
 
   const draftIdFromQuery = searchParams.get("draftId");
@@ -77,7 +77,12 @@ export default function Navbar() {
     };
   }, [user?.id]);
 
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const shouldAutoOpenDraftModal =
+    mounted &&
     Boolean(user) &&
     pathname?.startsWith("/my-project") &&
     Boolean(draftIdFromQuery);
