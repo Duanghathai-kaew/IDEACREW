@@ -1,5 +1,4 @@
 import {
-  getDetailedProjectById,
   getBenefitLabel,
   getWorkModeLabel,
   formatThaiDate,
@@ -206,11 +205,12 @@ export default async function ProjectDetailPage({
 }: ProjectDetailPageProps) {
   const { id } = await params;
   const dbProject = await getProjectFromDb(id);
-  const project = dbProject ?? getDetailedProjectById(id);
 
-  if (!project) {
+  if (!dbProject) {
     notFound();
   }
+
+  const project = dbProject;
 
   const avatar = project.createdBy.slice(0, 2).toUpperCase();
   const isOpen = project.status === "open";
