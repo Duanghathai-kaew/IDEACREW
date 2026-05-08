@@ -30,6 +30,7 @@ const creatorStatusLabelMap: Record<CreatorProjectStatus, string> = {
 };
 
 const applicantStatusLabelMap: Record<ApplicantApplicationStatus, string> = {
+  pending: "รอการพิจารณา",
   applied: "คุณสมัครแล้ว",
   in_review: "อยู่ระหว่าง review",
   rejected: "คุณไม่ผ่าน",
@@ -46,6 +47,7 @@ const creatorStatusOrder: CreatorProjectStatus[] = [
 ];
 
 const applicantStatusOrder: ApplicantApplicationStatus[] = [
+  "pending",
   "applied",
   "in_review",
   "accepted",

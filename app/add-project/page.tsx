@@ -1,17 +1,14 @@
 "use client";
 
 import AddProjectModal from "@/components/AddProjectModal";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function AddProjectPage() {
   const router = useRouter();
-  const [draftId, setDraftId] = useState<string | null>(null);
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setDraftId(params.get("draftId"));
-  }, []);
+  const searchParams = useSearchParams();
+
+  const draftId = searchParams.get("draftId");
 
   return (
     <AddProjectModal

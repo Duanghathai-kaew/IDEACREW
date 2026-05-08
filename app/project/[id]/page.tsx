@@ -5,6 +5,7 @@ import {
   formatThaiDate,
 } from "@/lib/detailedMockData";
 import Navbar from "@/components/Navbar";
+import { ProjectApplicationControls } from "@/components/applications/ProjectApplicationControls";
 import {
   ArrowLeft,
   Award,
@@ -172,6 +173,7 @@ async function getProjectFromDb(id: string): Promise<Project | null> {
 
   return {
     id: projectRow.id,
+    ownerId: projectRow.owner_id,
     title: projectRow.title,
     categories: ((categories as DbCategory[] | null) ?? []).map(
       (row) => row.category_name,
@@ -519,18 +521,14 @@ export default async function ProjectDetailPage({
                   <p className="text-center text-sm mb-6 opacity-90">
                     ส่งผลงานของคุณออกสู่สายในขณะนี้!
                   </p>
-                  <button
-                    className="w-full bg-white font-semibold py-3 px-4 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-lg"
-                    style={{ color: "var(--form-primary)" }}
-                    disabled={!isOpen}
-                  >
-                    {isOpen ? "สมัครเลย" : "ปิดรับสมัครแล้ว"}
-                  </button>
-                  {!isOpen && (
-                    <p className="text-center text-xs mt-3 opacity-75">
-                      หมดเวลา {formatThaiDate(project.applicationEndDate)}
-                    </p>
-                  )}
+                  <ProjectApplicationControls
+                    projectId={project.id}
+                    ownerId={project.ownerId}
+                    isOpen={isOpen}
+                    applicationEndDateLabel={formatThaiDate(
+                      project.applicationEndDate,
+                    )}
+                  />
                 </div>
 
                 <div className="space-y-6">

@@ -1,9 +1,17 @@
 "use client";
 
+import {
+  AppliedProjectCard,
+  getProjectApplicationsForUser,
+} from "@/app/actions/project-applications";
 import { useAuth } from "@/components/auth/AuthProvider";
 import Navbar from "@/components/Navbar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MyProject } from "@/lib/myProjectMockData";
-import { CalendarDays, Gift, Trash2, Users } from "lucide-react";
+import { CalendarDays, Gift, Mail, Trash2, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
@@ -76,7 +84,9 @@ export default function MyProjectPage() {
   const routeRefreshKey = `${pathname}?${searchParams.toString()}`;
   const [activeFilter, setActiveFilter] = useState<FilterKey>("all");
   const [projects, setProjects] = useState<MyProject[]>([]);
+  const [applications, setApplications] = useState<AppliedProjectCard[]>([]);
   const [isFetching, setIsFetching] = useState(true);
+  const [isFetchingApplications, setIsFetchingApplications] = useState(true);
   const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -119,6 +129,33 @@ export default function MyProjectPage() {
     }
 
     fetchMyProjects();
+
+    return () => {
+      mounted = false;
+    };
+  }, [isAuthLoading, routeRefreshKey, user?.id]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchApplications() {
+      if (isAuthLoading) return;
+
+      if (!user?.id) {
+        if (!mounted) return;
+        setApplications([]);
+        setIsFetchingApplications(false);
+        return;
+      }
+
+      setIsFetchingApplications(true);
+      const result = await getProjectApplicationsForUser(user.id);
+      if (!mounted) return;
+      setApplications(result.ok ? result.data : []);
+      setIsFetchingApplications(false);
+    }
+
+    fetchApplications();
 
     return () => {
       mounted = false;
@@ -188,60 +225,69 @@ export default function MyProjectPage() {
             </p>
           </div>
 
-          <div className="mb-6">
-            <div className="flex flex-wrap gap-3">
-              {filters.map((filter) => {
-                const isActive = activeFilter === filter.key;
-                return (
-                  <button
-                    key={filter.key}
-                    onClick={() => setActiveFilter(filter.key)}
-                    className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
-                      isActive
-                        ? "text-white border-transparent shadow"
-                        : "bg-white text-slate-700 border-slate-200 hover:border-brand-400"
-                    }`}
-                    style={
-                      isActive
-                        ? { background: "var(--brand-gradient-135)" }
-                        : undefined
-                    }
-                  >
-                    {filter.label}
-                    <span
-                      className={`ml-2 inline-flex items-center justify-center w-5 h-5 text-xs rounded-full ${
-                        isActive
-                          ? "bg-white/20 text-white"
-                          : "bg-slate-100 text-slate-700"
-                      }`}
-                    >
-                      {counts[filter.key]}
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+          <Tabs defaultValue="created" className="space-y-6">
+            <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm">
+              <TabsTrigger value="created" className="h-11 rounded-xl">
+                โปรเจกต์ที่สร้าง
+              </TabsTrigger>
+              <TabsTrigger value="applied" className="h-11 rounded-xl">
+                โปรเจกต์ที่สมัคร
+              </TabsTrigger>
+            </TabsList>
 
-          <div className="space-y-6">
-            {isFetching ? (
-              <div className="bg-white border border-slate-200 rounded-2xl px-6 py-10 text-center text-slate-500">
-                กำลังโหลดรายการโปรเจกต์...
+            <TabsContent value="created" className="space-y-6">
+              <div className="flex flex-wrap gap-3">
+                {filters.map((filter) => {
+                  const isActive = activeFilter === filter.key;
+                  return (
+                    <button
+                      key={filter.key}
+                      onClick={() => setActiveFilter(filter.key)}
+                      className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+                        isActive
+                          ? "text-white border-transparent shadow"
+                          : "bg-white text-slate-700 border-slate-200 hover:border-brand-400"
+                      }`}
+                      style={
+                        isActive
+                          ? { background: "var(--brand-gradient-135)" }
+                          : undefined
+                      }
+                    >
+                      {filter.label}
+                      <span
+                        className={`ml-2 inline-flex items-center justify-center w-5 h-5 text-xs rounded-full ${
+                          isActive
+                            ? "bg-white/20 text-white"
+                            : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {counts[filter.key]}
+                      </span>
+                    </button>
+                  );
+                })}
               </div>
-            ) : filteredProjects.length === 0 ? (
-              <div className="bg-amber-100 border border-amber-200 rounded-2xl px-6 py-10 text-center">
-                <div className="mx-auto w-12 h-12 rounded-full border-2 border-amber-400 flex items-center justify-center text-amber-700">
-                  <Gift className="w-6 h-6" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-amber-700">
-                  ยังไม่มีโปรเจกต์
-                </h3>
-                <p className="mt-2 text-sm text-slate-600">
-                  เริ่มต้นโพสต์โปรเจกต์ของคุณตอนนี้!
-                </p>
-              </div>
-            ) : (
-              filteredProjects.map((project) => {
+
+              <div className="space-y-6">
+                {isFetching ? (
+                  <div className="bg-white border border-slate-200 rounded-2xl px-6 py-10 text-center text-slate-500">
+                    กำลังโหลดรายการโปรเจกต์...
+                  </div>
+                ) : filteredProjects.length === 0 ? (
+                  <div className="bg-amber-100 border border-amber-200 rounded-2xl px-6 py-10 text-center">
+                    <div className="mx-auto w-12 h-12 rounded-full border-2 border-amber-400 flex items-center justify-center text-amber-700">
+                      <Gift className="w-6 h-6" />
+                    </div>
+                    <h3 className="mt-4 text-lg font-semibold text-amber-700">
+                      ยังไม่มีโปรเจกต์
+                    </h3>
+                    <p className="mt-2 text-sm text-slate-600">
+                      เริ่มต้นโพสต์โปรเจกต์ของคุณตอนนี้!
+                    </p>
+                  </div>
+                ) : (
+                  filteredProjects.map((project) => {
                 const meta = statusMeta[project.status];
                 return (
                   <article
@@ -337,11 +383,135 @@ export default function MyProjectPage() {
                     </div>
                   </article>
                 );
-              })
-            )}
-          </div>
+                  })
+                )}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="applied" className="space-y-4">
+              {isFetchingApplications ? (
+                <div className="bg-white border border-slate-200 rounded-2xl px-6 py-10 text-center text-slate-500">
+                  กำลังโหลดสถานะใบสมัคร...
+                </div>
+              ) : applications.length === 0 ? (
+                <div className="bg-white border border-slate-200 rounded-2xl px-6 py-10 text-center text-slate-500">
+                  ยังไม่มีประวัติการสมัคร
+                </div>
+              ) : (
+                applications.map((application) => (
+                  <ApplicationHistoryCard
+                    key={application.id}
+                    application={application}
+                  />
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
         </section>
       </main>
     </>
   );
+}
+
+function ApplicationHistoryCard({
+  application,
+}: {
+  application: AppliedProjectCard;
+}) {
+  return (
+    <Card className="rounded-2xl border-slate-200 bg-white shadow-sm">
+      <CardHeader className="gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <div>
+            <CardTitle className="text-lg text-slate-800">
+              {application.projectTitle}
+            </CardTitle>
+            <p className="mt-2 text-sm text-slate-500">
+              เจ้าของโปรเจกต์: {application.ownerName}
+            </p>
+            <p className="mt-1 text-xs text-slate-400">
+              สมัครเมื่อ {formatApplicationDate(application.appliedAt)}
+            </p>
+          </div>
+          <ApplicationStatusBadge status={application.status} />
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {application.status === "rejected" && (
+          <div className="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+            <p className="font-semibold">เหตุผลที่ปฏิเสธ</p>
+            <p className="mt-1">{application.rejectionReason || "ไม่ได้ระบุเหตุผล"}</p>
+          </div>
+        )}
+
+        {application.status === "accepted" && (
+          <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-800">
+            <p className="font-semibold">ช่องทางติดต่อเจ้าของโปรเจกต์</p>
+            <div className="mt-3 space-y-1">
+              <p>{application.ownerName}</p>
+              {application.ownerEmail && (
+                <p className="inline-flex items-center gap-2">
+                  <Mail className="h-4 w-4" />
+                  {application.ownerEmail}
+                </p>
+              )}
+              {application.ownerContactLink && (
+                <a
+                  href={application.ownerContactLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="block text-sky-700 hover:underline"
+                >
+                  {application.ownerContactLink}
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </CardContent>
+      <CardFooter className="grid gap-2 sm:grid-cols-2">
+        <Button variant="outline" asChild>
+          <Link href={`/project/${application.projectId}`}>View Project</Link>
+        </Button>
+        <Button
+          asChild={Boolean(application.ownerEmail || application.ownerContactLink)}
+          disabled={!application.ownerEmail && !application.ownerContactLink}
+          className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
+        >
+          {application.ownerContactLink ? (
+            <a href={application.ownerContactLink} target="_blank" rel="noreferrer">
+              Contact Team
+            </a>
+          ) : application.ownerEmail ? (
+            <a href={`mailto:${application.ownerEmail}`}>Contact Team</a>
+          ) : (
+            <span>Contact Team</span>
+          )}
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+}
+
+function ApplicationStatusBadge({ status }: { status: AppliedProjectCard["status"] }) {
+  const className =
+    status === "accepted"
+      ? "bg-emerald-100 text-emerald-700"
+      : status === "rejected"
+        ? "bg-rose-100 text-rose-700"
+        : "bg-amber-100 text-amber-700";
+  const label =
+    status === "accepted" ? "Accepted" : status === "rejected" ? "Rejected" : "Pending";
+
+  return <Badge className={className}>{label}</Badge>;
+}
+
+function formatApplicationDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleDateString("th-TH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
 }

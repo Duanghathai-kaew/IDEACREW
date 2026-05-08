@@ -2,21 +2,24 @@
 
 import AddProjectModal from "@/components/AddProjectModal";
 import { useAuth } from "@/components/auth/AuthProvider";
+import NotificationDropdown from "@/components/NotificationDropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import NotificationDropdown from "@/components/NotificationDropdown";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
-  const [draftIdFromQuery, setDraftIdFromQuery] = useState<string | null>(null);
+
+  const searchParams = useSearchParams();
+
+  const draftIdFromQuery = searchParams.get("draftId");
   const router = useRouter();
   const pathname = usePathname();
   const { user, isLoading, signOut } = useAuth();
@@ -36,11 +39,6 @@ export default function Navbar() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    setDraftIdFromQuery(params.get("draftId"));
-  }, [pathname]);
 
   useEffect(() => {
     let mounted = true;
@@ -80,9 +78,15 @@ export default function Navbar() {
   }, [user?.id]);
 
   const shouldAutoOpenDraftModal =
-    Boolean(user) && pathname?.startsWith("/my-project") && Boolean(draftIdFromQuery);
+    Boolean(user) &&
+    pathname?.startsWith("/my-project") &&
+    Boolean(draftIdFromQuery);
 
-  const menuItems: Array<{ key: "home" | "my-project"; label: string; href: string }> = user
+  const menuItems: Array<{
+    key: "home" | "my-project";
+    label: string;
+    href: string;
+  }> = user
     ? [
         { key: "home", label: "หน้าหลัก", href: "/" },
         { key: "my-project", label: "โปรเจกต์ของฉัน", href: "/my-project" },
@@ -215,7 +219,9 @@ export default function Navbar() {
               {user ? (
                 <LogOut className="icon-sm text-orange-500" />
               ) : (
-                <span className="text-xs font-semibold text-orange-500">LOGIN</span>
+                <span className="text-xs font-semibold text-orange-500">
+                  LOGIN
+                </span>
               )}
             </button>
           </div>
@@ -278,7 +284,9 @@ export default function Navbar() {
               {user ? (
                 <LogOut className="icon-sm text-orange-500" />
               ) : (
-                <span className="text-xs font-semibold text-orange-500">LOGIN</span>
+                <span className="text-xs font-semibold text-orange-500">
+                  LOGIN
+                </span>
               )}
             </button>
             <span className="text-sm text-slate-600">
@@ -292,7 +300,9 @@ export default function Navbar() {
       <AddProjectModal
         isOpen={isModalOpen || shouldAutoOpenDraftModal}
         onClose={handleCloseModal}
-        initialDraftProjectId={pathname?.startsWith("/my-project") ? draftIdFromQuery : null}
+        initialDraftProjectId={
+          pathname?.startsWith("/my-project") ? draftIdFromQuery : null
+        }
       />
     </nav>
   );
