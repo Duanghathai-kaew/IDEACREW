@@ -1,12 +1,15 @@
 "use client";
 
-import { Plus, Send, X } from "lucide-react";
-import { useEffect, useState, useTransition } from "react";
+import { Check, Plus, Send, X } from "lucide-react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 import {
   getApplyProfilePrefill,
+  getProjectPositions,
+  ProjectPositionOption,
   submitProjectApplication,
 } from "@/app/actions/project-applications";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -40,8 +43,18 @@ export function ApplyProjectModal({
   const [portfolioUrls, setPortfolioUrls] = useState<string[]>([]);
   const [skillDraft, setSkillDraft] = useState("");
   const [portfolioDraft, setPortfolioDraft] = useState("");
+  const [selectedPositionId, setSelectedPositionId] = useState<string | null>(
+    null,
+  );
+  const [positions, setPositions] = useState<ProjectPositionOption[]>([]);
+  const [loadingPositions, setLoadingPositions] = useState(false);
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  const availablePositions = useMemo(
+    () => positions.filter((p) => !p.isFull),
+    [positions],
+  );
 
   function formatSubmitError(message: string) {
     if (message.includes("already applied")) {
@@ -56,6 +69,14 @@ export function ApplyProjectModal({
       return "คุณเป็นเจ้าของโปรเจกต์นี้";
     }
 
+    if (message.includes("already filled")) {
+      return "ตำแหน่งนี้เต็มแล้ว";
+    }
+
+    if (message.includes("Position not found")) {
+      return "ตำแหน่งที่เลือกไม่พบ";
+    }
+
     return message;
   }
 
@@ -63,6 +84,10 @@ export function ApplyProjectModal({
     if (!open || !userId) return;
 
     let mounted = true;
+    setError("");
+    setSelectedPositionId(null);
+
+    // Load profile prefill
     getApplyProfilePrefill(userId).then((result) => {
       if (!mounted || !result.ok) return;
       setSkills(result.data.skills);
@@ -70,10 +95,28 @@ export function ApplyProjectModal({
       setAdditionalNote(result.data.bio);
     });
 
+    // Load positions
+    setLoadingPositions(true);
+    getProjectPositions(projectId).then((result) => {
+      if (!mounted) return;
+      setLoadingPositions(false);
+      if (result.ok) {
+        setPositions(result.data);
+        // Auto-select first available position
+        const firstAvailable = result.data.find((p) => !p.isFull);
+        if (firstAvailable) {
+          setSelectedPositionId(firstAvailable.id);
+        }
+      } else {
+        setPositions([]);
+        setError("ไม่สามารถโหลดตำแหน่งได้ กรุณาลองใหม่อีกครั้ง");
+      }
+    });
+
     return () => {
       mounted = false;
     };
-  }, [open, userId]);
+  }, [open, userId, projectId]);
 
   function addSkill() {
     const value = skillDraft.trim();
@@ -90,11 +133,17 @@ export function ApplyProjectModal({
   }
 
   function handleSubmit() {
+    if (!selectedPositionId) {
+      setError("Please select a position");
+      return;
+    }
+
     setError("");
     startTransition(async () => {
       const result = await submitProjectApplication({
         projectId,
         userId,
+        positionId: selectedPositionId,
         motivationMessage,
         skills,
         portfolioUrls,
@@ -113,30 +162,127 @@ export function ApplyProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>สมัครเข้าร่วมโปรเจกต์</DialogTitle>
-          <DialogDescription>
-            ระบบดึงข้อมูลจากโปรไฟล์ของคุณมาให้แล้ว
-            คุณสามารถแก้ไขก่อนส่งใบสมัครได้
+      <DialogContent className="max-h-[95vh] w-[96vw] max-w-4xl overflow-y-auto rounded-3xl p-8">
+        <DialogHeader className="space-y-2">
+          <DialogTitle className="text-2xl">สมัครเข้าร่วมโปรเจกต์</DialogTitle>
+          <DialogDescription className="text-base">
+            เลือกตำแหน่งที่ต้องการและระบุข้อมูลของคุณ
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-5">
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-700">
-              Motivation message
-            </span>
+        <div className="space-y-8">
+          {/* POSITION SELECTION */}
+          <div className="space-y-4">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800">
+                เลือกตำแหน่งที่สมัคร
+              </h3>
+              <p className="mt-1 text-sm text-slate-500">
+                เลือกตำแหน่งที่คุณต้องการสมัคร (จำเป็น)
+              </p>
+            </div>
+
+            {loadingPositions ? (
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+                กำลังโหลดตำแหน่ง...
+              </div>
+            ) : positions.length === 0 ? (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-6 text-center text-sm text-amber-700">
+                โปรเจกต์นี้ไม่มีตำแหน่งว่าง
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+                {positions.map((position) => (
+                  <button
+                    key={position.id}
+                    onClick={() =>
+                      !position.isFull && setSelectedPositionId(position.id)
+                    }
+                    disabled={position.isFull}
+                    className={`rounded-2xl border-2 p-4 text-left transition-all ${
+                      selectedPositionId === position.id
+                        ? "border-orange-400 bg-orange-50"
+                        : position.isFull
+                          ? "border-slate-200 bg-slate-50 opacity-60"
+                          : "border-slate-200 bg-white hover:border-orange-200"
+                    } ${position.isFull ? "cursor-not-allowed" : "cursor-pointer"}`}
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-slate-800">
+                          {position.title}
+                        </h4>
+                        <div className="mt-2 flex items-center gap-2">
+                          <span className="text-sm text-slate-600">
+                            {Math.max(
+                              0,
+                              position.neededCount - position.acceptedCount,
+                            )}{" "}
+                            ช่าง
+                          </span>
+                          <span className="text-xs text-slate-400">
+                            / {position.neededCount}
+                          </span>
+                        </div>
+                        {position.requiredSkills.length > 0 && (
+                          <div className="mt-3 flex flex-wrap gap-1">
+                            {position.requiredSkills.map((skill) => (
+                              <Badge
+                                key={skill}
+                                variant="secondary"
+                                className="rounded-full border-orange-100 bg-orange-50 px-2 py-0.5 text-[10px] text-orange-700"
+                              >
+                                {skill}
+                              </Badge>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      {position.isFull && (
+                        <Badge className="border-rose-200 bg-rose-50 text-rose-700">
+                          เต็มแล้ว
+                        </Badge>
+                      )}
+                      {selectedPositionId === position.id && (
+                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-600">
+                          <Check className="h-4 w-4 text-white" />
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* MOTIVATION MESSAGE */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                ทำไมคุณอยากเข้าร่วม?
+              </span>
+              <p className="mt-1 text-xs text-slate-500">
+                เล่าเหตุผล ความสนใจ และสิ่งที่คุณอยากมีส่วนร่วม
+              </p>
+            </label>
             <Textarea
               value={motivationMessage}
               onChange={(event) => setMotivationMessage(event.target.value)}
-              placeholder="เล่าว่าทำไมคุณอยากเข้าร่วมโปรเจกต์นี้"
-              className="min-h-32"
+              placeholder="เช่น: ฉันรักการออกแบบ UI และต้องการสร้างประสบการณ์ที่ดี..."
+              className="min-h-32 rounded-xl"
             />
-          </label>
+          </div>
 
-          <div className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">Skills</span>
+          {/* SKILLS */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                ทักษะของคุณ
+              </span>
+              <p className="mt-1 text-xs text-slate-500">
+                เพิ่มทักษะที่เกี่ยวข้อง
+              </p>
+            </label>
             <div className="flex gap-2">
               <Input
                 value={skillDraft}
@@ -147,39 +293,55 @@ export function ApplyProjectModal({
                     addSkill();
                   }
                 }}
-                placeholder="เพิ่มทักษะ"
+                placeholder="เช่น: React, TypeScript, Figma..."
+                className="rounded-xl"
               />
-              <Button type="button" variant="outline" onClick={addSkill}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addSkill}
+                className="rounded-xl"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {skills.map((skill) => (
-                <span
-                  key={skill}
-                  className="inline-flex items-center gap-2 rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-slate-700"
-                >
-                  {skill}
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setSkills((current) =>
-                        current.filter((item) => item !== skill),
-                      )
-                    }
-                    aria-label={`Remove ${skill}`}
+            {skills.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {skills.map((skill) => (
+                  <Badge
+                    key={skill}
+                    variant="secondary"
+                    className="rounded-full border-orange-200 bg-orange-100 px-3 py-1 text-sm text-orange-800"
                   >
-                    <X className="h-3 w-3" />
-                  </button>
-                </span>
-              ))}
-            </div>
+                    {skill}
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSkills((current) =>
+                          current.filter((item) => item !== skill),
+                        )
+                      }
+                      className="ml-1"
+                      aria-label={`Remove ${skill}`}
+                    >
+                      <X className="h-3 w-3" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            )}
           </div>
 
-          <div className="space-y-2">
-            <span className="text-sm font-medium text-slate-700">
-              Portfolio URL
-            </span>
+          {/* PORTFOLIO URLS */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                Portfolio / Links
+              </span>
+              <p className="mt-1 text-xs text-slate-500">
+                เพิ่มลิงค์ไปยังผลงาน GitHub profile หรือ portfolio ของคุณ
+              </p>
+            </label>
             <div className="flex gap-2">
               <Input
                 value={portfolioDraft}
@@ -190,68 +352,89 @@ export function ApplyProjectModal({
                     addPortfolioUrl();
                   }
                 }}
-                placeholder="https://..."
+                placeholder="https://github.com/... หรือ https://portfolio.com/..."
+                className="rounded-xl"
               />
-              <Button type="button" variant="outline" onClick={addPortfolioUrl}>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={addPortfolioUrl}
+                className="rounded-xl"
+              >
                 <Plus className="h-4 w-4" />
               </Button>
             </div>
-            <div className="space-y-2">
-              {portfolioUrls.map((url) => (
-                <div
-                  key={url}
-                  className="flex items-center justify-between gap-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
-                >
-                  <span className="truncate">{url}</span>
-                  <button
-                    type="button"
-                    className="text-slate-400 hover:text-rose-500"
-                    onClick={() =>
-                      setPortfolioUrls((current) =>
-                        current.filter((item) => item !== url),
-                      )
-                    }
-                    aria-label={`Remove ${url}`}
+            {portfolioUrls.length > 0 && (
+              <div className="space-y-2">
+                {portfolioUrls.map((url) => (
+                  <div
+                    key={url}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
                   >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <span className="truncate text-sm">{url}</span>
+                    <button
+                      type="button"
+                      className="text-slate-400 hover:text-rose-500"
+                      onClick={() =>
+                        setPortfolioUrls((current) =>
+                          current.filter((item) => item !== url),
+                        )
+                      }
+                      aria-label={`Remove ${url}`}
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          <label className="block space-y-2">
-            <span className="text-sm font-medium text-slate-700">
-              Additional note
-            </span>
+          {/* ADDITIONAL NOTE */}
+          <div className="space-y-3">
+            <label className="block">
+              <span className="text-sm font-semibold text-slate-800">
+                ข้อมูลเพิ่มเติม (Bio)
+              </span>
+              <p className="mt-1 text-xs text-slate-500">
+                บอกเล่าเกี่ยวกับตัวคุณให้เพิ่มเติม
+              </p>
+            </label>
             <Textarea
               value={additionalNote}
               onChange={(event) => setAdditionalNote(event.target.value)}
-              placeholder="ข้อมูลเพิ่มเติม"
+              placeholder="ตัวอย่าง: ฉันศึกษา Software Engineering ที่ Chulalongkorn University..."
+              className="min-h-24 rounded-xl"
             />
-          </label>
+          </div>
 
           {error && (
-            <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               {error}
             </div>
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="gap-3 pt-6">
           <Button
             type="button"
             variant="outline"
             onClick={() => onOpenChange(false)}
             disabled={isPending}
+            className="rounded-xl"
           >
             Cancel
           </Button>
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={isPending || !motivationMessage.trim()}
-            className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
+            disabled={
+              isPending ||
+              !motivationMessage.trim() ||
+              !selectedPositionId ||
+              availablePositions.length === 0
+            }
+            className="rounded-xl bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
           >
             <Send className="h-4 w-4" />
             Submit Application
