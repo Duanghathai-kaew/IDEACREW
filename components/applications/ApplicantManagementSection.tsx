@@ -41,7 +41,9 @@ function formatDate(value: string) {
 export function ApplicantManagementSection({ projectId, ownerId }: Props) {
   const [applicants, setApplicants] = useState<ApplicantCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedApplicant, setSelectedApplicant] = useState<ApplicantCard | null>(null);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
+  const [selectedApplicant, setSelectedApplicant] =
+    useState<ApplicantCard | null>(null);
   const [rejectTarget, setRejectTarget] = useState<ApplicantCard | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [error, setError] = useState("");
@@ -108,10 +110,19 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
   }
 
   return (
-    <section className="mt-6 rounded-2xl border border-white/20 bg-white p-5 text-slate-800 shadow-lg">
-      <div className="mb-4">
-        <h3 className="text-base font-semibold">จัดการผู้สมัคร</h3>
-        <p className="text-sm text-slate-500">ตรวจใบสมัครและรับสมาชิกเข้าทีม</p>
+    <section className="mt-6 rounded-2xl border border-orange-100 bg-white/95 p-5 text-slate-800 shadow-[0_14px_30px_rgb(15_23_42/0.08)] backdrop-blur">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold text-slate-800">
+            จัดการผู้สมัคร
+          </h3>
+          <p className="text-sm text-slate-500">
+            ตรวจใบสมัครและรับสมาชิกเข้าทีม
+          </p>
+        </div>
+        <Badge className="border border-orange-200 bg-orange-50 text-orange-700">
+          {applicants.length} คน
+        </Badge>
       </div>
 
       {error && (
@@ -121,87 +132,153 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
       )}
 
       {isLoading ? (
-        <div className="rounded-xl bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-7 text-center text-sm text-slate-500">
           กำลังโหลดผู้สมัคร...
         </div>
       ) : applicants.length === 0 ? (
-        <div className="rounded-xl bg-amber-50 px-4 py-6 text-center text-sm text-amber-700">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-7 text-center text-sm text-amber-700">
           ยังไม่มีผู้สมัครในโปรเจกต์นี้
         </div>
       ) : (
-        <div className="space-y-4">
-          {applicants.map((applicant) => (
-            <Card key={applicant.id} className="gap-4 rounded-xl border-slate-200 py-4 shadow-sm">
-              <CardHeader className="gap-3 px-4">
-                <div className="flex items-start gap-3">
-                  <div className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-50 text-(--brand-500)">
-                    <UserRound className="h-5 w-5" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <CardTitle className="text-base">{applicant.displayName}</CardTitle>
-                    <p className="text-xs text-slate-500">
-                      สมัครเมื่อ {formatDate(applicant.appliedAt)}
-                    </p>
-                  </div>
-                  <ApplicationBadge status={applicant.status} />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4 px-4">
-                <p className="text-sm leading-6 text-slate-600">
-                  {applicant.motivationMessage || "ไม่ได้ระบุ motivation message"}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {applicant.skills.map((skill) => (
-                    <Badge key={skill} variant="secondary" className="bg-amber-100 text-slate-700">
-                      {skill}
-                    </Badge>
-                  ))}
-                </div>
-                {applicant.portfolioUrls.length > 0 && (
-                  <div className="space-y-2">
-                    {applicant.portfolioUrls.map((url) => (
-                      <a
-                        key={url}
-                        href={url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="flex items-center gap-2 truncate text-sm text-sky-700 hover:underline"
-                      >
-                        <ExternalLink className="h-4 w-4 shrink-0" />
-                        <span className="truncate">{url}</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
-                {applicant.additionalNote && (
-                  <div className="rounded-lg bg-slate-50 p-3 text-sm text-slate-600">
-                    {applicant.additionalNote}
-                  </div>
-                )}
-                <div className="grid gap-2 sm:grid-cols-3">
-                  <Button variant="outline" asChild>
-                    <Link href={`/user/${applicant.applicantId}`}>View Profile</Link>
-                  </Button>
-                  <Button
-                    className="bg-emerald-600 text-white hover:bg-emerald-700"
-                    disabled={applicant.status === "accepted"}
-                    onClick={() => setSelectedApplicant(applicant)}
-                  >
-                    Accept
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    disabled={applicant.status === "rejected"}
-                    onClick={() => setRejectTarget(applicant)}
-                  >
-                    Reject
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+        <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50/70 p-4">
+          <p className="text-sm font-medium text-slate-700">
+            ตอนนี้มีผู้สมัครทั้งหมด {applicants.length} คน
+          </p>
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full border-orange-200 bg-white text-orange-700 hover:bg-orange-50"
+            onClick={() => setIsDetailOpen(true)}
+          >
+            ดูเพิ่มเติม
+          </Button>
         </div>
       )}
+
+      <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
+        <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>ผู้สมัครทั้งหมด ({applicants.length} คน)</DialogTitle>
+            <DialogDescription>
+              ตรวจรายละเอียดผู้สมัครได้จากหน้าต่างนี้
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {applicants.map((applicant) => (
+              <Card
+                key={applicant.id}
+                className="gap-4 rounded-2xl border-slate-200/90 py-4 shadow-[0_8px_20px_rgb(15_23_42/0.06)]"
+              >
+                <CardHeader className="gap-3 px-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-(--brand-500)">
+                      <UserRound className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <CardTitle className="text-[15px] font-semibold text-slate-800">
+                        {applicant.displayName}
+                      </CardTitle>
+                      <p className="mt-1 text-xs text-slate-500">
+                        สมัครเมื่อ {formatDate(applicant.appliedAt)}
+                      </p>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4 px-4">
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+                    <p className="mb-1 text-xs font-medium text-slate-500">
+                      Motivation
+                    </p>
+                    <p className="text-sm leading-6 text-slate-700">
+                      {applicant.motivationMessage ||
+                        "ไม่ได้ระบุ motivation message"}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                      Skills
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {applicant.skills.length === 0 && (
+                        <span className="text-xs text-slate-400">
+                          ไม่มีข้อมูลทักษะ
+                        </span>
+                      )}
+                      {applicant.skills.map((skill) => (
+                        <Badge
+                          key={skill}
+                          variant="secondary"
+                          className="rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-medium text-orange-700"
+                        >
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+
+                  {applicant.portfolioUrls.length > 0 && (
+                    <div className="space-y-2">
+                      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Portfolio
+                      </p>
+                      {applicant.portfolioUrls.map((url) => (
+                        <a
+                          key={url}
+                          href={url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-sm text-sky-700 transition-colors hover:bg-sky-100"
+                        >
+                          <ExternalLink className="h-4 w-4 shrink-0" />
+                          <span className="truncate">{url}</span>
+                        </a>
+                      ))}
+                    </div>
+                  )}
+
+                  {applicant.additionalNote && (
+                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-sm text-slate-700">
+                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Additional note
+                      </p>
+                      {applicant.additionalNote}
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                    <Button
+                      variant="outline"
+                      asChild
+                      className="h-9 w-full justify-center"
+                    >
+                      <Link href={`/user/${applicant.applicantId}`}>
+                        View Profile
+                      </Link>
+                    </Button>
+                    <Button
+                      className="h-9 w-full bg-emerald-600 text-white hover:bg-emerald-700"
+                      disabled={applicant.status === "accepted"}
+                      onClick={() => setSelectedApplicant(applicant)}
+                    >
+                      Accept
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      className="h-9 w-full"
+                      disabled={applicant.status === "rejected"}
+                      onClick={() => setRejectTarget(applicant)}
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={Boolean(selectedApplicant)}
@@ -236,7 +313,9 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>ปฏิเสธใบสมัคร</DialogTitle>
-            <DialogDescription>ระบุเหตุผลเพื่อแจ้งให้ผู้สมัครทราบ</DialogDescription>
+            <DialogDescription>
+              ระบุเหตุผลเพื่อแจ้งให้ผู้สมัครทราบ
+            </DialogDescription>
           </DialogHeader>
           <Textarea
             value={rejectionReason}
@@ -263,18 +342,4 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
       </Dialog>
     </section>
   );
-}
-
-function ApplicationBadge({ status }: { status: ApplicantCard["status"] }) {
-  const className =
-    status === "accepted"
-      ? "bg-emerald-100 text-emerald-700"
-      : status === "rejected"
-        ? "bg-rose-100 text-rose-700"
-        : "bg-amber-100 text-amber-700";
-
-  const label =
-    status === "accepted" ? "Accepted" : status === "rejected" ? "Rejected" : "Pending";
-
-  return <Badge className={className}>{label}</Badge>;
 }
