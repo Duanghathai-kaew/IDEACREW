@@ -43,6 +43,22 @@ export function ApplyProjectModal({
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
 
+  function formatSubmitError(message: string) {
+    if (message.includes("already applied")) {
+      return "คุณได้ส่งใบสมัครโปรเจกต์นี้แล้ว";
+    }
+
+    if (message.includes("not open for applications")) {
+      return "โปรเจกต์นี้ปิดรับสมัครแล้ว";
+    }
+
+    if (message.includes("cannot apply to their own project")) {
+      return "คุณเป็นเจ้าของโปรเจกต์นี้";
+    }
+
+    return message;
+  }
+
   useEffect(() => {
     if (!open || !userId) return;
 
@@ -86,7 +102,7 @@ export function ApplyProjectModal({
       });
 
       if (!result.ok) {
-        setError(result.error);
+        setError(formatSubmitError(result.error));
         return;
       }
 
@@ -101,7 +117,8 @@ export function ApplyProjectModal({
         <DialogHeader>
           <DialogTitle>สมัครเข้าร่วมโปรเจกต์</DialogTitle>
           <DialogDescription>
-            ระบบดึงข้อมูลจากโปรไฟล์ของคุณมาให้แล้ว คุณสามารถแก้ไขก่อนส่งใบสมัครได้
+            ระบบดึงข้อมูลจากโปรไฟล์ของคุณมาให้แล้ว
+            คุณสามารถแก้ไขก่อนส่งใบสมัครได้
           </DialogDescription>
         </DialogHeader>
 
@@ -146,7 +163,9 @@ export function ApplyProjectModal({
                   <button
                     type="button"
                     onClick={() =>
-                      setSkills((current) => current.filter((item) => item !== skill))
+                      setSkills((current) =>
+                        current.filter((item) => item !== skill),
+                      )
                     }
                     aria-label={`Remove ${skill}`}
                   >

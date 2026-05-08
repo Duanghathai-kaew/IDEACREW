@@ -42,7 +42,9 @@ export type AppliedProjectCard = {
 };
 
 function uniq(values: string[]) {
-  return Array.from(new Set(values.map((value) => value.trim()).filter(Boolean)));
+  return Array.from(
+    new Set(values.map((value) => value.trim()).filter(Boolean)),
+  );
 }
 
 function mapStatus(status: string | null): ApplicationStatus {
@@ -58,29 +60,37 @@ function isMissingColumnError(message?: string) {
 export async function getApplyProfilePrefill(
   userId: string,
 ): Promise<ActionResult<ApplyProfilePrefill>> {
-  const [{ data: profile, error: profileError }, { data: links, error: linksError }] =
-    await Promise.all([
-      supabaseAdmin
-        .from("profiles")
-        .select("skills,bio")
-        .eq("id", userId)
-        .maybeSingle(),
-      supabaseAdmin
-        .from("profile_links")
-        .select("url")
-        .eq("user_id", userId)
-        .eq("link_type", "portfolio")
-        .order("sort_order", { ascending: true }),
-    ]);
+  const [
+    { data: profile, error: profileError },
+    { data: links, error: linksError },
+  ] = await Promise.all([
+    supabaseAdmin
+      .from("profiles")
+      .select("skills,bio")
+      .eq("id", userId)
+      .maybeSingle(),
+    supabaseAdmin
+      .from("profile_links")
+      .select("url")
+      .eq("user_id", userId)
+      .eq("link_type", "portfolio")
+      .order("sort_order", { ascending: true }),
+  ]);
 
   if (profileError || linksError) {
     return {
       ok: false,
-      error: profileError?.message || linksError?.message || "Failed to load profile",
+      error:
+        profileError?.message ||
+        linksError?.message ||
+        "Failed to load profile",
     };
   }
 
-  const row = (profile ?? {}) as { skills?: string[] | null; bio?: string | null };
+  const row = (profile ?? {}) as {
+    skills?: string[] | null;
+    bio?: string | null;
+  };
   const linkRows = (links ?? []) as Array<{ url: string | null }>;
 
   return {
@@ -119,7 +129,10 @@ export async function submitProjectApplication(input: {
 
   const projectRow = project as { owner_id: string; status: string | null };
   if (projectRow.owner_id === userId) {
-    return { ok: false, error: "Project owners cannot apply to their own project" };
+    return {
+      ok: false,
+      error: "Project owners cannot apply to their own project",
+    };
   }
   if (projectRow.status !== "open") {
     return { ok: false, error: "This project is not open for applications" };
@@ -127,16 +140,13 @@ export async function submitProjectApplication(input: {
 
   const { data: existing, error: existingError } = await supabaseAdmin
     .from("project_applications")
-    .select("id")
+    .select("id,status")
     .eq("project_id", projectId)
     .eq("applicant_id", userId)
     .maybeSingle();
 
   if (existingError) {
     return { ok: false, error: existingError.message };
-  }
-  if (existing) {
-    return { ok: false, error: "You have already applied to this project" };
   }
 
   const payload = {
@@ -150,13 +160,45 @@ export async function submitProjectApplication(input: {
     note: input.additionalNote.trim(),
   };
 
-  const { data, error } = await supabaseAdmin
-    .from("project_applications")
-    .insert(payload)
-    .select("id")
-    .single();
+  let data: {
+    id: string;
+  } | null = null;
+  let error: { message: string; code?: string } | null = null;
+
+  if (existing) {
+    if (existing.status !== "rejected") {
+      return { ok: false, error: "You already applied to this project" };
+    }
+
+    const result = await supabaseAdmin
+      .from("project_applications")
+      .update({
+        ...payload,
+        rejection_reason: null,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", existing.id)
+      .select("id")
+      .single();
+
+    data = result.data as { id: string } | null;
+    error = result.error;
+  } else {
+    const result = await supabaseAdmin
+      .from("project_applications")
+      .insert(payload)
+      .select("id")
+      .single();
+
+    data = result.data as { id: string } | null;
+    error = result.error;
+  }
 
   if (error) {
+    if (error.code === "23505") {
+      return { ok: false, error: "You already applied to this project" };
+    }
     return { ok: false, error: error.message };
   }
 
@@ -200,7 +242,9 @@ export async function getProjectApplicationsForUser(
   }>;
   if (appRows.length === 0) return { ok: true, data: [] };
 
-  const projectIds = Array.from(new Set(appRows.map((item) => item.project_id)));
+  const projectIds = Array.from(
+    new Set(appRows.map((item) => item.project_id)),
+  );
   const { data: projects, error: projectsError } = await supabaseAdmin
     .from("projects")
     .select("id,title,owner_id")
@@ -213,7 +257,9 @@ export async function getProjectApplicationsForUser(
     title: string;
     owner_id: string;
   }>;
-  const ownerIds = Array.from(new Set(projectRows.map((item) => item.owner_id)));
+  const ownerIds = Array.from(
+    new Set(projectRows.map((item) => item.owner_id)),
+  );
 
   const [{ data: owners }, { data: links }] =
     ownerIds.length === 0
@@ -231,18 +277,25 @@ export async function getProjectApplicationsForUser(
             .order("sort_order", { ascending: true }),
         ]);
 
-  const projectById = new Map(projectRows.map((project) => [project.id, project]));
+  const projectById = new Map(
+    projectRows.map((project) => [project.id, project]),
+  );
   const ownerById = new Map(
-    ((owners ?? []) as Array<{
-      id: string;
-      displayname: string | null;
-      name: string | null;
-      username: string | null;
-      email: string | null;
-    }>).map((owner) => [owner.id, owner]),
+    (
+      (owners ?? []) as Array<{
+        id: string;
+        displayname: string | null;
+        name: string | null;
+        username: string | null;
+        email: string | null;
+      }>
+    ).map((owner) => [owner.id, owner]),
   );
   const contactByOwnerId = new Map<string, string>();
-  for (const link of (links ?? []) as Array<{ user_id: string; url: string | null }>) {
+  for (const link of (links ?? []) as Array<{
+    user_id: string;
+    url: string | null;
+  }>) {
     if (link.url && !contactByOwnerId.has(link.user_id)) {
       contactByOwnerId.set(link.user_id, link.url);
     }
@@ -263,7 +316,9 @@ export async function getProjectApplicationsForUser(
           owner?.username?.trim() ||
           "Project owner",
         ownerEmail: owner?.email ?? "",
-        ownerContactLink: project ? contactByOwnerId.get(project.owner_id) ?? "" : "",
+        ownerContactLink: project
+          ? (contactByOwnerId.get(project.owner_id) ?? "")
+          : "",
         appliedAt: application.created_at ?? "",
         status: mapStatus(application.status),
         rejectionReason: application.rejection_reason ?? "",
@@ -304,7 +359,9 @@ export async function getProjectApplicants(input: {
   }>;
   if (appRows.length === 0) return { ok: true, data: [] };
 
-  const applicantIds = Array.from(new Set(appRows.map((item) => item.applicant_id)));
+  const applicantIds = Array.from(
+    new Set(appRows.map((item) => item.applicant_id)),
+  );
   const { data: profiles, error: profilesError } = await supabaseAdmin
     .from("profiles")
     .select("id,displayname,name,username,avatar_url,skills")
@@ -313,14 +370,16 @@ export async function getProjectApplicants(input: {
   if (profilesError) return { ok: false, error: profilesError.message };
 
   const profileById = new Map(
-    ((profiles ?? []) as Array<{
-      id: string;
-      displayname: string | null;
-      name: string | null;
-      username: string | null;
-      avatar_url?: string | null;
-      skills?: string[] | null;
-    }>).map((profile) => [profile.id, profile]),
+    (
+      (profiles ?? []) as Array<{
+        id: string;
+        displayname: string | null;
+        name: string | null;
+        username: string | null;
+        avatar_url?: string | null;
+        skills?: string[] | null;
+      }>
+    ).map((profile) => [profile.id, profile]),
   );
 
   return {
@@ -336,7 +395,9 @@ export async function getProjectApplicants(input: {
           profile?.username?.trim() ||
           "Applicant",
         avatarUrl: profile?.avatar_url ?? "",
-        skills: application.skills?.length ? application.skills : profile?.skills ?? [],
+        skills: application.skills?.length
+          ? application.skills
+          : (profile?.skills ?? []),
         portfolioUrls: application.portfolio_urls ?? [],
         motivationMessage: application.motivation_message ?? "",
         additionalNote: application.additional_note ?? "",
@@ -351,7 +412,10 @@ export async function acceptApplication(input: {
   applicationId: string;
   ownerId: string;
 }): Promise<ActionResult> {
-  const loaded = await loadApplicationForOwner(input.applicationId, input.ownerId);
+  const loaded = await loadApplicationForOwner(
+    input.applicationId,
+    input.ownerId,
+  );
   if (!loaded.ok) return loaded;
 
   const { application } = loaded.data;
@@ -397,7 +461,10 @@ export async function rejectApplication(input: {
   ownerId: string;
   rejectionReason: string;
 }): Promise<ActionResult> {
-  const loaded = await loadApplicationForOwner(input.applicationId, input.ownerId);
+  const loaded = await loadApplicationForOwner(
+    input.applicationId,
+    input.ownerId,
+  );
   if (!loaded.ok) return loaded;
 
   const { application } = loaded.data;
@@ -441,7 +508,11 @@ async function assertProjectOwner(
     .maybeSingle();
 
   if (error) return { ok: false, error: error.message };
-  if (!data) return { ok: false, error: "You are not authorized to manage this project" };
+  if (!data)
+    return {
+      ok: false,
+      error: "You are not authorized to manage this project",
+    };
   return { ok: true, data: undefined };
 }
 
@@ -470,7 +541,10 @@ async function loadApplicationForOwner(
   };
   const project = Array.isArray(row.projects) ? row.projects[0] : row.projects;
   if (project.owner_id !== ownerId) {
-    return { ok: false, error: "You are not authorized to manage this application" };
+    return {
+      ok: false,
+      error: "You are not authorized to manage this application",
+    };
   }
 
   return {

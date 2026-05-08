@@ -1,11 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { useAuth } from "@/components/auth/AuthProvider";
-import { ApplyProjectModal } from "@/components/applications/ApplyProjectModal";
+import {
+  getProjectApplicationsForUser,
+  type AppliedProjectCard,
+} from "@/app/actions/project-applications";
 import { ApplicantManagementSection } from "@/components/applications/ApplicantManagementSection";
+import { ApplyProjectModal } from "@/components/applications/ApplyProjectModal";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -32,18 +36,72 @@ export function ProjectApplicationControls({
   const { user, isLoading } = useAuth();
   const [applyOpen, setApplyOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
+  const [application, setApplication] = useState<Pick<
+    AppliedProjectCard,
+    "id" | "projectId" | "status"
+  > | null>(null);
+  const [isCheckingApplication, setIsCheckingApplication] = useState(false);
 
   const isOwner = Boolean(user?.id && ownerId && user.id === ownerId);
+
+  async function loadApplicationStatus() {
+    if (!user?.id || isLoading) {
+      setApplication(null);
+      setIsCheckingApplication(false);
+      return;
+    }
+
+    setIsCheckingApplication(true);
+    const result = await getProjectApplicationsForUser(user.id);
+
+    if (result.ok) {
+      setApplication(
+        result.data.find((item) => item.projectId === projectId) ?? null,
+      );
+    } else {
+      setApplication(null);
+    }
+
+    setIsCheckingApplication(false);
+  }
+
+  useEffect(() => {
+    void loadApplicationStatus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, user?.id, isLoading]);
+
+  const applicationStatus = application?.status ?? null;
+  const isDuplicateApplication =
+    applicationStatus === "pending" || applicationStatus === "accepted";
+  const canApply =
+    isOpen &&
+    !isLoading &&
+    !isCheckingApplication &&
+    !!user?.id &&
+    !isOwner &&
+    !isDuplicateApplication;
+
+  const buttonLabel = !isOpen
+    ? "ปิดรับสมัครแล้ว"
+    : isCheckingApplication
+      ? "กำลังตรวจสอบสถานะ..."
+      : applicationStatus === "pending"
+        ? "ส่งใบสมัครแล้ว"
+        : applicationStatus === "accepted"
+          ? "เข้าร่วมทีมแล้ว"
+          : applicationStatus === "rejected"
+            ? "สมัครใหม่อีกครั้ง"
+            : "สมัครเลย";
 
   return (
     <>
       <button
         className="w-full rounded-lg bg-white px-4 py-3 font-semibold shadow-lg transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
         style={{ color: "var(--form-primary)" }}
-        disabled={!isOpen || isLoading || !user?.id || isOwner}
+        disabled={!canApply}
         onClick={() => setApplyOpen(true)}
       >
-        {isOpen ? "สมัครเลย" : "ปิดรับสมัครแล้ว"}
+        {buttonLabel}
       </button>
       {!user?.id && !isLoading && (
         <p className="mt-3 text-center text-xs text-white/80">
@@ -67,7 +125,10 @@ export function ProjectApplicationControls({
           projectId={projectId}
           userId={user.id}
           onOpenChange={setApplyOpen}
-          onSuccess={() => setSuccessOpen(true)}
+          onSuccess={async () => {
+            await loadApplicationStatus();
+            setSuccessOpen(true);
+          }}
         />
       )}
 
@@ -83,7 +144,10 @@ export function ProjectApplicationControls({
             <Button variant="outline" onClick={() => setSuccessOpen(false)}>
               ปิด
             </Button>
-            <Button asChild className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white">
+            <Button
+              asChild
+              className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
+            >
               <Link href="/my-project">ดูสถานะใบสมัคร</Link>
             </Button>
           </DialogFooter>
