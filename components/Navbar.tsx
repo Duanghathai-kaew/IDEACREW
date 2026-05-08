@@ -81,6 +81,10 @@ export default function Navbar() {
     setMounted(true);
   }, []);
 
+  if (!mounted) {
+    return null;
+  }
+
   const shouldAutoOpenDraftModal =
     mounted &&
     Boolean(user) &&

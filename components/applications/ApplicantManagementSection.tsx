@@ -49,11 +49,20 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
 
   async function refreshApplicants() {
     setIsLoading(true);
+    console.log("[ApplicantManagementSection] fetch start", { projectId });
     const result = await getProjectApplicants({ projectId, ownerId });
     if (result.ok) {
+      console.log("[ApplicantManagementSection] applications", {
+        projectId,
+        applications: result.data,
+      });
       setApplicants(result.data);
       setError("");
     } else {
+      console.error("[ApplicantManagementSection] fetch failed", {
+        projectId,
+        error: result.error,
+      });
       setError(result.error);
     }
     setIsLoading(false);

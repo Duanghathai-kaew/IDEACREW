@@ -331,10 +331,16 @@ export async function getProjectApplicants(input: {
   projectId: string;
   ownerId: string;
 }): Promise<ActionResult<ApplicantCard[]>> {
+  console.log("[getProjectApplicants] start", {
+    projectId: input.projectId,
+    ownerId: input.ownerId,
+    rlsBypassedWithServiceRole: true,
+  });
+
   const isOwner = await assertProjectOwner(input.projectId, input.ownerId);
   if (!isOwner.ok) return isOwner;
 
-  const { data, error } = await supabaseAdmin
+  const primaryResult = await supabaseAdmin
     .from("project_applications")
     .select(
       "id,applicant_id,status,motivation_message,skills,portfolio_urls,additional_note,created_at",
@@ -342,9 +348,39 @@ export async function getProjectApplicants(input: {
     .eq("project_id", input.projectId)
     .order("created_at", { ascending: false });
 
+  let data = primaryResult.data;
+  let error = primaryResult.error;
+
   if (error) {
-    if (isMissingColumnError(error.message)) return { ok: true, data: [] };
-    return { ok: false, error: error.message };
+    console.error("[getProjectApplicants] primary query failed", {
+      projectId: input.projectId,
+      error: error.message,
+    });
+
+    const fallbackResult = await supabaseAdmin
+      .from("project_applications")
+      .select("*")
+      .eq("project_id", input.projectId)
+      .order("created_at", { ascending: false });
+
+    data = fallbackResult.data;
+    error = fallbackResult.error;
+
+    if (error) {
+      console.error("[getProjectApplicants] fallback query failed", {
+        projectId: input.projectId,
+        error: error.message,
+      });
+      return {
+        ok: false,
+        error: `Failed to fetch applicants: ${error.message}`,
+      };
+    }
+
+    console.warn("[getProjectApplicants] fallback select(*) succeeded", {
+      projectId: input.projectId,
+      rowCount: (data ?? []).length,
+    });
   }
 
   const appRows = (data ?? []) as Array<{
@@ -357,15 +393,40 @@ export async function getProjectApplicants(input: {
     additional_note: string | null;
     created_at: string | null;
   }>;
+
+  console.log("[getProjectApplicants] applications", {
+    projectId: input.projectId,
+    applications: appRows,
+  });
+
   if (appRows.length === 0) return { ok: true, data: [] };
 
   const applicantIds = Array.from(
     new Set(appRows.map((item) => item.applicant_id)),
   );
-  const { data: profiles, error: profilesError } = await supabaseAdmin
+
+  const profilesPrimaryResult = await supabaseAdmin
     .from("profiles")
     .select("id,displayname,name,username,avatar_url,skills")
     .in("id", applicantIds);
+
+  let profiles = profilesPrimaryResult.data;
+  let profilesError = profilesPrimaryResult.error;
+
+  if (profilesError) {
+    console.error("[getProjectApplicants] profile query failed", {
+      projectId: input.projectId,
+      error: profilesError.message,
+    });
+
+    const profilesFallbackResult = await supabaseAdmin
+      .from("profiles")
+      .select("*")
+      .in("id", applicantIds);
+
+    profiles = profilesFallbackResult.data;
+    profilesError = profilesFallbackResult.error;
+  }
 
   if (profilesError) return { ok: false, error: profilesError.message };
 
