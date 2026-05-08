@@ -1,10 +1,12 @@
-import {
-  getBenefitLabel,
-  getWorkModeLabel,
-  formatThaiDate,
-} from "@/lib/detailedMockData";
 import Navbar from "@/components/Navbar";
 import { ProjectApplicationControls } from "@/components/applications/ProjectApplicationControls";
+import {
+  formatThaiDate,
+  getBenefitLabel,
+  getWorkModeLabel,
+} from "@/lib/detailedMockData";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { Benefit, Project } from "@/types/project";
 import {
   ArrowLeft,
   Award,
@@ -14,11 +16,9 @@ import {
   Settings,
   Users,
 } from "lucide-react";
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { supabaseAdmin } from "@/lib/supabase/admin";
-import { Benefit, Project } from "@/types/project";
 
 interface ProjectDetailPageProps {
   params: Promise<{
@@ -118,20 +118,20 @@ async function getProjectFromDb(id: string): Promise<Project | null> {
 
   const [{ data: profile }, { data: categories }, { data: positions }] =
     await Promise.all([
-    supabaseAdmin
-      .from("profiles")
-      .select("name")
-      .eq("id", projectRow.owner_id)
-      .maybeSingle(),
-    supabaseAdmin
-      .from("project_categories")
-      .select("category_name")
-      .eq("project_id", id),
-    supabaseAdmin
-      .from("project_positions")
-      .select("id,project_id,title,needed_count,preferred_qualifications")
-      .eq("project_id", id),
-  ]);
+      supabaseAdmin
+        .from("profiles")
+        .select("name")
+        .eq("id", projectRow.owner_id)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("project_categories")
+        .select("category_name")
+        .eq("project_id", id),
+      supabaseAdmin
+        .from("project_positions")
+        .select("id,project_id,title,needed_count,preferred_qualifications")
+        .eq("project_id", id),
+    ]);
 
   const positionRows = (positions as DbPosition[] | null) ?? [];
   const positionIds = positionRows.map((p) => p.id);
