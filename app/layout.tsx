@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+
 import { AuthProvider } from "@/components/auth/AuthProvider";
 import { GuestAccessGate } from "@/components/auth/GuestAccessGate";
+
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -22,7 +25,9 @@ export default function RootLayout({
     <html lang="th">
       <body className="font-sans antialiased bg-[#FFF9F6]">
         <AuthProvider>
-          <GuestAccessGate>{children}</GuestAccessGate>
+          <Suspense fallback={null}>
+            <GuestAccessGate>{children}</GuestAccessGate>
+          </Suspense>
         </AuthProvider>
       </body>
     </html>
