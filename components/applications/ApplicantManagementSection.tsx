@@ -1,18 +1,18 @@
 "use client";
 
-import { ExternalLink, UserRound } from "lucide-react";
+import { ExternalLink, Search, UserRound } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 import {
   acceptApplication,
   ApplicantCard,
+  ApplicationStatus,
   getProjectApplicants,
   rejectApplication,
 } from "@/app/actions/project-applications";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -21,6 +21,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 
 type Props = {
@@ -38,16 +39,75 @@ function formatDate(value: string) {
   });
 }
 
+function getStatusBadgeColor(status: ApplicationStatus) {
+  switch (status) {
+    case "pending":
+      return "border-amber-200 bg-amber-50 text-amber-700";
+    case "accepted":
+      return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "rejected":
+      return "border-rose-200 bg-rose-50 text-rose-700";
+    default:
+      return "border-slate-200 bg-slate-50 text-slate-700";
+  }
+}
+
+function getStatusLabel(status: ApplicationStatus) {
+  switch (status) {
+    case "pending":
+      return "Pending";
+    case "accepted":
+      return "Accepted";
+    case "rejected":
+      return "Rejected";
+    default:
+      return "Unknown";
+  }
+}
+
 export function ApplicantManagementSection({ projectId, ownerId }: Props) {
   const [applicants, setApplicants] = useState<ApplicantCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [selectedApplicant, setSelectedApplicant] =
-    useState<ApplicantCard | null>(null);
+  const [selectedApplicantId, setSelectedApplicantId] = useState<string | null>(
+    null,
+  );
+  const [filterStatus, setFilterStatus] = useState<
+    "all" | "pending" | "accepted" | "rejected"
+  >("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [confirmingAccept, setConfirmingAccept] = useState(false);
   const [rejectTarget, setRejectTarget] = useState<ApplicantCard | null>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [error, setError] = useState("");
   const [isPending, startTransition] = useTransition();
+
+  // Memoized filtered applicants
+  const filteredApplicants = useMemo(() => {
+    return applicants.filter((applicant) => {
+      const statusMatch =
+        filterStatus === "all" || applicant.status === filterStatus;
+      const searchMatch = applicant.displayName
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      return statusMatch && searchMatch;
+    });
+  }, [applicants, filterStatus, searchQuery]);
+
+  // Get selected applicant
+  const selectedApplicant = applicants.find(
+    (a) => a.id === selectedApplicantId,
+  );
+
+  // Count by status
+  const statusCounts = useMemo(() => {
+    return {
+      all: applicants.length,
+      pending: applicants.filter((a) => a.status === "pending").length,
+      accepted: applicants.filter((a) => a.status === "accepted").length,
+      rejected: applicants.filter((a) => a.status === "rejected").length,
+    };
+  }, [applicants]);
 
   async function refreshApplicants() {
     setIsLoading(true);
@@ -75,6 +135,13 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, ownerId]);
 
+  // Auto-select first applicant when modal opens and no selection exists
+  useEffect(() => {
+    if (isDetailOpen && !selectedApplicantId && filteredApplicants.length > 0) {
+      setSelectedApplicantId(filteredApplicants[0].id);
+    }
+  }, [isDetailOpen, selectedApplicantId, filteredApplicants]);
+
   function handleAccept() {
     if (!selectedApplicant) return;
     startTransition(async () => {
@@ -86,8 +153,9 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
         setError(result.error);
         return;
       }
-      setSelectedApplicant(null);
       await refreshApplicants();
+      // Keep selected applicant visible
+      setSelectedApplicantId(selectedApplicant.id);
     });
   }
 
@@ -106,6 +174,13 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
       setRejectTarget(null);
       setRejectionReason("");
       await refreshApplicants();
+      // Keep selected applicant visible if it's still in the list
+      if (rejectTarget.id === selectedApplicantId) {
+        const nextApplicant = filteredApplicants.find(
+          (a) => a.id !== rejectTarget.id,
+        );
+        setSelectedApplicantId(nextApplicant?.id || null);
+      }
     });
   }
 
@@ -155,135 +230,256 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
         </div>
       )}
 
+      {/* Split-panel recruiter modal */}
       <Dialog open={isDetailOpen} onOpenChange={setIsDetailOpen}>
-        <DialogContent className="max-h-[88vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>ผู้สมัครทั้งหมด ({applicants.length} คน)</DialogTitle>
-            <DialogDescription>
-              ตรวจรายละเอียดผู้สมัครได้จากหน้าต่างนี้
-            </DialogDescription>
-          </DialogHeader>
+        <DialogContent className="flex h-[90vh] max-h-[90vh] w-[96vw] max-w-7xl flex-col gap-0 overflow-hidden rounded-3xl p-0">
+          <div className="flex flex-1 flex-col overflow-hidden sm:flex-row">
+            {/* LEFT PANEL: Applicant list */}
+            <div className="flex flex-col border-b border-slate-200 sm:w-[340px] sm:border-b-0 sm:border-r sm:shadow-[-1px_0_0_rgba(226,232,240,1)]">
+              <div className="border-b border-slate-200 p-4">
+                <DialogHeader>
+                  <DialogTitle className="text-base">
+                    ผู้สมัครทั้งหมด ({applicants.length})
+                  </DialogTitle>
+                </DialogHeader>
+              </div>
 
-          <div className="space-y-4">
-            {applicants.map((applicant) => (
-              <Card
-                key={applicant.id}
-                className="gap-4 rounded-2xl border-slate-200/90 py-4 shadow-[0_8px_20px_rgb(15_23_42/0.06)]"
-              >
-                <CardHeader className="gap-3 px-4">
-                  <div className="flex items-start gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-(--brand-500)">
-                      <UserRound className="h-5 w-5" />
+              {/* Search input */}
+              <div className="border-b border-slate-200 p-3">
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 transform text-slate-400" />
+                  <Input
+                    type="text"
+                    placeholder="ค้นหาชื่อ..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-8 h-9 text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Status filter tabs */}
+              <div className="border-b border-slate-200 px-3 py-2">
+                <div className="flex gap-1 overflow-x-auto">
+                  {(["all", "pending", "accepted", "rejected"] as const).map(
+                    (status) => (
+                      <button
+                        key={status}
+                        onClick={() => setFilterStatus(status)}
+                        className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                          filterStatus === status
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                        }`}
+                      >
+                        {status === "all"
+                          ? `ทั้งหมด (${statusCounts.all})`
+                          : status === "pending"
+                            ? `Pending (${statusCounts.pending})`
+                            : status === "accepted"
+                              ? `Accepted (${statusCounts.accepted})`
+                              : `Rejected (${statusCounts.rejected})`}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </div>
+
+              {/* Applicant list */}
+              <div className="flex-1 overflow-y-auto">
+                {filteredApplicants.length === 0 ? (
+                  <div className="flex items-center justify-center px-4 py-8 text-center text-sm text-slate-500">
+                    {applicants.length === 0
+                      ? "ไม่มีผู้สมัคร"
+                      : "ไม่พบผลการค้นหา"}
+                  </div>
+                ) : (
+                  <div className="space-y-1 p-2">
+                    {filteredApplicants.map((applicant) => (
+                      <button
+                        key={applicant.id}
+                        onClick={() => setSelectedApplicantId(applicant.id)}
+                        className={`w-full rounded-lg px-3 py-2 text-left transition-all duration-200 ${
+                          selectedApplicantId === applicant.id
+                            ? "bg-orange-50 ring-1 ring-orange-200"
+                            : "hover:bg-slate-100"
+                        }`}
+                      >
+                        <div className="flex items-start gap-2.5">
+                          <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-(--brand-500)">
+                            <UserRound className="h-4 w-4 text-orange-600" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium text-slate-800">
+                              {applicant.displayName}
+                            </p>
+                            <p className="truncate text-xs text-slate-500">
+                              {applicant.skills[0] || "No skill"}
+                            </p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <Badge
+                                variant="secondary"
+                                className={`border text-[10px] font-medium ${getStatusBadgeColor(
+                                  applicant.status,
+                                )}`}
+                              >
+                                {getStatusLabel(applicant.status)}
+                              </Badge>
+                              <span className="text-[10px] text-slate-400">
+                                {formatDate(applicant.appliedAt)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* RIGHT PANEL: Applicant detail */}
+            <div className="flex-1 overflow-y-auto">
+              {selectedApplicant ? (
+                <div className="space-y-6 p-6">
+                  {/* Header */}
+                  <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-(--brand-500)">
+                      <UserRound className="h-7 w-7 text-orange-600" />
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <CardTitle className="text-[15px] font-semibold text-slate-800">
-                        {applicant.displayName}
-                      </CardTitle>
-                      <p className="mt-1 text-xs text-slate-500">
-                        สมัครเมื่อ {formatDate(applicant.appliedAt)}
+                    <div className="flex-1">
+                      <h2 className="text-lg font-semibold text-slate-800">
+                        {selectedApplicant.displayName}
+                      </h2>
+                      <p className="text-sm text-slate-500">
+                        สมัครเมื่อ {formatDate(selectedApplicant.appliedAt)}
                       </p>
                     </div>
                   </div>
-                </CardHeader>
-                <CardContent className="space-y-4 px-4">
-                  <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-                    <p className="mb-1 text-xs font-medium text-slate-500">
+
+                  {/* Motivation */}
+                  <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
+                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
                       Motivation
                     </p>
                     <p className="text-sm leading-6 text-slate-700">
-                      {applicant.motivationMessage ||
+                      {selectedApplicant.motivationMessage ||
                         "ไม่ได้ระบุ motivation message"}
                     </p>
                   </div>
 
+                  {/* Skills */}
                   <div className="space-y-2">
                     <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                       Skills
                     </p>
                     <div className="flex flex-wrap gap-2">
-                      {applicant.skills.length === 0 && (
+                      {selectedApplicant.skills.length === 0 ? (
                         <span className="text-xs text-slate-400">
                           ไม่มีข้อมูลทักษะ
                         </span>
+                      ) : (
+                        selectedApplicant.skills.map((skill) => (
+                          <Badge
+                            key={skill}
+                            variant="secondary"
+                            className="rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-medium text-orange-700"
+                          >
+                            {skill}
+                          </Badge>
+                        ))
                       )}
-                      {applicant.skills.map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="secondary"
-                          className="rounded-full border border-orange-100 bg-orange-50 px-2.5 py-1 text-[11px] font-medium text-orange-700"
-                        >
-                          {skill}
-                        </Badge>
-                      ))}
                     </div>
                   </div>
 
-                  {applicant.portfolioUrls.length > 0 && (
+                  {/* Bio */}
+                  {selectedApplicant.additionalNote && (
+                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4 text-sm text-slate-700">
+                      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Bio / Additional Note
+                      </p>
+                      {selectedApplicant.additionalNote}
+                    </div>
+                  )}
+
+                  {/* Portfolio links */}
+                  {selectedApplicant.portfolioUrls.length > 0 && (
                     <div className="space-y-2">
                       <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
                         Portfolio
                       </p>
-                      {applicant.portfolioUrls.map((url) => (
-                        <a
-                          key={url}
-                          href={url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-sm text-sky-700 transition-colors hover:bg-sky-100"
-                        >
-                          <ExternalLink className="h-4 w-4 shrink-0" />
-                          <span className="truncate">{url}</span>
-                        </a>
-                      ))}
+                      <div className="space-y-1">
+                        {selectedApplicant.portfolioUrls.map((url) => (
+                          <a
+                            key={url}
+                            href={url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 rounded-lg border border-sky-100 bg-sky-50 px-3 py-2 text-sm text-sky-700 transition-colors hover:bg-sky-100"
+                          >
+                            <ExternalLink className="h-4 w-4 shrink-0" />
+                            <span className="truncate">{url}</span>
+                          </a>
+                        ))}
+                      </div>
                     </div>
                   )}
 
-                  {applicant.additionalNote && (
-                    <div className="rounded-xl border border-indigo-100 bg-indigo-50/70 p-3 text-sm text-slate-700">
-                      <p className="mb-1 text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Additional note
-                      </p>
-                      {applicant.additionalNote}
+                  {/* Action buttons */}
+                  <div className="sticky bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 pt-4">
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        variant="outline"
+                        asChild
+                        className="h-9 w-full justify-center text-xs"
+                      >
+                        <Link href={`/user/${selectedApplicant.applicantId}`}>
+                          View Profile
+                        </Link>
+                      </Button>
+                      <Button
+                        className="h-9 w-full bg-emerald-600 text-white hover:bg-emerald-700"
+                        disabled={
+                          selectedApplicant.status === "accepted" || isPending
+                        }
+                        onClick={() => setConfirmingAccept(true)}
+                        size="sm"
+                      >
+                        Accept
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        className="h-9 w-full text-xs"
+                        disabled={
+                          selectedApplicant.status === "rejected" || isPending
+                        }
+                        onClick={() => setRejectTarget(selectedApplicant)}
+                        size="sm"
+                      >
+                        Reject
+                      </Button>
                     </div>
-                  )}
-
-                  <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
-                    <Button
-                      variant="outline"
-                      asChild
-                      className="h-9 w-full justify-center"
-                    >
-                      <Link href={`/user/${applicant.applicantId}`}>
-                        View Profile
-                      </Link>
-                    </Button>
-                    <Button
-                      className="h-9 w-full bg-emerald-600 text-white hover:bg-emerald-700"
-                      disabled={applicant.status === "accepted"}
-                      onClick={() => setSelectedApplicant(applicant)}
-                    >
-                      Accept
-                    </Button>
-                    <Button
-                      variant="destructive"
-                      className="h-9 w-full"
-                      disabled={applicant.status === "rejected"}
-                      onClick={() => setRejectTarget(applicant)}
-                    >
-                      Reject
-                    </Button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center px-6 py-12">
+                  <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-6 py-8">
+                    <p className="text-center text-sm font-medium text-slate-600">
+                      เลือกผู้สมัครจากรายการทางซ้าย
+                    </p>
+                    <p className="mt-2 text-center text-xs text-slate-500">
+                      ดูรายละเอียดและรับสมาชิกเข้าทีม
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </DialogContent>
       </Dialog>
 
-      <Dialog
-        open={Boolean(selectedApplicant)}
-        onOpenChange={(open) => !open && setSelectedApplicant(null)}
-      >
+      {/* Accept confirmation dialog */}
+      <Dialog open={confirmingAccept} onOpenChange={setConfirmingAccept}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>ยืนยันรับสมาชิกเข้าทีม?</DialogTitle>
@@ -294,18 +490,25 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setSelectedApplicant(null)}
+              onClick={() => setConfirmingAccept(false)}
               disabled={isPending}
             >
               Cancel
             </Button>
-            <Button onClick={handleAccept} disabled={isPending}>
+            <Button
+              onClick={() => {
+                setConfirmingAccept(false);
+                handleAccept();
+              }}
+              disabled={isPending}
+            >
               Confirm
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Reject confirmation dialog */}
       <Dialog
         open={Boolean(rejectTarget)}
         onOpenChange={(open) => !open && setRejectTarget(null)}
