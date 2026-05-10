@@ -540,12 +540,14 @@ export async function getProjectApplicants(input: {
   const appRows = (data ?? []) as Array<{
     id: string;
     applicant_id: string;
+    position_id: string | null;
     status: string | null;
     motivation_message: string | null;
     skills: string[] | null;
     portfolio_urls: string[] | null;
     additional_note: string | null;
     created_at: string | null;
+    project_positions: { title: string } | { title: string }[] | null;
   }>;
 
   console.log("[getProjectApplicants] applications", {
@@ -800,6 +802,7 @@ async function loadApplicationForOwner(
         id: row.id,
         project_id: row.project_id,
         applicant_id: row.applicant_id,
+        position_id: row.position_id,
       },
     },
   };
