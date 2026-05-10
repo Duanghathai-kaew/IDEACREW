@@ -37,6 +37,7 @@ export type ProjectPositionOption = {
   neededCount: number;
   acceptedCount: number;
   requiredSkills: string[];
+  isActive: boolean;
   isFull: boolean;
 };
 
@@ -117,120 +118,50 @@ export async function getApplyProfilePrefill(
 export async function getProjectPositions(
   projectId: string,
 ): Promise<ActionResult<ProjectPositionOption[]>> {
-  let positions: Array<{
+  const { data, error } = await supabaseAdmin
+    .from("project_positions")
+    .select("id,title,required_skills,needed_count,accepted_count,is_active")
+    .eq("project_id", projectId)
+    .eq("is_active", true)
+    .order("title", { ascending: true });
+
+  if (error) {
+    console.error("getProjectPositions query error:", error);
+    return { ok: false, error: error.message };
+  }
+
+  const positions = (data ?? []) as Array<{
     id: string;
     title: string;
     needed_count: number | null;
-    accepted_count?: number | null;
-  }> | null = null;
+    accepted_count: number | null;
+    required_skills: string[] | null;
+    is_active: boolean | null;
+  }>;
 
-  const withAccepted = await supabaseAdmin
-    .from("project_positions")
-    .select("id,title,needed_count,accepted_count")
-    .eq("project_id", projectId)
-    .order("sort_order", { ascending: true });
+  console.log("project_positions result:", positions);
 
-  if (withAccepted.error) {
-    if (!isMissingColumnError(withAccepted.error.message)) {
-      return { ok: false, error: withAccepted.error.message };
-    }
-
-    const fallback = await supabaseAdmin
-      .from("project_positions")
-      .select("id,title,needed_count")
-      .eq("project_id", projectId)
-      .order("sort_order", { ascending: true });
-
-    if (fallback.error) {
-      return { ok: false, error: fallback.error.message };
-    }
-
-    positions = (fallback.data ?? []).map((row) => ({
-      id: row.id,
-      title: row.title,
-      needed_count: row.needed_count,
-      accepted_count: null,
-    }));
-  } else {
-    positions = withAccepted.data;
-  }
-
-  const positionRows = positions ?? [];
-  const positionIds = positionRows.map((row) => row.id);
-
-  const [skillsResult, acceptedAppsResult] =
-    positionIds.length === 0
-      ? [
-          { data: [] as Array<{ position_id: string; skill_name: string }> },
-          { data: [] as Array<{ position_id: string | null }> },
-        ]
-      : await Promise.all([
-          supabaseAdmin
-            .from("project_position_skills")
-            .select("position_id,skill_name")
-            .in("position_id", positionIds),
-          supabaseAdmin
-            .from("project_applications")
-            .select("position_id")
-            .eq("project_id", projectId)
-            .eq("status", "accepted")
-            .not("position_id", "is", null),
-        ]);
-
-  if ((skillsResult as { error?: { message: string } }).error) {
-    return {
-      ok: false,
-      error: (skillsResult as { error: { message: string } }).error.message,
-    };
-  }
-
-  if ((acceptedAppsResult as { error?: { message: string } }).error) {
-    return {
-      ok: false,
-      error: (acceptedAppsResult as { error: { message: string } }).error
-        .message,
-    };
-  }
-
-  const skillsByPositionId = new Map<string, string[]>();
-  for (const row of (skillsResult.data ?? []) as Array<{
-    position_id: string;
-    skill_name: string;
-  }>) {
-    const current = skillsByPositionId.get(row.position_id) ?? [];
-    current.push(row.skill_name);
-    skillsByPositionId.set(row.position_id, current);
-  }
-
-  const acceptedCountByPositionId = new Map<string, number>();
-  for (const row of (acceptedAppsResult.data ?? []) as Array<{
-    position_id: string | null;
-  }>) {
-    if (!row.position_id) continue;
-    acceptedCountByPositionId.set(
-      row.position_id,
-      (acceptedCountByPositionId.get(row.position_id) ?? 0) + 1,
-    );
-  }
-
-  const positionOptions = positionRows.map((pos) => {
-    const acceptedCount =
-      typeof pos.accepted_count === "number"
-        ? pos.accepted_count
-        : (acceptedCountByPositionId.get(pos.id) ?? 0);
-    const neededCount = pos.needed_count ?? 0;
-
-    return {
-      id: pos.id,
-      title: pos.title,
-      neededCount,
-      acceptedCount,
-      requiredSkills: skillsByPositionId.get(pos.id) ?? [],
-      isFull: acceptedCount >= neededCount,
-    } satisfies ProjectPositionOption;
+  const availablePositions = positions.filter((position) => {
+    const acceptedCount = position.accepted_count ?? 0;
+    const neededCount = position.needed_count ?? 1;
+    const isActive = position.is_active !== false;
+    return isActive && acceptedCount < neededCount;
   });
 
-  return { ok: true, data: positionOptions };
+  console.log("availablePositions:", availablePositions);
+
+  return {
+    ok: true,
+    data: availablePositions.map((position) => ({
+      id: position.id,
+      title: position.title,
+      neededCount: position.needed_count ?? 0,
+      acceptedCount: position.accepted_count ?? 0,
+      requiredSkills: position.required_skills ?? [],
+      isActive: position.is_active ?? false,
+      isFull: (position.accepted_count ?? 0) >= (position.needed_count ?? 1),
+    })),
+  };
 }
 
 export async function submitProjectApplication(input: {
@@ -271,10 +202,9 @@ export async function submitProjectApplication(input: {
     return { ok: false, error: "This project is not open for applications" };
   }
 
-  // Verify position exists and belongs to this project
   const { data: position, error: positionError } = await supabaseAdmin
     .from("project_positions")
-    .select("id,needed_count,accepted_count")
+    .select("id,needed_count,accepted_count,is_active")
     .eq("id", positionId)
     .eq("project_id", projectId)
     .maybeSingle();
@@ -284,10 +214,14 @@ export async function submitProjectApplication(input: {
   }
 
   const positionRow = position as {
-    needed_count: number;
-    accepted_count: number;
+    needed_count: number | null;
+    accepted_count: number | null;
+    is_active: boolean | null;
   };
-  if (positionRow.accepted_count >= positionRow.needed_count) {
+  if (
+    !positionRow.is_active ||
+    (positionRow.accepted_count ?? 0) >= (positionRow.needed_count ?? 0)
+  ) {
     return { ok: false, error: "This position is already filled" };
   }
 
@@ -674,6 +608,9 @@ export async function acceptApplication(input: {
 
     if (!positionFetchError && position) {
       const newCount = (position.accepted_count ?? 0) + 1;
+      if (newCount > (position.needed_count ?? 0)) {
+        return { ok: false, error: "This position is already filled" };
+      }
       await supabaseAdmin
         .from("project_positions")
         .update({ accepted_count: newCount })

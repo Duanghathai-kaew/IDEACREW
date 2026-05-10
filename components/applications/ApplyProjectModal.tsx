@@ -97,17 +97,26 @@ export function ApplyProjectModal({
 
     // Load positions
     setLoadingPositions(true);
+    setPositions([]); // Reset positions state
     getProjectPositions(projectId).then((result) => {
       if (!mounted) return;
+
+      console.log("getProjectPositions result:", result);
       setLoadingPositions(false);
+
       if (result.ok) {
+        console.log("positions from action:", result.data);
+        console.log("positions length:", result.data.length);
         setPositions(result.data);
+
         // Auto-select first available position
         const firstAvailable = result.data.find((p) => !p.isFull);
         if (firstAvailable) {
+          console.log("auto-selected position:", firstAvailable.id);
           setSelectedPositionId(firstAvailable.id);
         }
       } else {
+        console.error("getProjectPositions error:", result.error);
         setPositions([]);
         setError("ไม่สามารถโหลดตำแหน่งได้ กรุณาลองใหม่อีกครั้ง");
       }
@@ -186,71 +195,73 @@ export function ApplyProjectModal({
               <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
                 กำลังโหลดตำแหน่ง...
               </div>
-            ) : positions.length === 0 ? (
+            ) : availablePositions.length === 0 ? (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-6 text-center text-sm text-amber-700">
                 โปรเจกต์นี้ไม่มีตำแหน่งว่าง
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
-                {positions.map((position) => (
-                  <button
-                    key={position.id}
-                    onClick={() =>
-                      !position.isFull && setSelectedPositionId(position.id)
-                    }
-                    disabled={position.isFull}
-                    className={`rounded-2xl border-2 p-4 text-left transition-all ${
-                      selectedPositionId === position.id
-                        ? "border-orange-400 bg-orange-50"
-                        : position.isFull
-                          ? "border-slate-200 bg-slate-50 opacity-60"
-                          : "border-slate-200 bg-white hover:border-orange-200"
-                    } ${position.isFull ? "cursor-not-allowed" : "cursor-pointer"}`}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-slate-800">
-                          {position.title}
-                        </h4>
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-sm text-slate-600">
-                            {Math.max(
-                              0,
-                              position.neededCount - position.acceptedCount,
-                            )}{" "}
-                            ช่าง
-                          </span>
-                          <span className="text-xs text-slate-400">
-                            / {position.neededCount}
-                          </span>
+                {availablePositions.map((position) => {
+                  console.log(
+                    "rendering position:",
+                    position.id,
+                    position.title,
+                    "isFull:",
+                    position.isFull,
+                  );
+                  return (
+                    <button
+                      key={position.id}
+                      onClick={() =>
+                        !position.isFull && setSelectedPositionId(position.id)
+                      }
+                      disabled={position.isFull}
+                      className={`rounded-2xl border-2 p-4 text-left transition-all ${
+                        selectedPositionId === position.id
+                          ? "border-orange-400 bg-orange-50"
+                          : position.isFull
+                            ? "border-slate-200 bg-slate-50 opacity-60"
+                            : "border-slate-200 bg-white hover:border-orange-200"
+                      } ${position.isFull ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1">
+                          <h4 className="font-semibold text-slate-800">
+                            {position.title}
+                          </h4>
+                          <div className="mt-2 flex items-center gap-2">
+                            <span className="text-sm text-slate-600">
+                              {position.acceptedCount} / {position.neededCount}
+                            </span>
+                          </div>
+                          {position.requiredSkills.length > 0 && (
+                            <div className="mt-3 flex flex-wrap gap-1">
+                              {position.requiredSkills.map((skill) => (
+                                <Badge
+                                  key={skill}
+                                  variant="secondary"
+                                  className="rounded-full border-orange-100 bg-orange-50 px-2 py-0.5 text-[10px] text-orange-700"
+                                >
+                                  {skill}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
                         </div>
-                        {position.requiredSkills.length > 0 && (
-                          <div className="mt-3 flex flex-wrap gap-1">
-                            {position.requiredSkills.map((skill) => (
-                              <Badge
-                                key={skill}
-                                variant="secondary"
-                                className="rounded-full border-orange-100 bg-orange-50 px-2 py-0.5 text-[10px] text-orange-700"
-                              >
-                                {skill}
-                              </Badge>
-                            ))}
+                        {position.isFull && (
+                          <Badge className="border-rose-200 bg-rose-50 text-rose-700">
+                            เต็มแล้ว
+                          </Badge>
+                        )}
+                        {selectedPositionId === position.id && (
+                          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-600">
+                            <Check className="h-4 w-4 text-white" />
                           </div>
                         )}
                       </div>
-                      {position.isFull && (
-                        <Badge className="border-rose-200 bg-rose-50 text-rose-700">
-                          เต็มแล้ว
-                        </Badge>
-                      )}
-                      {selectedPositionId === position.id && (
-                        <div className="flex h-6 w-6 items-center justify-center rounded-full bg-orange-600">
-                          <Check className="h-4 w-4 text-white" />
-                        </div>
-                      )}
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -429,12 +440,9 @@ export function ApplyProjectModal({
             type="button"
             onClick={handleSubmit}
             disabled={
-              isPending ||
-              !motivationMessage.trim() ||
-              !selectedPositionId ||
-              availablePositions.length === 0
+              isPending || !motivationMessage.trim() || !selectedPositionId
             }
-            className="rounded-xl bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
+            className="rounded-xl bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
           >
             <Send className="h-4 w-4" />
             Submit Application
