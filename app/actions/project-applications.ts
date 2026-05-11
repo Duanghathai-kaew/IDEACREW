@@ -56,6 +56,23 @@ export type AppliedProjectCard = {
   rejectionReason: string;
 };
 
+export type RecruitmentPosition = {
+  id: string;
+  title: string;
+  neededCount: number;
+  acceptedCount: number;
+  requiredSkills: string[];
+  isFull: boolean;
+};
+
+export type TeamMember = {
+  userId: string;
+  displayName: string;
+  avatarUrl: string;
+  positionTitle: string;
+  acceptedAt: string;
+};
+
 function uniq(values: string[]) {
   return Array.from(
     new Set(values.map((value) => value.trim()).filter(Boolean)),
@@ -418,6 +435,127 @@ export async function getProjectApplicationsForUser(
   };
 }
 
+/**
+ * Get recruitment progress for a project
+ * Returns all positions with their acceptance counts and status
+ */
+export async function getProjectRecruitmentProgress(
+  projectId: string,
+): Promise<ActionResult<RecruitmentPosition[]>> {
+  const { data, error } = await supabaseAdmin
+    .from("project_positions")
+    .select("id,title,needed_count,accepted_count,required_skills,is_active")
+    .eq("project_id", projectId)
+    .eq("is_active", true)
+    .order("title", { ascending: true });
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  const positions = (data ?? []) as Array<{
+    id: string;
+    title: string;
+    needed_count: number | null;
+    accepted_count: number | null;
+    required_skills: string[] | null;
+    is_active: boolean | null;
+  }>;
+
+  return {
+    ok: true,
+    data: positions.map((position) => {
+      const acceptedCount = position.accepted_count ?? 0;
+      const neededCount = position.needed_count ?? 0;
+      return {
+        id: position.id,
+        title: position.title,
+        neededCount,
+        acceptedCount,
+        requiredSkills: position.required_skills ?? [],
+        isFull: acceptedCount >= neededCount,
+      };
+    }),
+  };
+}
+
+/**
+ * Get team members for a project
+ * Returns accepted applicants grouped by position with member details
+ */
+export async function getProjectTeamMembers(
+  projectId: string,
+): Promise<ActionResult<TeamMember[]>> {
+  // Get accepted applications with position and applicant info
+  const { data: applications, error } = await supabaseAdmin
+    .from("project_applications")
+    .select("id,applicant_id,position_id,created_at,project_positions(title)")
+    .eq("project_id", projectId)
+    .eq("status", "accepted")
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    return { ok: false, error: error.message };
+  }
+
+  const appRows = (applications ?? []) as Array<{
+    id: string;
+    applicant_id: string;
+    position_id: string | null;
+    created_at: string | null;
+    project_positions: Array<{ title: string }> | null;
+  }>;
+
+  if (appRows.length === 0) return { ok: true, data: [] };
+
+  // Get profile info for all applicants
+  const applicantIds = Array.from(
+    new Set(appRows.map((app) => app.applicant_id)),
+  );
+  const { data: profiles, error: profileError } = await supabaseAdmin
+    .from("profiles")
+    .select("id,displayname,name,username,avatar_url")
+    .in("id", applicantIds);
+
+  if (profileError) {
+    return { ok: false, error: profileError.message };
+  }
+
+  const profileById = new Map(
+    (
+      (profiles ?? []) as Array<{
+        id: string;
+        displayname: string | null;
+        name: string | null;
+        username: string | null;
+        avatar_url: string | null;
+      }>
+    ).map((profile) => [profile.id, profile]),
+  );
+
+  return {
+    ok: true,
+    data: appRows.map((app) => {
+      const profile = profileById.get(app.applicant_id);
+      const positionArray = app.project_positions as
+        | Array<{ title: string }>
+        | null;
+      const positionTitle = positionArray?.[0]?.title ?? "Member";
+      return {
+        userId: app.applicant_id,
+        displayName:
+          profile?.displayname?.trim() ||
+          profile?.name?.trim() ||
+          profile?.username?.trim() ||
+          "Team Member",
+        avatarUrl: profile?.avatar_url ?? "",
+        positionTitle,
+        acceptedAt: app.created_at ?? "",
+      };
+    }),
+  };
+}
+
 export async function getProjectApplicants(input: {
   projectId: string;
   ownerId: string;
@@ -484,17 +622,20 @@ export async function getProjectApplicants(input: {
     portfolio_urls: string[] | null;
     additional_note: string | null;
     created_at: string | null;
-    project_positions: {
-      title: string;
-      needed_count: number | null;
-      accepted_count: number | null;
-      required_skills: string[] | null;
-    } | {
-      title: string;
-      needed_count: number | null;
-      accepted_count: number | null;
-      required_skills: string[] | null;
-    }[] | null;
+    project_positions:
+      | {
+          title: string;
+          needed_count: number | null;
+          accepted_count: number | null;
+          required_skills: string[] | null;
+        }
+      | {
+          title: string;
+          needed_count: number | null;
+          accepted_count: number | null;
+          required_skills: string[] | null;
+        }[]
+      | null;
   }>;
 
   console.log("[getProjectApplicants] applications", {
@@ -599,7 +740,10 @@ async function checkAndUpdateProjectRecruitmentStatus(
       .eq("is_active", true);
 
     if (error) {
-      console.error("[checkAndUpdateProjectRecruitmentStatus] query error:", error);
+      console.error(
+        "[checkAndUpdateProjectRecruitmentStatus] query error:",
+        error,
+      );
       return;
     }
 
@@ -621,13 +765,21 @@ async function checkAndUpdateProjectRecruitmentStatus(
         .eq("id", projectId);
 
       if (updateError) {
-        console.error("[checkAndUpdateProjectRecruitmentStatus] update error:", updateError);
+        console.error(
+          "[checkAndUpdateProjectRecruitmentStatus] update error:",
+          updateError,
+        );
       } else {
-        console.log("[checkAndUpdateProjectRecruitmentStatus] project status updated to closed");
+        console.log(
+          "[checkAndUpdateProjectRecruitmentStatus] project status updated to closed",
+        );
       }
     }
   } catch (err) {
-    console.error("[checkAndUpdateProjectRecruitmentStatus] unexpected error:", err);
+    console.error(
+      "[checkAndUpdateProjectRecruitmentStatus] unexpected error:",
+      err,
+    );
   }
 }
 

@@ -192,12 +192,31 @@ export function ApplyProjectModal({
             </div>
 
             {loadingPositions ? (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center text-sm text-slate-500">
-                กำลังโหลดตำแหน่ง...
+              <div className="space-y-3">
+                {[1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                  >
+                    <div className="space-y-2">
+                      <div className="h-4 w-32 rounded bg-slate-200" />
+                      <div className="h-3 w-16 rounded bg-slate-200" />
+                      <div className="mt-3 flex gap-1">
+                        <div className="h-6 w-16 rounded-full bg-slate-200" />
+                        <div className="h-6 w-16 rounded-full bg-slate-200" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             ) : availablePositions.length === 0 ? (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-6 text-center text-sm text-amber-700">
-                โปรเจกต์นี้ไม่มีตำแหน่งว่าง
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-6 text-center">
+                <p className="text-sm font-semibold text-amber-700">
+                  โปรเจกต์นี้ปิดรับสมัครแล้ว
+                </p>
+                <p className="mt-1 text-xs text-amber-600">
+                  ทำเนียบตำแหน่งทั้งหมดเต็มแล้ว กรุณารอโปรเจกต์ถัดไป
+                </p>
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
@@ -440,7 +459,11 @@ export function ApplyProjectModal({
             type="button"
             onClick={handleSubmit}
             disabled={
-              isPending || !motivationMessage.trim() || !selectedPositionId
+              isPending ||
+              loadingPositions ||
+              availablePositions.length === 0 ||
+              !motivationMessage.trim() ||
+              !selectedPositionId
             }
             className="rounded-xl bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
           >

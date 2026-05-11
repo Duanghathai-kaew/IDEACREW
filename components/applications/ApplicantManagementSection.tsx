@@ -375,19 +375,23 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                                   ตำแหน่งที่ว่าง
                                 </span>
                                 <span className="font-semibold text-slate-800">
-                                  {selectedApplicant.positionAcceptedCount ?? 0} /{" "}
-                                  {selectedApplicant.positionNeededCount}
+                                  {selectedApplicant.positionAcceptedCount ?? 0}{" "}
+                                  / {selectedApplicant.positionNeededCount}
                                 </span>
                               </div>
                               {/* Progress bar */}
                               <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
                                 <div
                                   className={`h-full transition-all ${
-                                    (selectedApplicant.positionAcceptedCount ?? 0) >=
+                                    (selectedApplicant.positionAcceptedCount ??
+                                      0) >=
                                     selectedApplicant.positionNeededCount
                                       ? "bg-red-500"
-                                      : (selectedApplicant.positionAcceptedCount ?? 0) >=
-                                          (selectedApplicant.positionNeededCount ?? 0) * 0.7
+                                      : (selectedApplicant.positionAcceptedCount ??
+                                            0) >=
+                                          (selectedApplicant.positionNeededCount ??
+                                            0) *
+                                            0.7
                                         ? "bg-amber-500"
                                         : "bg-emerald-500"
                                   }`}
@@ -395,7 +399,8 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                                     width: `${Math.min(
                                       ((selectedApplicant.positionAcceptedCount ??
                                         0) /
-                                        (selectedApplicant.positionNeededCount ?? 1)) *
+                                        (selectedApplicant.positionNeededCount ??
+                                          1)) *
                                         100,
                                       100,
                                     )}%`,
@@ -406,7 +411,8 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                           )}
                         </div>
                         {selectedApplicant.positionRequiredSkills &&
-                          selectedApplicant.positionRequiredSkills.length > 0 && (
+                          selectedApplicant.positionRequiredSkills.length >
+                            0 && (
                             <div>
                               <p className="mb-2 text-xs font-medium text-slate-600">
                                 ทักษะที่ต้องการ

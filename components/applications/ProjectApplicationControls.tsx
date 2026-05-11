@@ -25,6 +25,7 @@ type Props = {
   ownerId?: string;
   isOpen: boolean;
   applicationEndDateLabel: string;
+  projectStatus?: string;
 };
 
 export function ProjectApplicationControls({
@@ -32,6 +33,7 @@ export function ProjectApplicationControls({
   ownerId,
   isOpen,
   applicationEndDateLabel,
+  projectStatus,
 }: Props) {
   const { user, isLoading } = useAuth();
   const [applyOpen, setApplyOpen] = useState(false);
@@ -73,25 +75,29 @@ export function ProjectApplicationControls({
   const applicationStatus = application?.status ?? null;
   const isDuplicateApplication =
     applicationStatus === "pending" || applicationStatus === "accepted";
+  const isClosed = projectStatus === "closed";
   const canApply =
     isOpen &&
+    !isClosed &&
     !isLoading &&
     !isCheckingApplication &&
     !!user?.id &&
     !isOwner &&
     !isDuplicateApplication;
 
-  const buttonLabel = !isOpen
+  const buttonLabel = isClosed
     ? "ปิดรับสมัครแล้ว"
-    : isCheckingApplication
-      ? "กำลังตรวจสอบสถานะ..."
-      : applicationStatus === "pending"
-        ? "ส่งใบสมัครแล้ว"
-        : applicationStatus === "accepted"
-          ? "เข้าร่วมทีมแล้ว"
-          : applicationStatus === "rejected"
-            ? "สมัครใหม่อีกครั้ง"
-            : "สมัครเลย";
+    : !isOpen
+      ? "ปิดรับสมัครแล้ว"
+      : isCheckingApplication
+        ? "กำลังตรวจสอบสถานะ..."
+        : applicationStatus === "pending"
+          ? "ส่งใบสมัครแล้ว"
+          : applicationStatus === "accepted"
+            ? "เข้าร่วมทีมแล้ว"
+            : applicationStatus === "rejected"
+              ? "สมัครใหม่อีกครั้ง"
+              : "สมัครเลย";
 
   return (
     <>
@@ -113,7 +119,12 @@ export function ProjectApplicationControls({
           คุณเป็นเจ้าของโปรเจกต์นี้
         </p>
       )}
-      {!isOpen && (
+      {isClosed && !isOwner && (
+        <p className="mt-3 text-center text-xs text-white/80">
+          โปรเจกต์นี้ปิดรับสมาชิกแล้ว
+        </p>
+      )}
+      {!isOpen && !isClosed && (
         <p className="mt-3 text-center text-xs opacity-75">
           หมดเวลา {applicationEndDateLabel}
         </p>

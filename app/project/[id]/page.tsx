@@ -1,5 +1,7 @@
 import Navbar from "@/components/Navbar";
 import { ProjectApplicationControls } from "@/components/applications/ProjectApplicationControls";
+import { RecruitmentProgressSection } from "@/components/applications/RecruitmentProgressSection";
+import { TeamMembersSection } from "@/components/applications/TeamMembersSection";
 import {
   formatThaiDate,
   getBenefitLabel,
@@ -272,12 +274,18 @@ export default async function ProjectDetailPage({
               <div className="text-sm text-gray-500">
                 <span
                   className={`inline-block rounded-full px-2.5 py-1 text-xs ${
-                    isOpen
-                      ? "bg-emerald-100 text-emerald-700"
-                      : "bg-rose-100 text-rose-700"
+                    project.status === "closed"
+                      ? "bg-slate-100 text-slate-600"
+                      : isOpen
+                        ? "bg-emerald-100 text-emerald-700"
+                        : "bg-rose-100 text-rose-700"
                   }`}
                 >
-                  {isOpen ? "เปิดรับสมัคร" : "ปิดรับสมัครแล้ว"}
+                  {project.status === "closed"
+                    ? "ปิดรับสมัครแล้ว"
+                    : isOpen
+                      ? "เปิดรับสมัคร"
+                      : "ปิดรับสมัครแล้ว"}
                 </span>
               </div>
             </div>
@@ -387,6 +395,10 @@ export default async function ProjectDetailPage({
                     ))}
                   </div>
                 </div>
+
+                <RecruitmentProgressSection projectId={project.id} />
+
+                <TeamMembersSection projectId={project.id} />
 
                 <div className="rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
                   <h2 className="mb-4 text-lg font-semibold text-slate-700">
@@ -528,6 +540,7 @@ export default async function ProjectDetailPage({
                     applicationEndDateLabel={formatThaiDate(
                       project.applicationEndDate,
                     )}
+                    projectStatus={project.status}
                   />
                 </div>
 
