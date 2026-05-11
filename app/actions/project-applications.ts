@@ -19,6 +19,9 @@ export type ApplicantCard = {
   applicantId: string;
   positionId: string | null;
   positionTitle: string | null;
+  positionNeededCount: number | null;
+  positionAcceptedCount: number | null;
+  positionRequiredSkills: string[] | null;
   displayName: string;
   avatarUrl: string;
   skills: string[];
@@ -431,7 +434,7 @@ export async function getProjectApplicants(input: {
   const primaryResult = await supabaseAdmin
     .from("project_applications")
     .select(
-      "id,applicant_id,position_id,status,motivation_message,skills,portfolio_urls,additional_note,created_at,project_positions(title)",
+      "id,applicant_id,position_id,status,motivation_message,skills,portfolio_urls,additional_note,created_at,project_positions(title,needed_count,accepted_count,required_skills)",
     )
     .eq("project_id", input.projectId)
     .order("created_at", { ascending: false });
@@ -481,7 +484,17 @@ export async function getProjectApplicants(input: {
     portfolio_urls: string[] | null;
     additional_note: string | null;
     created_at: string | null;
-    project_positions: { title: string } | { title: string }[] | null;
+    project_positions: {
+      title: string;
+      needed_count: number | null;
+      accepted_count: number | null;
+      required_skills: string[] | null;
+    } | {
+      title: string;
+      needed_count: number | null;
+      accepted_count: number | null;
+      required_skills: string[] | null;
+    }[] | null;
   }>;
 
   console.log("[getProjectApplicants] applications", {
@@ -539,12 +552,18 @@ export async function getProjectApplicants(input: {
       const profile = profileById.get(application.applicant_id);
       const positionData = application.project_positions as {
         title: string;
+        needed_count: number | null;
+        accepted_count: number | null;
+        required_skills: string[] | null;
       } | null;
       return {
         id: application.id,
         applicantId: application.applicant_id,
         positionId: application.position_id ?? null,
         positionTitle: positionData?.title ?? null,
+        positionNeededCount: positionData?.needed_count ?? null,
+        positionAcceptedCount: positionData?.accepted_count ?? null,
+        positionRequiredSkills: positionData?.required_skills ?? null,
         displayName:
           profile?.displayname?.trim() ||
           profile?.name?.trim() ||
@@ -562,6 +581,54 @@ export async function getProjectApplicants(input: {
       };
     }),
   };
+}
+
+/**
+ * Check if a project's recruitment is complete (all positions filled)
+ * and update project status to 'closed' if necessary
+ */
+async function checkAndUpdateProjectRecruitmentStatus(
+  projectId: string,
+): Promise<void> {
+  try {
+    // Get all active positions for the project
+    const { data: positions, error } = await supabaseAdmin
+      .from("project_positions")
+      .select("id,needed_count,accepted_count,is_active")
+      .eq("project_id", projectId)
+      .eq("is_active", true);
+
+    if (error) {
+      console.error("[checkAndUpdateProjectRecruitmentStatus] query error:", error);
+      return;
+    }
+
+    // Check if all positions are full
+    const allPositionsFull = (positions ?? []).every((position) => {
+      const acceptedCount = position.accepted_count ?? 0;
+      const neededCount = position.needed_count ?? 0;
+      return acceptedCount >= neededCount;
+    });
+
+    // If all positions are full, update project status to 'closed'
+    if (allPositionsFull && (positions ?? []).length > 0) {
+      const { error: updateError } = await supabaseAdmin
+        .from("projects")
+        .update({
+          status: "closed",
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", projectId);
+
+      if (updateError) {
+        console.error("[checkAndUpdateProjectRecruitmentStatus] update error:", updateError);
+      } else {
+        console.log("[checkAndUpdateProjectRecruitmentStatus] project status updated to closed");
+      }
+    }
+  } catch (err) {
+    console.error("[checkAndUpdateProjectRecruitmentStatus] unexpected error:", err);
+  }
 }
 
 export async function acceptApplication(input: {
@@ -628,6 +695,9 @@ export async function acceptApplication(input: {
     status: "accepted",
     link: `/project/${application.project_id}`,
   });
+
+  // Check if recruitment is complete and update project status if necessary
+  await checkAndUpdateProjectRecruitmentStatus(application.project_id);
 
   revalidatePath(`/project/${application.project_id}`);
   revalidatePath("/my-project");

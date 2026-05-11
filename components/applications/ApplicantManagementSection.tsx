@@ -235,7 +235,7 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
         <DialogContent className="flex h-[90vh] max-h-[90vh] w-[96vw] max-w-7xl flex-col gap-0 overflow-hidden rounded-3xl p-0">
           <div className="flex flex-1 flex-col overflow-hidden sm:flex-row">
             {/* LEFT PANEL: Applicant list */}
-            <div className="flex flex-col border-b border-slate-200 sm:w-[340px] sm:border-b-0 sm:border-r sm:shadow-[-1px_0_0_rgba(226,232,240,1)]">
+            <div className="flex flex-col border-b border-slate-200 sm:w-85 sm:border-b-0 sm:border-r sm:shadow-[-1px_0_0_rgba(226,232,240,1)]">
               <div className="border-b border-slate-200 p-4">
                 <DialogHeader>
                   <DialogTitle className="text-base">
@@ -306,7 +306,7 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                         }`}
                       >
                         <div className="flex items-start gap-2.5">
-                          <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-(--brand-500)">
+                          <div className="mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-100 to-amber-100 text-brand-500">
                             <UserRound className="h-4 w-4 text-orange-600" />
                           </div>
                           <div className="min-w-0 flex-1">
@@ -344,7 +344,7 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                 <div className="space-y-6 p-6">
                   {/* Header */}
                   <div className="flex items-center gap-4 rounded-xl border border-slate-200 bg-slate-50/50 p-4">
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-(--brand-500)">
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-orange-100 to-amber-100 text-brand-500">
                       <UserRound className="h-7 w-7 text-orange-600" />
                     </div>
                     <div className="flex-1">
@@ -356,6 +356,78 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                       </p>
                     </div>
                   </div>
+
+                  {/* Position Information */}
+                  {selectedApplicant.positionTitle && (
+                    <div className="rounded-xl border border-slate-100 bg-linear-to-br from-slate-50 to-slate-100 p-4">
+                      <p className="mb-3 text-xs font-medium uppercase tracking-wide text-slate-500">
+                        ตำแหน่ง
+                      </p>
+                      <div className="space-y-3">
+                        <div>
+                          <h3 className="font-semibold text-slate-800">
+                            {selectedApplicant.positionTitle}
+                          </h3>
+                          {selectedApplicant.positionNeededCount !== null && (
+                            <div className="mt-2 space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span className="text-slate-600">
+                                  ตำแหน่งที่ว่าง
+                                </span>
+                                <span className="font-semibold text-slate-800">
+                                  {selectedApplicant.positionAcceptedCount ?? 0} /{" "}
+                                  {selectedApplicant.positionNeededCount}
+                                </span>
+                              </div>
+                              {/* Progress bar */}
+                              <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
+                                <div
+                                  className={`h-full transition-all ${
+                                    (selectedApplicant.positionAcceptedCount ?? 0) >=
+                                    selectedApplicant.positionNeededCount
+                                      ? "bg-red-500"
+                                      : (selectedApplicant.positionAcceptedCount ?? 0) >=
+                                          (selectedApplicant.positionNeededCount ?? 0) * 0.7
+                                        ? "bg-amber-500"
+                                        : "bg-emerald-500"
+                                  }`}
+                                  style={{
+                                    width: `${Math.min(
+                                      ((selectedApplicant.positionAcceptedCount ??
+                                        0) /
+                                        (selectedApplicant.positionNeededCount ?? 1)) *
+                                        100,
+                                      100,
+                                    )}%`,
+                                  }}
+                                />
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        {selectedApplicant.positionRequiredSkills &&
+                          selectedApplicant.positionRequiredSkills.length > 0 && (
+                            <div>
+                              <p className="mb-2 text-xs font-medium text-slate-600">
+                                ทักษะที่ต้องการ
+                              </p>
+                              <div className="flex flex-wrap gap-1">
+                                {selectedApplicant.positionRequiredSkills.map(
+                                  (skill) => (
+                                    <Badge
+                                      key={skill}
+                                      className="border border-slate-300 bg-slate-200 text-[10px] font-medium text-slate-700"
+                                    >
+                                      {skill}
+                                    </Badge>
+                                  ),
+                                )}
+                              </div>
+                            </div>
+                          )}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Motivation */}
                   <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-4">
@@ -426,7 +498,15 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                   )}
 
                   {/* Action buttons */}
-                  <div className="sticky bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur supports-[backdrop-filter]:bg-white/75 pt-4">
+                  <div className="sticky bottom-0 border-t border-slate-200 bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/75 pt-4">
+                    {/* Position full warning */}
+                    {selectedApplicant.positionNeededCount !== null &&
+                      (selectedApplicant.positionAcceptedCount ?? 0) >=
+                        selectedApplicant.positionNeededCount && (
+                        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700">
+                          ตำแหน่งนี้เต็มแล้ว
+                        </div>
+                      )}
                     <div className="grid grid-cols-3 gap-2">
                       <Button
                         variant="outline"
@@ -440,7 +520,11 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                       <Button
                         className="h-9 w-full bg-emerald-600 text-white hover:bg-emerald-700"
                         disabled={
-                          selectedApplicant.status === "accepted" || isPending
+                          selectedApplicant.status === "accepted" ||
+                          isPending ||
+                          (selectedApplicant.positionNeededCount !== null &&
+                            (selectedApplicant.positionAcceptedCount ?? 0) >=
+                              selectedApplicant.positionNeededCount)
                         }
                         onClick={() => setConfirmingAccept(true)}
                         size="sm"
