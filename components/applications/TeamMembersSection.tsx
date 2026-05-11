@@ -1,7 +1,6 @@
 "use client";
 
 import { getProjectTeamMembers } from "@/app/actions/project-applications";
-import { Badge } from "@/components/ui/badge";
 import { UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -81,9 +80,7 @@ export function TeamMembersSection({ projectId }: Props) {
 
   return (
     <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-      <h2 className="mb-6 text-xl font-semibold text-slate-800">
-        ทีมโปรเจกต์
-      </h2>
+      <h2 className="mb-6 text-xl font-semibold text-slate-800">ทีมโปรเจกต์</h2>
 
       <div className="space-y-6">
         {Array.from(groupedByPosition.entries()).map(

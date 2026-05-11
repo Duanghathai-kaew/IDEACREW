@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 
 import { createMyProjectStatusNotification } from "@/lib/server/notifications";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import { SimpleProject } from "@/lib/simpleMockData";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { ProjectFormData, ProjectStatus } from "@/types/project";
 
 type DbProject = {
@@ -48,28 +48,24 @@ function mapStatus(status: string | null): "open" | "closed" {
 }
 
 export async function GET() {
-  const [{ data: projects, error: projectsError }, { data: profiles, error: profilesError }] =
-    await Promise.all([
-      supabaseAdmin
-        .from("projects")
-        .select("id,title,description,status,owner_id")
-        .in("status", ["open", "reviewing", "closed"])
-        .order("created_at", { ascending: false }),
-      supabaseAdmin.from("profiles").select("id,name"),
-    ]);
+  const [
+    { data: projects, error: projectsError },
+    { data: profiles, error: profilesError },
+  ] = await Promise.all([
+    supabaseAdmin
+      .from("projects")
+      .select("id,title,description,status,owner_id")
+      .in("status", ["open", "reviewing", "closed"])
+      .order("created_at", { ascending: false }),
+    supabaseAdmin.from("profiles").select("id,name"),
+  ]);
 
   if (projectsError) {
-    return NextResponse.json(
-      { error: projectsError.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: projectsError.message }, { status: 500 });
   }
 
   if (profilesError) {
-    return NextResponse.json(
-      { error: profilesError.message },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: profilesError.message }, { status: 500 });
   }
 
   const [positionsRes, positionSkillsRes, categoriesRes] = await Promise.all([
@@ -157,7 +153,10 @@ export async function POST(request: Request) {
   }
 
   if (!formData) {
-    return NextResponse.json({ error: "formData is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "formData is required" },
+      { status: 400 },
+    );
   }
 
   const title = formData.title.trim();
@@ -165,21 +164,38 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "title is required" }, { status: 400 });
   }
 
+  // Set approval_status based on status
+  // draft projects are auto-approved for editing, pending_approval projects need admin review
+  const approvalStatus = status === "pending_approval" ? "pending" : "approved";
+
+  console.log("[createProject] Creating project", {
+    ownerId,
+    status,
+    approvalStatus,
+    title,
+  });
+
   const { data: projectId, error: rpcError } = await supabaseAdmin.rpc(
     "create_project_with_relations",
     {
       p_owner_id: ownerId,
       p_status: status,
       p_form_data: formData,
+      p_approval_status: approvalStatus,
     },
   );
 
   if (rpcError) {
-    return NextResponse.json(
-      { error: rpcError.message },
-      { status: 500 },
-    );
+    console.error("[createProject] RPC Error:", rpcError.message);
+    return NextResponse.json({ error: rpcError.message }, { status: 500 });
   }
+
+  console.log("[createProject] Created project", {
+    id: String(projectId),
+    title,
+    status,
+    approvalStatus,
+  });
 
   if (status === "approved" || status === "rejected_by_admin") {
     await createMyProjectStatusNotification({

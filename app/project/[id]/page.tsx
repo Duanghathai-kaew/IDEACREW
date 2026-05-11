@@ -117,6 +117,20 @@ async function getProjectFromDb(id: string): Promise<Project | null> {
   if (error || !project) return null;
 
   const projectRow = project as DbProject;
+  const { data: approvalRow } = await supabaseAdmin
+    .from("projects")
+    .select("approval_status")
+    .eq("id", id)
+    .maybeSingle();
+  const approvalStatus =
+    approvalRow &&
+    typeof approvalRow === "object" &&
+    "approval_status" in approvalRow &&
+    (approvalRow.approval_status === "pending" ||
+      approvalRow.approval_status === "approved" ||
+      approvalRow.approval_status === "rejected")
+      ? approvalRow.approval_status
+      : "approved";
 
   const [{ data: profile }, { data: categories }, { data: positions }] =
     await Promise.all([
@@ -188,6 +202,7 @@ async function getProjectFromDb(id: string): Promise<Project | null> {
     benefits: mapBenefitArray(projectRow.benefits),
     compensationDetail: projectRow.compensation_detail ?? "",
     status: mapProjectStatus(projectRow.status),
+    approvalStatus,
     positions: positionRows.map((pos) => ({
       id: pos.id,
       projectId: pos.project_id,
@@ -274,18 +289,26 @@ export default async function ProjectDetailPage({
               <div className="text-sm text-gray-500">
                 <span
                   className={`inline-block rounded-full px-2.5 py-1 text-xs ${
-                    project.status === "closed"
-                      ? "bg-slate-100 text-slate-600"
-                      : isOpen
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-rose-100 text-rose-700"
+                    project.approvalStatus === "pending"
+                      ? "bg-amber-100 text-amber-700"
+                      : project.approvalStatus === "rejected"
+                        ? "bg-rose-100 text-rose-700"
+                        : project.status === "closed"
+                          ? "bg-slate-100 text-slate-600"
+                          : isOpen
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-rose-100 text-rose-700"
                   }`}
                 >
-                  {project.status === "closed"
-                    ? "ปิดรับสมัครแล้ว"
-                    : isOpen
-                      ? "เปิดรับสมัคร"
-                      : "ปิดรับสมัครแล้ว"}
+                  {project.approvalStatus === "pending"
+                    ? "รออนุมัติจากแอดมิน"
+                    : project.approvalStatus === "rejected"
+                      ? "ถูกปฏิเสธ"
+                      : project.status === "closed"
+                        ? "ปิดรับสมัครแล้ว"
+                        : isOpen
+                          ? "เปิดรับสมัคร"
+                          : "ปิดรับสมัครแล้ว"}
                 </span>
               </div>
             </div>
@@ -541,6 +564,7 @@ export default async function ProjectDetailPage({
                       project.applicationEndDate,
                     )}
                     projectStatus={project.status}
+                    approvalStatus={project.approvalStatus}
                   />
                 </div>
 

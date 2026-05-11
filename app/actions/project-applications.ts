@@ -537,9 +537,9 @@ export async function getProjectTeamMembers(
     ok: true,
     data: appRows.map((app) => {
       const profile = profileById.get(app.applicant_id);
-      const positionArray = app.project_positions as
-        | Array<{ title: string }>
-        | null;
+      const positionArray = app.project_positions as Array<{
+        title: string;
+      }> | null;
       const positionTitle = positionArray?.[0]?.title ?? "Member";
       return {
         userId: app.applicant_id,
@@ -993,4 +993,190 @@ async function createNotification(input: {
   if (error && !isMissingColumnError(error.message)) {
     throw error;
   }
+}
+
+// ===== ADMIN MODERATION FUNCTIONS =====
+
+export type AdminProject = {
+  id: string;
+  title: string;
+  ownerName: string;
+  ownerEmail: string;
+  approvalStatus: "pending" | "approved" | "rejected";
+  projectStatus: "open" | "closed";
+  createdAt: string;
+  applicationEndDate: string;
+};
+
+/**
+ * Get all projects for admin moderation panel
+ * Returns all projects with their approval status
+ */
+export async function getAdminProjects(): Promise<
+  ActionResult<AdminProject[]>
+> {
+  console.log("[getAdminProjects] Fetching projects from Supabase");
+
+  const { data: projects, error } = await supabaseAdmin
+    .from("projects")
+    .select(
+      "id,title,owner_id,approval_status,status,created_at,application_end_date",
+    )
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("[getAdminProjects] Error:", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  const projectRows = (projects ?? []) as Array<{
+    id: string;
+    title: string;
+    owner_id: string;
+    approval_status: string | null;
+    status: string | null;
+    created_at: string | null;
+    application_end_date: string | null;
+  }>;
+
+  if (projectRows.length === 0) {
+    console.log("[getAdminProjects] No projects found");
+    return { ok: true, data: [] };
+  }
+
+  // Get owner profiles
+  const ownerIds = Array.from(new Set(projectRows.map((p) => p.owner_id)));
+  const { data: owners, error: ownerError } = await supabaseAdmin
+    .from("profiles")
+    .select("id,displayname,name,email")
+    .in("id", ownerIds);
+
+  if (ownerError) {
+    console.error(
+      "[getAdminProjects] Error fetching owners:",
+      ownerError.message,
+    );
+    return { ok: false, error: ownerError.message };
+  }
+
+  const ownerById = new Map(
+    (
+      (owners ?? []) as Array<{
+        id: string;
+        displayname: string | null;
+        name: string | null;
+        email: string | null;
+      }>
+    ).map((owner) => [owner.id, owner]),
+  );
+
+  const result = projectRows.map((project) => {
+    const owner = ownerById.get(project.owner_id);
+    return {
+      id: project.id,
+      title: project.title,
+      ownerName: owner?.displayname?.trim() || owner?.name?.trim() || "Unknown",
+      ownerEmail: owner?.email ?? "",
+      approvalStatus:
+        (project.approval_status as "pending" | "approved" | "rejected") ??
+        "pending",
+      projectStatus: (project.status as "open" | "closed") ?? "open",
+      createdAt: project.created_at ?? "",
+      applicationEndDate: project.application_end_date ?? "",
+    };
+  });
+
+  console.log("[getAdminProjects] Fetched", result.length, "projects");
+  return { ok: true, data: result };
+}
+
+/**
+ * Approve a project for publication
+ */
+export async function approveProject(projectId: string): Promise<ActionResult> {
+  console.log("[approveProject]", { projectId });
+
+  const { error } = await supabaseAdmin
+    .from("projects")
+    .update({
+      approval_status: "approved",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", projectId);
+
+  if (error) {
+    console.error("[approveProject] Error:", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  // Notify project owner
+  const { data: project } = await supabaseAdmin
+    .from("projects")
+    .select("id,title,owner_id")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (project) {
+    await createNotification({
+      userId: project.owner_id,
+      projectId,
+      category: "my-project",
+      type: "project_approved",
+      title: "โปรเจกต์ได้รับการอนุมัติ",
+      message:
+        "Your project has been approved and is now open for applications",
+      status: "approved",
+      link: `/project/${projectId}`,
+    });
+  }
+
+  revalidatePath("/admin/projects");
+  return { ok: true, data: undefined };
+}
+
+/**
+ * Reject a project with feedback
+ */
+export async function rejectProject(
+  projectId: string,
+  feedback: string,
+): Promise<ActionResult> {
+  console.log("[rejectProject]", { projectId, feedback });
+
+  const { error } = await supabaseAdmin
+    .from("projects")
+    .update({
+      approval_status: "rejected",
+      admin_feedback: feedback.trim(),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", projectId);
+
+  if (error) {
+    console.error("[rejectProject] Error:", error.message);
+    return { ok: false, error: error.message };
+  }
+
+  // Notify project owner
+  const { data: project } = await supabaseAdmin
+    .from("projects")
+    .select("id,title,owner_id")
+    .eq("id", projectId)
+    .maybeSingle();
+
+  if (project) {
+    await createNotification({
+      userId: project.owner_id,
+      projectId,
+      category: "my-project",
+      type: "project_rejected",
+      title: "โปรเจกต์ถูกปฏิเสธ",
+      message: `Your project was rejected. Feedback: ${feedback}`,
+      status: "rejected",
+      link: `/project/${projectId}`,
+    });
+  }
+
+  revalidatePath("/admin/projects");
+  return { ok: true, data: undefined };
 }

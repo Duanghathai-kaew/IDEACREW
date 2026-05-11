@@ -26,6 +26,7 @@ type Props = {
   isOpen: boolean;
   applicationEndDateLabel: string;
   projectStatus?: string;
+  approvalStatus?: "pending" | "approved" | "rejected";
 };
 
 export function ProjectApplicationControls({
@@ -34,6 +35,7 @@ export function ProjectApplicationControls({
   isOpen,
   applicationEndDateLabel,
   projectStatus,
+  approvalStatus,
 }: Props) {
   const { user, isLoading } = useAuth();
   const [applyOpen, setApplyOpen] = useState(false);
@@ -76,28 +78,34 @@ export function ProjectApplicationControls({
   const isDuplicateApplication =
     applicationStatus === "pending" || applicationStatus === "accepted";
   const isClosed = projectStatus === "closed";
+  const isNotApproved = approvalStatus && approvalStatus !== "approved";
   const canApply =
     isOpen &&
     !isClosed &&
+    !isNotApproved &&
     !isLoading &&
     !isCheckingApplication &&
     !!user?.id &&
     !isOwner &&
     !isDuplicateApplication;
 
-  const buttonLabel = isClosed
-    ? "ปิดรับสมัครแล้ว"
-    : !isOpen
+  const buttonLabel = isNotApproved
+    ? approvalStatus === "pending"
+      ? "รออนุมัติจากแอดมิน"
+      : "ถูกปฏิเสธ"
+    : isClosed
       ? "ปิดรับสมัครแล้ว"
-      : isCheckingApplication
-        ? "กำลังตรวจสอบสถานะ..."
-        : applicationStatus === "pending"
-          ? "ส่งใบสมัครแล้ว"
-          : applicationStatus === "accepted"
-            ? "เข้าร่วมทีมแล้ว"
-            : applicationStatus === "rejected"
-              ? "สมัครใหม่อีกครั้ง"
-              : "สมัครเลย";
+      : !isOpen
+        ? "ปิดรับสมัครแล้ว"
+        : isCheckingApplication
+          ? "กำลังตรวจสอบสถานะ..."
+          : applicationStatus === "pending"
+            ? "ส่งใบสมัครแล้ว"
+            : applicationStatus === "accepted"
+              ? "เข้าร่วมทีมแล้ว"
+              : applicationStatus === "rejected"
+                ? "สมัครใหม่อีกครั้ง"
+                : "สมัครเลย";
 
   return (
     <>
@@ -119,12 +127,22 @@ export function ProjectApplicationControls({
           คุณเป็นเจ้าของโปรเจกต์นี้
         </p>
       )}
-      {isClosed && !isOwner && (
+      {isNotApproved && approvalStatus === "pending" && !isOwner && (
+        <p className="mt-3 text-center text-xs text-white/80">
+          โปรเจกต์นี้อยู่ระหว่างรอการอนุมัติจากแอดมิน
+        </p>
+      )}
+      {isNotApproved && approvalStatus === "rejected" && !isOwner && (
+        <p className="mt-3 text-center text-xs text-white/80">
+          โปรเจกต์นี้ถูกปฏิเสธ
+        </p>
+      )}
+      {isClosed && !isOwner && !isNotApproved && (
         <p className="mt-3 text-center text-xs text-white/80">
           โปรเจกต์นี้ปิดรับสมาชิกแล้ว
         </p>
       )}
-      {!isOpen && !isClosed && (
+      {!isOpen && !isClosed && !isNotApproved && (
         <p className="mt-3 text-center text-xs opacity-75">
           หมดเวลา {applicationEndDateLabel}
         </p>
