@@ -997,16 +997,88 @@ async function createNotification(input: {
 
 // ===== ADMIN MODERATION FUNCTIONS =====
 
+export type AdminProjectPosition = {
+  id: string;
+  title: string;
+  neededCount: number;
+  acceptedCount: number;
+  requiredSkills: string[];
+  applicantCount: number;
+  isFull: boolean;
+};
+
+export type AdminRecruitmentProgress = {
+  totalPositions: number;
+  filledPositions: number;
+  totalNeeded: number;
+  acceptedCount: number;
+  completionRate: number;
+};
+
 export type AdminProject = {
   id: string;
   title: string;
+  description: string;
   ownerName: string;
   ownerEmail: string;
   approvalStatus: "pending" | "approved" | "rejected";
   projectStatus: "open" | "closed";
   createdAt: string;
   applicationEndDate: string;
+  applicantCount: number;
+  positions: AdminProjectPosition[];
+  recruitmentProgress: AdminRecruitmentProgress;
 };
+
+function mapProjectLifecycleStatus(status: string | null): "open" | "closed" {
+  return status === "closed" ? "closed" : "open";
+}
+
+function mapApprovalStatus(
+  approvalStatus: string | null,
+  projectStatus: string | null,
+): "pending" | "approved" | "rejected" {
+  if (
+    approvalStatus === "pending" ||
+    approvalStatus === "approved" ||
+    approvalStatus === "rejected"
+  ) {
+    return approvalStatus;
+  }
+
+  if (projectStatus === "pending_approval") return "pending";
+  if (projectStatus === "rejected_by_admin") return "rejected";
+  return "approved";
+}
+
+function buildRecruitmentProgress(
+  positions: AdminProjectPosition[],
+): AdminRecruitmentProgress {
+  const totalPositions = positions.length;
+  const filledPositions = positions.filter(
+    (position) => position.isFull,
+  ).length;
+  const totalNeeded = positions.reduce(
+    (sum, position) => sum + position.neededCount,
+    0,
+  );
+  const acceptedCount = positions.reduce(
+    (sum, position) => sum + position.acceptedCount,
+    0,
+  );
+  const completionRate =
+    totalNeeded > 0
+      ? Math.min(100, Math.round((acceptedCount / totalNeeded) * 100))
+      : 0;
+
+  return {
+    totalPositions,
+    filledPositions,
+    totalNeeded,
+    acceptedCount,
+    completionRate,
+  };
+}
 
 /**
  * Get all projects for admin moderation panel
@@ -1020,7 +1092,7 @@ export async function getAdminProjects(): Promise<
   const { data: projects, error } = await supabaseAdmin
     .from("projects")
     .select(
-      "id,title,owner_id,approval_status,status,created_at,application_end_date",
+      "id,title,description,owner_id,approval_status,status,created_at,application_end_date",
     )
     .order("created_at", { ascending: false });
 
@@ -1032,6 +1104,7 @@ export async function getAdminProjects(): Promise<
   const projectRows = (projects ?? []) as Array<{
     id: string;
     title: string;
+    description: string | null;
     owner_id: string;
     approval_status: string | null;
     status: string | null;
@@ -1044,24 +1117,50 @@ export async function getAdminProjects(): Promise<
     return { ok: true, data: [] };
   }
 
-  // Get owner profiles
   const ownerIds = Array.from(new Set(projectRows.map((p) => p.owner_id)));
-  const { data: owners, error: ownerError } = await supabaseAdmin
-    .from("profiles")
-    .select("id,displayname,name,email")
-    .in("id", ownerIds);
+  const projectIds = projectRows.map((project) => project.id);
+  const [ownersRes, positionsRes, applicationsRes] = await Promise.all([
+    supabaseAdmin
+      .from("profiles")
+      .select("id,displayname,name,email")
+      .in("id", ownerIds),
+    supabaseAdmin
+      .from("project_positions")
+      .select("id,project_id,title,needed_count,accepted_count,required_skills")
+      .in("project_id", projectIds),
+    supabaseAdmin
+      .from("project_applications")
+      .select("project_id,position_id")
+      .in("project_id", projectIds),
+  ]);
 
-  if (ownerError) {
+  if (ownersRes.error) {
     console.error(
       "[getAdminProjects] Error fetching owners:",
-      ownerError.message,
+      ownersRes.error.message,
     );
-    return { ok: false, error: ownerError.message };
+    return { ok: false, error: ownersRes.error.message };
+  }
+
+  if (positionsRes.error) {
+    console.error(
+      "[getAdminProjects] Error fetching positions:",
+      positionsRes.error.message,
+    );
+    return { ok: false, error: positionsRes.error.message };
+  }
+
+  if (applicationsRes.error) {
+    console.error(
+      "[getAdminProjects] Error fetching applications:",
+      applicationsRes.error.message,
+    );
+    return { ok: false, error: applicationsRes.error.message };
   }
 
   const ownerById = new Map(
     (
-      (owners ?? []) as Array<{
+      (ownersRes.data ?? []) as Array<{
         id: string;
         displayname: string | null;
         name: string | null;
@@ -1070,23 +1169,71 @@ export async function getAdminProjects(): Promise<
     ).map((owner) => [owner.id, owner]),
   );
 
+  const applicantCountByProjectId = new Map<string, number>();
+  const applicantCountByPositionId = new Map<string, number>();
+  for (const row of (applicationsRes.data ?? []) as Array<{
+    project_id: string;
+    position_id: string | null;
+  }>) {
+    applicantCountByProjectId.set(
+      row.project_id,
+      (applicantCountByProjectId.get(row.project_id) ?? 0) + 1,
+    );
+    if (row.position_id) {
+      applicantCountByPositionId.set(
+        row.position_id,
+        (applicantCountByPositionId.get(row.position_id) ?? 0) + 1,
+      );
+    }
+  }
+
+  const positionsByProjectId = new Map<string, AdminProjectPosition[]>();
+  for (const position of (positionsRes.data ?? []) as Array<{
+    id: string;
+    project_id: string;
+    title: string;
+    needed_count: number | null;
+    accepted_count: number | null;
+    required_skills: string[] | null;
+  }>) {
+    const neededCount = position.needed_count ?? 0;
+    const acceptedCount = position.accepted_count ?? 0;
+    const current = positionsByProjectId.get(position.project_id) ?? [];
+    current.push({
+      id: position.id,
+      title: position.title,
+      neededCount,
+      acceptedCount,
+      requiredSkills: position.required_skills ?? [],
+      applicantCount: applicantCountByPositionId.get(position.id) ?? 0,
+      isFull: neededCount > 0 && acceptedCount >= neededCount,
+    });
+    positionsByProjectId.set(position.project_id, current);
+  }
+
   const result = projectRows.map((project) => {
     const owner = ownerById.get(project.owner_id);
+    const positions = positionsByProjectId.get(project.id) ?? [];
     return {
       id: project.id,
       title: project.title,
+      description: project.description ?? "",
       ownerName: owner?.displayname?.trim() || owner?.name?.trim() || "Unknown",
       ownerEmail: owner?.email ?? "",
-      approvalStatus:
-        (project.approval_status as "pending" | "approved" | "rejected") ??
-        "pending",
-      projectStatus: (project.status as "open" | "closed") ?? "open",
+      approvalStatus: mapApprovalStatus(
+        project.approval_status,
+        project.status,
+      ),
+      projectStatus: mapProjectLifecycleStatus(project.status),
       createdAt: project.created_at ?? "",
       applicationEndDate: project.application_end_date ?? "",
+      applicantCount: applicantCountByProjectId.get(project.id) ?? 0,
+      positions,
+      recruitmentProgress: buildRecruitmentProgress(positions),
     };
   });
 
-  console.log("[getAdminProjects] Fetched", result.length, "projects");
+  console.log("[adminProjects]", result);
   return { ok: true, data: result };
 }
 
@@ -1131,6 +1278,7 @@ export async function approveProject(projectId: string): Promise<ActionResult> {
   }
 
   revalidatePath("/admin/projects");
+  revalidatePath("/admin/dashboard");
   return { ok: true, data: undefined };
 }
 
@@ -1178,5 +1326,6 @@ export async function rejectProject(
   }
 
   revalidatePath("/admin/projects");
+  revalidatePath("/admin/dashboard");
   return { ok: true, data: undefined };
 }

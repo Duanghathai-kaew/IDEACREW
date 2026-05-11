@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { AdminStatus } from "@/lib/admin/mock-data";
+
+export type AdminStatus = "pending" | "approved" | "rejected";
 
 const STATUS_LABEL: Record<AdminStatus, string> = {
   pending: "Pending",
@@ -23,7 +24,11 @@ export function StatusBadge({ status, className }: StatusBadgeProps) {
   return (
     <Badge
       variant="outline"
-      className={cn("rounded-full border px-2.5 py-1 text-xs font-semibold", STATUS_CLASS[status], className)}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-xs font-semibold",
+        STATUS_CLASS[status],
+        className,
+      )}
     >
       {STATUS_LABEL[status]}
     </Badge>
