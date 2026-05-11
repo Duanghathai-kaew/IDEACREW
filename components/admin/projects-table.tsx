@@ -1,7 +1,7 @@
 "use client";
 
-import * as React from "react";
 import { ArrowUpDown, Eye, MoreHorizontal } from "lucide-react";
+import * as React from "react";
 
 import { DataTable, DataTableColumn } from "@/components/admin/data-table";
 import { StatusBadge } from "@/components/admin/status-badge";
@@ -25,14 +25,17 @@ export function ProjectsTable() {
   const [statusFilter, setStatusFilter] = React.useState("all");
   const [sortBy, setSortBy] = React.useState<SortBy>("submittedAt");
   const [sortOrder, setSortOrder] = React.useState<SortOrder>("desc");
-  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(new Set());
+  const [selectedIds, setSelectedIds] = React.useState<Set<string>>(
+    () => new Set(),
+  );
   const [page, setPage] = React.useState(1);
 
   const filtered = React.useMemo(() => {
     const keyword = query.trim().toLowerCase();
     return adminProjects
       .filter((project) => {
-        if (statusFilter !== "all" && project.status !== statusFilter) return false;
+        if (statusFilter !== "all" && project.status !== statusFilter)
+          return false;
         if (!keyword) return true;
         return (
           project.name.toLowerCase().includes(keyword) ||
@@ -73,7 +76,9 @@ export function ProjectsTable() {
       header: "Project Name",
       cell: (project) => (
         <div className="space-y-1">
-          <p className="line-clamp-1 font-medium text-slate-700">{project.name}</p>
+          <p className="line-clamp-1 font-medium text-slate-700">
+            {project.name}
+          </p>
           <p className="text-xs text-slate-400">ID {project.id}</p>
         </div>
       ),
@@ -82,7 +87,9 @@ export function ProjectsTable() {
     {
       id: "submittedBy",
       header: "Submitted By",
-      cell: (project) => <span className="text-slate-600">{project.submittedBy}</span>,
+      cell: (project) => (
+        <span className="text-slate-600">{project.submittedBy}</span>
+      ),
     },
     {
       id: "submittedAt",
@@ -97,7 +104,11 @@ export function ProjectsTable() {
           <ArrowUpDown className="h-3.5 w-3.5" />
         </button>
       ),
-      cell: (project) => <span className="text-slate-600">{formatReadableDate(project.submittedAt)}</span>,
+      cell: (project) => (
+        <span className="text-slate-600">
+          {formatReadableDate(project.submittedAt)}
+        </span>
+      ),
     },
     {
       id: "deadline",
@@ -112,7 +123,11 @@ export function ProjectsTable() {
           <ArrowUpDown className="h-3.5 w-3.5" />
         </button>
       ),
-      cell: (project) => <span className="text-slate-600">{formatReadableDate(project.deadline)}</span>,
+      cell: (project) => (
+        <span className="text-slate-600">
+          {formatReadableDate(project.deadline)}
+        </span>
+      ),
     },
     {
       id: "status",
@@ -132,7 +147,12 @@ export function ProjectsTable() {
           >
             <Eye className="h-4 w-4" />
           </Button>
-          <Button type="button" size="icon-sm" variant="ghost" className="text-slate-500">
+          <Button
+            type="button"
+            size="icon-sm"
+            variant="ghost"
+            className="text-slate-500"
+          >
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>

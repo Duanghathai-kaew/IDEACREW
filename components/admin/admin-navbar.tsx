@@ -1,8 +1,8 @@
 "use client";
 
+import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LogOut } from "lucide-react";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
@@ -24,9 +24,15 @@ export function AdminNavbar() {
       : "/admin/dashboard";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur">
+    <header
+      className="sticky top-0 z-40 border-b border-slate-200 bg-white/85 backdrop-blur"
+      suppressHydrationWarning
+    >
       <div className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6">
-        <Link href="/admin/dashboard" className="text-lg font-semibold tracking-tight text-slate-900">
+        <Link
+          href="/admin/dashboard"
+          className="text-lg font-semibold tracking-tight text-slate-900"
+        >
           IDEACREW Admin
         </Link>
 
@@ -60,7 +66,7 @@ export function AdminNavbar() {
         </Tabs>
 
         <div className="flex items-center gap-3">
-          <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-to-br from-indigo-500 to-violet-500 text-xs font-semibold text-white">
+          <div className="grid h-9 w-9 place-items-center rounded-full bg-linear-to-br from-indigo-500 to-violet-500 text-xs font-semibold text-white">
             AD
           </div>
           <button
