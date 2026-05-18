@@ -21,17 +21,21 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { unstable_noStore as noStore } from "next/cache";
 
 interface ProjectDetailPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export default async function ProjectDetailPage({
   params,
 }: ProjectDetailPageProps) {
-  const { id } = projectIdSchema.parse(params);
+  noStore();
+
+  const resolvedParams = await params;
+  const { id } = projectIdSchema.parse(resolvedParams);
   const dbProject = await getProjectDetail(id);
 
   if (!dbProject) {

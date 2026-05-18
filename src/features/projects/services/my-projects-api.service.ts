@@ -7,8 +7,11 @@ import {
   fetchMyProjectsMetadata,
 } from "@/features/projects/repositories/projects.repository";
 import { MyProject } from "@/features/projects/services/my-project-mock-data";
+import { unstable_noStore as noStore } from "next/cache";
 
 export async function getMyProjectsService(query: unknown) {
+  noStore();
+
   const parsed = myProjectsQuerySchema.parse(query);
   const { data: projects, error: projectsError } = await fetchMyProjects(parsed.ownerId);
 

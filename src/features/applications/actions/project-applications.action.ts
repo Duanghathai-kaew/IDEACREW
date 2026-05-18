@@ -91,6 +91,7 @@ export async function rejectApplication(
 export async function approveProject(projectId: string) {
   const result = await approveProjectService(projectId);
   if (result.ok) {
+    revalidatePath("/my-project");
     revalidatePath("/admin/projects");
     revalidatePath("/admin/dashboard");
     revalidatePath(`/project/${projectId}`);
@@ -101,6 +102,7 @@ export async function approveProject(projectId: string) {
 export async function rejectProject(projectId: string, feedback: string) {
   const result = await rejectProjectService(projectId, feedback);
   if (result.ok) {
+    revalidatePath("/my-project");
     revalidatePath("/admin/projects");
     revalidatePath("/admin/dashboard");
     revalidatePath(`/project/${projectId}`);

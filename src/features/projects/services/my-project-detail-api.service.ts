@@ -5,6 +5,7 @@ import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { MyProjectStatus } from "@/features/projects/services/my-project-mock-data";
 import { Benefit, ProjectFormData } from "@/features/projects/types/project.type";
 import { CreatorProjectStatus } from "@/types/status";
+import { unstable_noStore as noStore } from "next/cache";
 
 type DbProject = {
   id: string;
@@ -98,6 +99,8 @@ export async function getMyProjectByIdService(input: {
   id: string;
   ownerId: string;
 }) {
+  noStore();
+
   const { data, error } = await supabaseAdminClient
     .from("projects")
     .select(

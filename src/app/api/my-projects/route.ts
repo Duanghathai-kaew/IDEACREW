@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 
 import {
   getMyProjectsService,
@@ -9,6 +10,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
+    noStore();
     const result = await getMyProjectsService({
       ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
     });

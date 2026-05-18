@@ -1,5 +1,6 @@
 import { Benefit, Project } from "@/features/projects/types/project.type";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
+import { unstable_noStore as noStore } from "next/cache";
 
 type DbProject = {
   id: string;
@@ -65,31 +66,26 @@ function mapWorkMode(mode: string | null): Project["workMode"] {
 }
 
 export async function getProjectDetail(id: string): Promise<Project | null> {
+  noStore();
+
   const { data: project, error } = await supabaseAdminClient
     .from("projects")
     .select(
-      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,created_at",
+      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,approval_status,created_at",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (error || !project) return null;
 
-  const projectRow = project as DbProject;
-  const { data: approvalRow } = await supabaseAdminClient
-    .from("projects")
-    .select("approval_status")
-    .eq("id", id)
-    .maybeSingle();
-
+  const projectRow = project as DbProject & {
+    approval_status?: string | null;
+  };
   const approvalStatus =
-    approvalRow &&
-    typeof approvalRow === "object" &&
-    "approval_status" in approvalRow &&
-    (approvalRow.approval_status === "pending" ||
-      approvalRow.approval_status === "approved" ||
-      approvalRow.approval_status === "rejected")
-      ? approvalRow.approval_status
+    projectRow.approval_status === "pending" ||
+    projectRow.approval_status === "approved" ||
+    projectRow.approval_status === "rejected"
+      ? projectRow.approval_status
       : "approved";
 
   const [{ data: profile }, { data: categories }, { data: positions }] =

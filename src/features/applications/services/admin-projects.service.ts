@@ -133,6 +133,7 @@ export async function approveProject(projectId: string): Promise<ActionResult> {
     .from("projects")
     .update({
       approval_status: "approved",
+      status: "open",
       updated_at: new Date().toISOString(),
     })
     .eq("id", projectId);
@@ -170,6 +171,7 @@ export async function rejectProject(
     .from("projects")
     .update({
       approval_status: "rejected",
+      status: "closed",
       admin_feedback: feedback.trim(),
       updated_at: new Date().toISOString(),
     })

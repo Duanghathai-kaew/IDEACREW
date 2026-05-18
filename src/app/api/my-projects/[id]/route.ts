@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { unstable_noStore as noStore } from "next/cache";
 
 import {
   mapMyProjectDetailZodError,
@@ -18,6 +19,7 @@ type ParamsContext = { params: Promise<{ id: string }> };
 
 export async function GET(request: NextRequest, context: ParamsContext) {
   try {
+    noStore();
     const params = myProjectParamsSchema.parse(await context.params);
     const query = myProjectOwnerQuerySchema.parse({
       ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
@@ -38,6 +40,7 @@ export async function GET(request: NextRequest, context: ParamsContext) {
 
 export async function PATCH(request: NextRequest, context: ParamsContext) {
   try {
+    noStore();
     const params = myProjectParamsSchema.parse(await context.params);
     const query = myProjectOwnerQuerySchema.parse({
       ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
@@ -61,6 +64,7 @@ export async function PATCH(request: NextRequest, context: ParamsContext) {
 
 export async function DELETE(request: NextRequest, context: ParamsContext) {
   try {
+    noStore();
     const params = myProjectParamsSchema.parse(await context.params);
     const query = myProjectOwnerQuerySchema.parse({
       ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),

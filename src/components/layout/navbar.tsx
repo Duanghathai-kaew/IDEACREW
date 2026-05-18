@@ -76,9 +76,6 @@ export default function Navbar() {
     };
   }, [user?.id]);
 
-  const isClient = typeof window !== "undefined";
-  if (!isClient) return null;
-
   const shouldAutoOpenDraftModal =
     Boolean(user) &&
     pathname?.startsWith("/my-project") &&
