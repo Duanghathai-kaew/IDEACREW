@@ -52,7 +52,9 @@ export function buildTeamMembers(input: {
 }): TeamMember[] {
   return input.members.map((member) => {
     const profile = input.profileById.get(member.user_id);
-    const positionArray = member.project_positions as Array<{ title: string }> | null;
+    const positionArray = member.project_positions as Array<{
+      title: string;
+    }> | null;
 
     return {
       userId: member.user_id,
@@ -68,7 +70,9 @@ export function buildTeamMembers(input: {
   });
 }
 
-export function mapProjectLifecycleStatus(status: string | null): "open" | "closed" {
+export function mapProjectLifecycleStatus(
+  status: string | null,
+): "open" | "closed" {
   return status === "closed" ? "closed" : "open";
 }
 
@@ -93,11 +97,21 @@ export function buildAdminRecruitmentProgress(
   positions: AdminProjectPosition[],
 ): AdminRecruitmentProgress {
   const totalPositions = positions.length;
-  const filledPositions = positions.filter((position) => position.isFull).length;
-  const totalNeeded = positions.reduce((sum, position) => sum + position.neededCount, 0);
-  const acceptedCount = positions.reduce((sum, position) => sum + position.acceptedCount, 0);
+  const filledPositions = positions.filter(
+    (position) => position.isFull,
+  ).length;
+  const totalNeeded = positions.reduce(
+    (sum, position) => sum + position.neededCount,
+    0,
+  );
+  const acceptedCount = positions.reduce(
+    (sum, position) => sum + position.acceptedCount,
+    0,
+  );
   const completionRate =
-    totalNeeded > 0 ? Math.min(100, Math.round((acceptedCount / totalNeeded) * 100)) : 0;
+    totalNeeded > 0
+      ? Math.min(100, Math.round((acceptedCount / totalNeeded) * 100))
+      : 0;
 
   return {
     totalPositions,
@@ -127,7 +141,10 @@ export function buildAdminProject(input: {
     description: input.description ?? "",
     ownerName: input.ownerName,
     ownerEmail: input.ownerEmail,
-    approvalStatus: mapApprovalStatus(input.approvalStatus, input.projectStatus),
+    approvalStatus: mapApprovalStatus(
+      input.approvalStatus,
+      input.projectStatus,
+    ),
     projectStatus: mapProjectLifecycleStatus(input.projectStatus),
     createdAt: input.createdAt ?? "",
     applicationEndDate: input.applicationEndDate ?? "",

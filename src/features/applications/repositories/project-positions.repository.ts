@@ -9,7 +9,10 @@ export function fetchActiveProjectPositions(projectId: string) {
     .order("title", { ascending: true });
 }
 
-export function fetchAcceptedApplicationsForPositions(projectId: string, positionIds: string[]) {
+export function fetchAcceptedApplicationsForPositions(
+  projectId: string,
+  positionIds: string[],
+) {
   return supabaseAdminClient
     .from("project_applications")
     .select("position_id,status")

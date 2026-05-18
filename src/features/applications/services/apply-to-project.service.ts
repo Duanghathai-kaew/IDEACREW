@@ -16,9 +16,9 @@ import {
   fetchExistingApplicationForApplicant,
   fetchProjectApplicationsByApplicant,
   fetchProjectById,
-  fetchProjectPositionForApplication,
   fetchProjectOwnerContacts,
   fetchProjectOwnersByIds,
+  fetchProjectPositionForApplication,
   fetchProjectsByIds,
   insertProjectApplication,
   updateProjectApplication,
@@ -36,7 +36,8 @@ function isMissingColumnError(message?: string) {
 export async function getApplyProfilePrefill(
   userId: string,
 ): Promise<ActionResult<ApplyProfilePrefill>> {
-  const [profileResult, linksResult] = await fetchApplyProfilePrefillData(userId);
+  const [profileResult, linksResult] =
+    await fetchApplyProfilePrefillData(userId);
 
   if (profileResult.error || linksResult.error) {
     return {
@@ -138,7 +139,8 @@ export async function submitProjectApplication(input: {
     return { ok: false, error: "Missing required fields" };
   }
 
-  const { data: project, error: projectError } = await fetchProjectById(projectId);
+  const { data: project, error: projectError } =
+    await fetchProjectById(projectId);
   if (projectError || !project) {
     return { ok: false, error: projectError?.message || "Project not found" };
   }
@@ -153,10 +155,8 @@ export async function submitProjectApplication(input: {
     return { ok: false, error: "This project is not open for applications" };
   }
 
-  const { data: position, error: positionError } = await fetchProjectPositionForApplication(
-    projectId,
-    positionId,
-  );
+  const { data: position, error: positionError } =
+    await fetchProjectPositionForApplication(projectId, positionId);
   if (positionError || !position) {
     return { ok: false, error: "Position not found" };
   }
@@ -244,7 +244,8 @@ export async function submitProjectApplication(input: {
 export async function getProjectApplicationsForUser(
   userId: string,
 ): Promise<ActionResult<AppliedProjectCard[]>> {
-  const { data: applications, error } = await fetchProjectApplicationsByApplicant(userId);
+  const { data: applications, error } =
+    await fetchProjectApplicationsByApplicant(userId);
   if (error) {
     if (isMissingColumnError(error.message)) return { ok: true, data: [] };
     return { ok: false, error: error.message };
@@ -259,8 +260,11 @@ export async function getProjectApplicationsForUser(
   }>;
   if (appRows.length === 0) return { ok: true, data: [] };
 
-  const projectIds = Array.from(new Set(appRows.map((item) => item.project_id)));
-  const { data: projects, error: projectsError } = await fetchProjectsByIds(projectIds);
+  const projectIds = Array.from(
+    new Set(appRows.map((item) => item.project_id)),
+  );
+  const { data: projects, error: projectsError } =
+    await fetchProjectsByIds(projectIds);
   if (projectsError) return { ok: false, error: projectsError.message };
 
   const projectRows = (projects ?? []) as Array<{
@@ -268,7 +272,9 @@ export async function getProjectApplicationsForUser(
     title: string;
     owner_id: string;
   }>;
-  const ownerIds = Array.from(new Set(projectRows.map((item) => item.owner_id)));
+  const ownerIds = Array.from(
+    new Set(projectRows.map((item) => item.owner_id)),
+  );
 
   const [ownersResult, linksResult] =
     ownerIds.length === 0
@@ -281,18 +287,23 @@ export async function getProjectApplicationsForUser(
           fetchProjectOwnerContacts(ownerIds),
         ]);
 
-  if (ownersResult.error) return { ok: false, error: ownersResult.error.message };
+  if (ownersResult.error)
+    return { ok: false, error: ownersResult.error.message };
   if (linksResult.error) return { ok: false, error: linksResult.error.message };
 
-  const projectById = new Map(projectRows.map((project) => [project.id, project]));
+  const projectById = new Map(
+    projectRows.map((project) => [project.id, project]),
+  );
   const ownerById = new Map(
-    ((ownersResult.data ?? []) as Array<{
-      id: string;
-      displayname: string | null;
-      name: string | null;
-      username: string | null;
-      email: string | null;
-    }>).map((owner) => [owner.id, owner]),
+    (
+      (ownersResult.data ?? []) as Array<{
+        id: string;
+        displayname: string | null;
+        name: string | null;
+        username: string | null;
+        email: string | null;
+      }>
+    ).map((owner) => [owner.id, owner]),
   );
   const contactByOwnerId = new Map<string, string>();
   for (const link of (linksResult.data ?? []) as Array<{

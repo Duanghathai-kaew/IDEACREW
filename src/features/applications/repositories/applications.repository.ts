@@ -24,7 +24,10 @@ export function fetchProjectById(projectId: string) {
     .maybeSingle();
 }
 
-export function fetchProjectPositionForApplication(projectId: string, positionId: string) {
+export function fetchProjectPositionForApplication(
+  projectId: string,
+  positionId: string,
+) {
   return supabaseAdminClient
     .from("project_positions")
     .select("id,needed_count,accepted_count,is_active")
@@ -33,7 +36,10 @@ export function fetchProjectPositionForApplication(projectId: string, positionId
     .maybeSingle();
 }
 
-export function countAcceptedApplicationsForPosition(projectId: string, positionId: string) {
+export function countAcceptedApplicationsForPosition(
+  projectId: string,
+  positionId: string,
+) {
   return supabaseAdminClient
     .from("project_applications")
     .select("id", { count: "exact", head: true })
@@ -42,7 +48,10 @@ export function countAcceptedApplicationsForPosition(projectId: string, position
     .eq("status", "accepted");
 }
 
-export function fetchExistingApplicationForApplicant(projectId: string, userId: string) {
+export function fetchExistingApplicationForApplicant(
+  projectId: string,
+  userId: string,
+) {
   return supabaseAdminClient
     .from("project_applications")
     .select("id,status")
@@ -59,7 +68,10 @@ export function insertProjectApplication(payload: Record<string, unknown>) {
     .single();
 }
 
-export function updateProjectApplication(id: string, payload: Record<string, unknown>) {
+export function updateProjectApplication(
+  id: string,
+  payload: Record<string, unknown>,
+) {
   return supabaseAdminClient
     .from("project_applications")
     .update(payload)

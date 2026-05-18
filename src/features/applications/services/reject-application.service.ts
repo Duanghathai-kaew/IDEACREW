@@ -43,7 +43,10 @@ export async function rejectApplication(input: {
   ownerId: string;
   rejectionReason: string;
 }): Promise<ActionResult> {
-  const loaded = await loadApplicationForOwner(input.applicationId, input.ownerId);
+  const loaded = await loadApplicationForOwner(
+    input.applicationId,
+    input.ownerId,
+  );
   if (!loaded.ok) return loaded;
 
   const { application } = loaded.data;

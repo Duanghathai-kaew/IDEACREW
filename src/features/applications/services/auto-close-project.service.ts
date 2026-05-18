@@ -1,8 +1,13 @@
-import { fetchAcceptedApplicationsForPositions, fetchActiveProjectPositions, updateProjectStatusClosed } from "@/features/applications/repositories/project-positions.repository";
+import {
+  fetchAcceptedApplicationsForPositions,
+  fetchActiveProjectPositions,
+  updateProjectStatusClosed,
+} from "@/features/applications/repositories/project-positions.repository";
 
 export async function autoCloseProjectIfRecruitmentComplete(projectId: string) {
   try {
-    const { data: positions, error } = await fetchActiveProjectPositions(projectId);
+    const { data: positions, error } =
+      await fetchActiveProjectPositions(projectId);
     if (error) {
       return;
     }

@@ -1,7 +1,7 @@
 import type {
-  AppliedProjectCard,
   ApplicantCard,
   ApplicationStatus,
+  AppliedProjectCard,
   ApplyProfilePrefill,
   ProjectPositionOption,
 } from "@/features/applications/dto/application.dto";
@@ -86,7 +86,7 @@ export function buildAppliedProjectCards(input: {
         "Project owner",
       ownerEmail: owner?.email ?? "",
       ownerContactLink: project
-        ? input.contactByOwnerId.get(project.owner_id) ?? ""
+        ? (input.contactByOwnerId.get(project.owner_id) ?? "")
         : "",
       appliedAt: application.created_at ?? "",
       status: mapApplicationStatus(application.status),
@@ -135,14 +135,12 @@ export function buildApplicantCards(input: {
 }): ApplicantCard[] {
   return input.applications.map((application) => {
     const profile = input.profileById.get(application.applicant_id);
-    const positionData = application.project_positions as
-      | {
-          title: string;
-          needed_count: number | null;
-          accepted_count: number | null;
-          required_skills: string[] | null;
-        }
-      | null;
+    const positionData = application.project_positions as {
+      title: string;
+      needed_count: number | null;
+      accepted_count: number | null;
+      required_skills: string[] | null;
+    } | null;
 
     return {
       id: application.id,
@@ -158,7 +156,9 @@ export function buildApplicantCards(input: {
         profile?.username?.trim() ||
         "Applicant",
       avatarUrl: profile?.avatar_url ?? "",
-      skills: application.skills?.length ? application.skills : profile?.skills ?? [],
+      skills: application.skills?.length
+        ? application.skills
+        : (profile?.skills ?? []),
       portfolioUrls: application.portfolio_urls ?? [],
       motivationMessage: application.motivation_message ?? "",
       additionalNote: application.additional_note ?? "",

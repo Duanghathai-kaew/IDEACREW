@@ -1,6 +1,4 @@
-import type {
-  ActionResult,
-} from "@/features/applications/dto/application.dto";
+import type { ActionResult } from "@/features/applications/dto/application.dto";
 import type {
   AdminProject,
   AdminProjectPosition,
@@ -15,7 +13,9 @@ import {
 import { insertNotification } from "@/features/applications/repositories/notifications.repository";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 
-export async function getAdminProjects(): Promise<ActionResult<AdminProject[]>> {
+export async function getAdminProjects(): Promise<
+  ActionResult<AdminProject[]>
+> {
   const { data: projects, error } = await fetchAdminProjects();
   if (error) {
     return { ok: false, error: error.message };
@@ -36,7 +36,9 @@ export async function getAdminProjects(): Promise<ActionResult<AdminProject[]>> 
     return { ok: true, data: [] };
   }
 
-  const ownerIds = Array.from(new Set(projectRows.map((project) => project.owner_id)));
+  const ownerIds = Array.from(
+    new Set(projectRows.map((project) => project.owner_id)),
+  );
   const projectIds = projectRows.map((project) => project.id);
   const [ownersRes, positionsRes, applicationsRes] = await Promise.all([
     fetchAdminProjectOwners(ownerIds),
@@ -45,16 +47,20 @@ export async function getAdminProjects(): Promise<ActionResult<AdminProject[]>> 
   ]);
 
   if (ownersRes.error) return { ok: false, error: ownersRes.error.message };
-  if (positionsRes.error) return { ok: false, error: positionsRes.error.message };
-  if (applicationsRes.error) return { ok: false, error: applicationsRes.error.message };
+  if (positionsRes.error)
+    return { ok: false, error: positionsRes.error.message };
+  if (applicationsRes.error)
+    return { ok: false, error: applicationsRes.error.message };
 
   const ownerById = new Map(
-    ((ownersRes.data ?? []) as Array<{
-      id: string;
-      displayname: string | null;
-      name: string | null;
-      email: string | null;
-    }>).map((owner) => [owner.id, owner]),
+    (
+      (ownersRes.data ?? []) as Array<{
+        id: string;
+        displayname: string | null;
+        name: string | null;
+        email: string | null;
+      }>
+    ).map((owner) => [owner.id, owner]),
   );
 
   const applicantCountByProjectId = new Map<string, number>();
@@ -108,7 +114,8 @@ export async function getAdminProjects(): Promise<ActionResult<AdminProject[]>> 
         id: project.id,
         title: project.title,
         description: project.description,
-        ownerName: owner?.displayname?.trim() || owner?.name?.trim() || "Unknown",
+        ownerName:
+          owner?.displayname?.trim() || owner?.name?.trim() || "Unknown",
         ownerEmail: owner?.email ?? "",
         approvalStatus: project.approval_status,
         projectStatus: project.status,
@@ -124,7 +131,10 @@ export async function getAdminProjects(): Promise<ActionResult<AdminProject[]>> 
 export async function approveProject(projectId: string): Promise<ActionResult> {
   const { error } = await supabaseAdminClient
     .from("projects")
-    .update({ approval_status: "approved", updated_at: new Date().toISOString() })
+    .update({
+      approval_status: "approved",
+      updated_at: new Date().toISOString(),
+    })
     .eq("id", projectId);
 
   if (error) return { ok: false, error: error.message };
@@ -142,7 +152,8 @@ export async function approveProject(projectId: string): Promise<ActionResult> {
       category: "my-project",
       type: "project_approved",
       title: "โปรเจกต์ได้รับการอนุมัติ",
-      message: "Your project has been approved and is now open for applications",
+      message:
+        "Your project has been approved and is now open for applications",
       status: "approved",
       link: `/project/${projectId}`,
     });
