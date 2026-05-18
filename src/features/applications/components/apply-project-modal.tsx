@@ -205,24 +205,17 @@ export function ApplyProjectModal({
                 ))}
               </div>
             ) : availablePositions.length === 0 ? (
-              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-6 text-center">
-                <p className="text-sm font-semibold text-amber-700">
-                  โปรเจกต์นี้ปิดรับสมัครแล้ว
+              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                <p className="text-sm font-semibold text-slate-700">
+                  โปรเจกต์นี้ไม่มีตำแหน่งว่างในตอนนี้
                 </p>
-                <p className="mt-1 text-xs text-amber-600">
-                  ทำเนียบตำแหน่งทั้งหมดเต็มแล้ว กรุณารอโปรเจกต์ถัดไป
+                <p className="mt-1 text-xs text-slate-600">
+                  ทุกตำแหน่งเต็มแล้วหรือปิดรับชั่วคราว กรุณาตรวจสอบอีกครั้งภายหลัง
                 </p>
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
                 {availablePositions.map((position) => {
-                  console.log(
-                    "rendering position:",
-                    position.id,
-                    position.title,
-                    "isFull:",
-                    position.isFull,
-                  );
                   return (
                     <button
                       key={position.id}
@@ -245,7 +238,7 @@ export function ApplyProjectModal({
                           </h4>
                           <div className="mt-2 flex items-center gap-2">
                             <span className="text-sm text-slate-600">
-                              {position.acceptedCount} / {position.neededCount}
+                              {position.acceptedCount}/{position.neededCount}
                             </span>
                           </div>
                           {position.requiredSkills.length > 0 && (

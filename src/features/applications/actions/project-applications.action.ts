@@ -146,7 +146,6 @@ export async function getProjectPositions(
     .order("title", { ascending: true });
 
   if (error) {
-    console.error("getProjectPositions query error:", error);
     return { ok: false, error: error.message };
   }
 
@@ -159,28 +158,51 @@ export async function getProjectPositions(
     is_active: boolean | null;
   }>;
 
-  console.log("project_positions result:", positions);
+  const positionIds = positions.map((position) => position.id);
+  const acceptedCountByPositionId = new Map<string, number>();
+  if (positionIds.length > 0) {
+    const { data: acceptedApps, error: acceptedAppsError } = await supabaseAdminClient
+      .from("project_applications")
+      .select("position_id,status")
+      .eq("project_id", projectId)
+      .eq("status", "accepted")
+      .in("position_id", positionIds);
 
-  const availablePositions = positions.filter((position) => {
-    const acceptedCount = position.accepted_count ?? 0;
-    const neededCount = position.needed_count ?? 1;
-    const isActive = position.is_active !== false;
-    return isActive && acceptedCount < neededCount;
-  });
+    if (acceptedAppsError) {
+      return { ok: false, error: acceptedAppsError.message };
+    }
 
-  console.log("availablePositions:", availablePositions);
+    for (const row of (acceptedApps ?? []) as Array<{
+      position_id: string | null;
+      status: string | null;
+    }>) {
+      if (!row.position_id) continue;
+      acceptedCountByPositionId.set(
+        row.position_id,
+        (acceptedCountByPositionId.get(row.position_id) ?? 0) + 1,
+      );
+    }
+  }
 
   return {
     ok: true,
-    data: availablePositions.map((position) => ({
-      id: position.id,
-      title: position.title,
-      neededCount: position.needed_count ?? 0,
-      acceptedCount: position.accepted_count ?? 0,
-      requiredSkills: position.required_skills ?? [],
-      isActive: position.is_active ?? false,
-      isFull: (position.accepted_count ?? 0) >= (position.needed_count ?? 1),
-    })),
+    data: positions
+      .map((position) => {
+        const neededCount = Math.max(1, position.needed_count ?? 1);
+        const acceptedCount = acceptedCountByPositionId.has(position.id)
+          ? (acceptedCountByPositionId.get(position.id) ?? 0)
+          : (position.accepted_count ?? 0);
+        return {
+          id: position.id,
+          title: position.title,
+          neededCount,
+          acceptedCount,
+          requiredSkills: position.required_skills ?? [],
+          isActive: position.is_active !== false,
+          isFull: acceptedCount >= neededCount,
+        };
+      })
+      .filter((position) => position.isActive && !position.isFull),
   };
 }
 
@@ -238,10 +260,24 @@ export async function submitProjectApplication(input: {
     accepted_count: number | null;
     is_active: boolean | null;
   };
-  if (
-    !positionRow.is_active ||
-    (positionRow.accepted_count ?? 0) >= (positionRow.needed_count ?? 0)
-  ) {
+  if (!positionRow.is_active) {
+    return { ok: false, error: "This position is already filled" };
+  }
+
+  const { count: acceptedCount, error: acceptedCountError } =
+    await supabaseAdminClient
+      .from("project_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", projectId)
+      .eq("position_id", positionId)
+      .eq("status", "accepted");
+
+  if (acceptedCountError) {
+    return { ok: false, error: acceptedCountError.message };
+  }
+
+  const neededCount = Math.max(1, positionRow.needed_count ?? 1);
+  if ((acceptedCount ?? 0) >= neededCount) {
     return { ok: false, error: "This position is already filled" };
   }
 
@@ -462,11 +498,39 @@ export async function getProjectRecruitmentProgress(
     is_active: boolean | null;
   }>;
 
+  const positionIds = positions.map((position) => position.id);
+  const acceptedCountByPositionId = new Map<string, number>();
+  if (positionIds.length > 0) {
+    const { data: acceptedApps, error: acceptedAppsError } = await supabaseAdminClient
+      .from("project_applications")
+      .select("position_id,status")
+      .eq("project_id", projectId)
+      .eq("status", "accepted")
+      .in("position_id", positionIds);
+
+    if (acceptedAppsError) {
+      return { ok: false, error: acceptedAppsError.message };
+    }
+
+    for (const row of (acceptedApps ?? []) as Array<{
+      position_id: string | null;
+      status: string | null;
+    }>) {
+      if (!row.position_id) continue;
+      acceptedCountByPositionId.set(
+        row.position_id,
+        (acceptedCountByPositionId.get(row.position_id) ?? 0) + 1,
+      );
+    }
+  }
+
   return {
     ok: true,
     data: positions.map((position) => {
-      const acceptedCount = position.accepted_count ?? 0;
-      const neededCount = position.needed_count ?? 0;
+      const neededCount = Math.max(1, position.needed_count ?? 1);
+      const acceptedCount = acceptedCountByPositionId.has(position.id)
+        ? (acceptedCountByPositionId.get(position.id) ?? 0)
+        : (position.accepted_count ?? 0);
       return {
         id: position.id,
         title: position.title,
@@ -486,31 +550,27 @@ export async function getProjectRecruitmentProgress(
 export async function getProjectTeamMembers(
   projectId: string,
 ): Promise<ActionResult<TeamMember[]>> {
-  // Get accepted applications with position and applicant info
-  const { data: applications, error } = await supabaseAdminClient
-    .from("project_applications")
-    .select("id,applicant_id,position_id,created_at,project_positions(title)")
+  const { data: members, error } = await supabaseAdminClient
+    .from("project_members")
+    .select("user_id,position_id,created_at,project_positions(title)")
     .eq("project_id", projectId)
-    .eq("status", "accepted")
     .order("created_at", { ascending: true });
 
   if (error) {
     return { ok: false, error: error.message };
   }
 
-  const appRows = (applications ?? []) as Array<{
-    id: string;
-    applicant_id: string;
+  const memberRows = (members ?? []) as Array<{
+    user_id: string;
     position_id: string | null;
     created_at: string | null;
     project_positions: Array<{ title: string }> | null;
   }>;
 
-  if (appRows.length === 0) return { ok: true, data: [] };
+  if (memberRows.length === 0) return { ok: true, data: [] };
 
-  // Get profile info for all applicants
   const applicantIds = Array.from(
-    new Set(appRows.map((app) => app.applicant_id)),
+    new Set(memberRows.map((member) => member.user_id)),
   );
   const { data: profiles, error: profileError } = await supabaseAdminClient
     .from("profiles")
@@ -535,14 +595,14 @@ export async function getProjectTeamMembers(
 
   return {
     ok: true,
-    data: appRows.map((app) => {
-      const profile = profileById.get(app.applicant_id);
-      const positionArray = app.project_positions as Array<{
+    data: memberRows.map((member) => {
+      const profile = profileById.get(member.user_id);
+      const positionArray = member.project_positions as Array<{
         title: string;
       }> | null;
       const positionTitle = positionArray?.[0]?.title ?? "Member";
       return {
-        userId: app.applicant_id,
+        userId: member.user_id,
         displayName:
           profile?.displayname?.trim() ||
           profile?.name?.trim() ||
@@ -550,7 +610,7 @@ export async function getProjectTeamMembers(
           "Team Member",
         avatarUrl: profile?.avatar_url ?? "",
         positionTitle,
-        acceptedAt: app.created_at ?? "",
+        acceptedAt: member.created_at ?? "",
       };
     }),
   };
@@ -732,10 +792,9 @@ async function checkAndUpdateProjectRecruitmentStatus(
   projectId: string,
 ): Promise<void> {
   try {
-    // Get all active positions for the project
     const { data: positions, error } = await supabaseAdminClient
       .from("project_positions")
-      .select("id,needed_count,accepted_count,is_active")
+      .select("id,needed_count,is_active")
       .eq("project_id", projectId)
       .eq("is_active", true);
 
@@ -747,15 +806,51 @@ async function checkAndUpdateProjectRecruitmentStatus(
       return;
     }
 
-    // Check if all positions are full
-    const allPositionsFull = (positions ?? []).every((position) => {
-      const acceptedCount = position.accepted_count ?? 0;
-      const neededCount = position.needed_count ?? 0;
+    const positionRows = (positions ?? []) as Array<{
+      id: string;
+      needed_count: number | null;
+      is_active: boolean | null;
+    }>;
+
+    const positionIds = positionRows.map((position) => position.id);
+    const acceptedCountByPositionId = new Map<string, number>();
+    if (positionIds.length > 0) {
+      const { data: acceptedApps, error: acceptedAppsError } =
+        await supabaseAdminClient
+          .from("project_applications")
+          .select("position_id,status")
+          .eq("project_id", projectId)
+          .eq("status", "accepted")
+          .in("position_id", positionIds);
+
+      if (acceptedAppsError) {
+        console.error(
+          "[checkAndUpdateProjectRecruitmentStatus] accepted count query error:",
+          acceptedAppsError,
+        );
+        return;
+      }
+
+      for (const row of (acceptedApps ?? []) as Array<{
+        position_id: string | null;
+        status: string | null;
+      }>) {
+        if (!row.position_id) continue;
+        acceptedCountByPositionId.set(
+          row.position_id,
+          (acceptedCountByPositionId.get(row.position_id) ?? 0) + 1,
+        );
+      }
+    }
+
+    const allPositionsFull = positionRows.every((position) => {
+      const neededCount = Math.max(1, position.needed_count ?? 1);
+      const acceptedCount = acceptedCountByPositionId.get(position.id) ?? 0;
       return acceptedCount >= neededCount;
     });
 
     // If all positions are full, update project status to 'closed'
-    if (allPositionsFull && (positions ?? []).length > 0) {
+    if (allPositionsFull && positionRows.length > 0) {
       const { error: updateError } = await supabaseAdminClient
         .from("projects")
         .update({
@@ -795,46 +890,104 @@ export async function acceptApplication(input: {
 
   const { application } = loaded.data;
 
-  const { error: updateError } = await supabaseAdminClient
+  if (!application.position_id) {
+    return { ok: false, error: "Application is missing position_id" };
+  }
+
+  const { count: acceptedCount, error: acceptedCountError } =
+    await supabaseAdminClient
+      .from("project_applications")
+      .select("id", { count: "exact", head: true })
+      .eq("project_id", application.project_id)
+      .eq("position_id", application.position_id)
+      .eq("status", "accepted");
+
+  if (acceptedCountError) return { ok: false, error: acceptedCountError.message };
+
+  const { data: position, error: positionError } = await supabaseAdminClient
+    .from("project_positions")
+    .select("id,needed_count,accepted_count,is_active")
+    .eq("id", application.position_id)
+    .eq("project_id", application.project_id)
+    .maybeSingle();
+
+  if (positionError || !position) {
+    return { ok: false, error: positionError?.message || "Position not found" };
+  }
+
+  const neededCount = Math.max(1, position.needed_count ?? 1);
+  if (!position.is_active || (acceptedCount ?? 0) >= neededCount) {
+    return { ok: false, error: "This position is already filled" };
+  }
+
+  const { data: memberExists, error: memberExistsError } = await supabaseAdminClient
+    .from("project_members")
+    .select("user_id")
+    .eq("project_id", application.project_id)
+    .eq("user_id", application.applicant_id)
+    .maybeSingle();
+
+  if (memberExistsError) return { ok: false, error: memberExistsError.message };
+  if (memberExists) {
+    return { ok: false, error: "Applicant is already a project member" };
+  }
+
+  const { data: updatedApp, error: updateError } = await supabaseAdminClient
     .from("project_applications")
     .update({ status: "accepted", updated_at: new Date().toISOString() })
-    .eq("id", input.applicationId);
+    .eq("id", input.applicationId)
+    .eq("status", "pending")
+    .select("id")
+    .maybeSingle();
 
   if (updateError) return { ok: false, error: updateError.message };
+  if (!updatedApp) {
+    return { ok: false, error: "Application was already processed" };
+  }
 
-  // Add member to project with position association
   const { error: memberError } = await supabaseAdminClient
     .from("project_members")
-    .upsert(
-      {
-        project_id: application.project_id,
-        user_id: application.applicant_id,
-        position_id: application.position_id || null,
-        role: "member",
-      },
-      { onConflict: "project_id,user_id" },
-    );
+    .insert({
+      project_id: application.project_id,
+      user_id: application.applicant_id,
+      position_id: application.position_id,
+      role: "member",
+    });
 
-  if (memberError) return { ok: false, error: memberError.message };
+  if (memberError) {
+    await supabaseAdminClient
+      .from("project_applications")
+      .update({ status: "pending", updated_at: new Date().toISOString() })
+      .eq("id", input.applicationId);
+    return { ok: false, error: memberError.message };
+  }
 
-  // If position_id exists, increment accepted_count
-  if (application.position_id) {
-    const { data: position, error: positionFetchError } = await supabaseAdminClient
-      .from("project_positions")
-      .select("accepted_count,needed_count")
-      .eq("id", application.position_id)
-      .maybeSingle();
+  const currentAcceptedCount = position.accepted_count ?? 0;
+  const nextAcceptedCount = Math.max(currentAcceptedCount + 1, acceptedCount ?? 0);
+  const { data: updatedPosition, error: updatePositionError } = await supabaseAdminClient
+    .from("project_positions")
+    .update({ accepted_count: nextAcceptedCount })
+    .eq("id", application.position_id)
+    .eq("accepted_count", currentAcceptedCount)
+    .select("id")
+    .maybeSingle();
 
-    if (!positionFetchError && position) {
-      const newCount = (position.accepted_count ?? 0) + 1;
-      if (newCount > (position.needed_count ?? 0)) {
-        return { ok: false, error: "This position is already filled" };
-      }
-      await supabaseAdminClient
-        .from("project_positions")
-        .update({ accepted_count: newCount })
-        .eq("id", application.position_id);
-    }
+  if (updatePositionError || !updatedPosition) {
+    await supabaseAdminClient
+      .from("project_members")
+      .delete()
+      .eq("project_id", application.project_id)
+      .eq("user_id", application.applicant_id);
+    await supabaseAdminClient
+      .from("project_applications")
+      .update({ status: "pending", updated_at: new Date().toISOString() })
+      .eq("id", input.applicationId);
+    return {
+      ok: false,
+      error:
+        updatePositionError?.message ??
+        "Position acceptance count changed. Please try again.",
+    };
   }
 
   await createNotification({
