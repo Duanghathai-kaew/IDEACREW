@@ -1,11 +1,14 @@
 import { z } from "zod";
 
-import { formatThaiDate, mapMyProjectStatus } from "@/features/projects/mappers/project-api.mapper";
-import { myProjectsQuerySchema } from "@/features/projects/schemas/projects-api.schema";
+import {
+  formatThaiDate,
+  mapMyProjectStatus,
+} from "@/features/projects/mappers/project-api.mapper";
 import {
   fetchMyProjects,
   fetchMyProjectsMetadata,
 } from "@/features/projects/repositories/projects.repository";
+import { myProjectsQuerySchema } from "@/features/projects/schemas/projects-api.schema";
 import { MyProject } from "@/features/projects/services/my-project-mock-data";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -13,7 +16,9 @@ export async function getMyProjectsService(query: unknown) {
   noStore();
 
   const parsed = myProjectsQuerySchema.parse(query);
-  const { data: projects, error: projectsError } = await fetchMyProjects(parsed.ownerId);
+  const { data: projects, error: projectsError } = await fetchMyProjects(
+    parsed.ownerId,
+  );
 
   if (projectsError) {
     return { status: 500, body: { error: projectsError.message } };
@@ -73,7 +78,9 @@ export async function getMyProjectsService(query: unknown) {
 
   const applicantCountByProjectId = new Map<string, number>();
   if (!applicationsRes.error) {
-    const applicationRows = (applicationsRes.data ?? []) as Array<{ project_id: string }>;
+    const applicationRows = (applicationsRes.data ?? []) as Array<{
+      project_id: string;
+    }>;
     for (const row of applicationRows) {
       applicantCountByProjectId.set(
         row.project_id,
@@ -104,7 +111,10 @@ export async function getMyProjectsService(query: unknown) {
 
 export function mapMyProjectsZodError(error: unknown) {
   if (error instanceof z.ZodError) {
-    return { status: 400, body: { error: "Invalid query", issues: error.issues } };
+    return {
+      status: 400,
+      body: { error: "Invalid query", issues: error.issues },
+    };
   }
   return null;
 }

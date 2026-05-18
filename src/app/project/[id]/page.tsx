@@ -18,10 +18,10 @@ import {
   Settings,
   Users,
 } from "lucide-react";
+import { unstable_noStore as noStore } from "next/cache";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { unstable_noStore as noStore } from "next/cache";
 
 interface ProjectDetailPageProps {
   params: Promise<{

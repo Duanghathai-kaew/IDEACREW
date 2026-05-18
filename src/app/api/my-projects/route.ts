@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
 import {
   getMyProjectsService,
@@ -20,6 +20,9 @@ export async function GET(request: NextRequest) {
     if (zodResult) {
       return NextResponse.json(zodResult.body, { status: zodResult.status });
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }

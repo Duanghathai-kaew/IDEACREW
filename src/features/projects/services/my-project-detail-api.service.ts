@@ -1,9 +1,12 @@
 import { z } from "zod";
 
+import { MyProjectStatus } from "@/features/projects/services/my-project-mock-data";
+import {
+  Benefit,
+  ProjectFormData,
+} from "@/features/projects/types/project.type";
 import { createMyProjectStatusNotification } from "@/lib/server/notifications";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
-import { MyProjectStatus } from "@/features/projects/services/my-project-mock-data";
-import { Benefit, ProjectFormData } from "@/features/projects/types/project.type";
 import { CreatorProjectStatus } from "@/types/status";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -150,7 +153,8 @@ export async function getMyProjectByIdService(input: {
   }
 
   const qualificationsByPositionId = new Map<string, string[]>();
-  for (const row of (qualificationsResult.data ?? []) as DbBasicQualification[]) {
+  for (const row of (qualificationsResult.data ??
+    []) as DbBasicQualification[]) {
     const current = qualificationsByPositionId.get(row.position_id) ?? [];
     current.push(row.qualification_text);
     qualificationsByPositionId.set(row.position_id, current);
@@ -158,7 +162,9 @@ export async function getMyProjectByIdService(input: {
 
   const formData: ProjectFormData = {
     title: project.title,
-    categories: ((categories as DbCategory[] | null) ?? []).map((c) => c.category_name),
+    categories: ((categories as DbCategory[] | null) ?? []).map(
+      (c) => c.category_name,
+    ),
     summary: project.summary ?? "",
     description: project.description ?? "",
     workMode: mapWorkMode(project.work_mode),
@@ -177,7 +183,8 @@ export async function getMyProjectByIdService(input: {
             title: position.title,
             neededCount: position.needed_count,
             skills: skillsByPositionId.get(position.id) ?? [],
-            basicQualifications: qualificationsByPositionId.get(position.id) ?? [],
+            basicQualifications:
+              qualificationsByPositionId.get(position.id) ?? [],
             preferredQualifications: position.preferred_qualifications ?? "",
           }))
         : [
@@ -213,17 +220,19 @@ export async function patchMyProjectByIdService(input: {
   ownerId: string;
   body: UpdateBody;
 }) {
-  const { data: currentProject, error: currentProjectError } = await supabaseAdminClient
-    .from("projects")
-    .select("id,title,status")
-    .eq("id", input.id)
-    .eq("owner_id", input.ownerId)
-    .maybeSingle();
+  const { data: currentProject, error: currentProjectError } =
+    await supabaseAdminClient
+      .from("projects")
+      .select("id,title,status")
+      .eq("id", input.id)
+      .eq("owner_id", input.ownerId)
+      .maybeSingle();
 
   if (currentProjectError) {
     return { status: 500, body: { error: currentProjectError.message } };
   }
-  if (!currentProject) return { status: 404, body: { error: "Project not found" } };
+  if (!currentProject)
+    return { status: 404, body: { error: "Project not found" } };
 
   const nextFormData = input.body.formData;
   const status = (input.body.status ?? "").trim();
@@ -311,16 +320,20 @@ export async function deleteMyProjectByIdService(input: {
     .eq("owner_id", input.ownerId)
     .maybeSingle();
 
-  if (projectError) return { status: 500, body: { error: projectError.message } };
+  if (projectError)
+    return { status: 500, body: { error: projectError.message } };
   if (!project) return { status: 404, body: { error: "Project not found" } };
 
   const { data: positions, error: positionsError } = await supabaseAdminClient
     .from("project_positions")
     .select("id")
     .eq("project_id", input.id);
-  if (positionsError) return { status: 500, body: { error: positionsError.message } };
+  if (positionsError)
+    return { status: 500, body: { error: positionsError.message } };
 
-  const positionIds = (positions ?? []).map((position) => position.id as string);
+  const positionIds = (positions ?? []).map(
+    (position) => position.id as string,
+  );
   if (positionIds.length > 0) {
     const [skillsDeleteRes, qualsDeleteRes] = await Promise.all([
       supabaseAdminClient
@@ -347,8 +360,14 @@ export async function deleteMyProjectByIdService(input: {
 
   const [positionsDeleteRes, categoriesDeleteRes, applicationsDeleteRes] =
     await Promise.all([
-      supabaseAdminClient.from("project_positions").delete().eq("project_id", input.id),
-      supabaseAdminClient.from("project_categories").delete().eq("project_id", input.id),
+      supabaseAdminClient
+        .from("project_positions")
+        .delete()
+        .eq("project_id", input.id),
+      supabaseAdminClient
+        .from("project_categories")
+        .delete()
+        .eq("project_id", input.id),
       supabaseAdminClient
         .from("project_applications")
         .delete()
@@ -361,7 +380,11 @@ export async function deleteMyProjectByIdService(input: {
       ? applicationsDeleteRes.error
       : null;
 
-  if (positionsDeleteRes.error || categoriesDeleteRes.error || applicationsDeleteError) {
+  if (
+    positionsDeleteRes.error ||
+    categoriesDeleteRes.error ||
+    applicationsDeleteError
+  ) {
     return {
       status: 500,
       body: {
@@ -388,7 +411,10 @@ export async function deleteMyProjectByIdService(input: {
 
 export function mapMyProjectDetailZodError(error: unknown) {
   if (error instanceof z.ZodError) {
-    return { status: 400, body: { error: "Invalid request", issues: error.issues } };
+    return {
+      status: 400,
+      body: { error: "Invalid request", issues: error.issues },
+    };
   }
   return null;
 }

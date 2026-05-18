@@ -1,17 +1,17 @@
-import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
+import { NextRequest, NextResponse } from "next/server";
 
-import {
-  mapMyProjectDetailZodError,
-  getMyProjectByIdService,
-  patchMyProjectByIdService,
-  deleteMyProjectByIdService,
-} from "@/features/projects/services/my-project-detail-api.service";
 import {
   myProjectOwnerQuerySchema,
   myProjectParamsSchema,
   updateMyProjectBodySchema,
 } from "@/features/projects/schemas/projects-api.schema";
+import {
+  deleteMyProjectByIdService,
+  getMyProjectByIdService,
+  mapMyProjectDetailZodError,
+  patchMyProjectByIdService,
+} from "@/features/projects/services/my-project-detail-api.service";
 
 export const runtime = "nodejs";
 
@@ -34,7 +34,10 @@ export async function GET(request: NextRequest, context: ParamsContext) {
     if (zodResult) {
       return NextResponse.json(zodResult.body, { status: zodResult.status });
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -58,7 +61,10 @@ export async function PATCH(request: NextRequest, context: ParamsContext) {
     if (zodResult) {
       return NextResponse.json(zodResult.body, { status: zodResult.status });
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
 
@@ -79,6 +85,9 @@ export async function DELETE(request: NextRequest, context: ParamsContext) {
     if (zodResult) {
       return NextResponse.json(zodResult.body, { status: zodResult.status });
     }
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
   }
 }
