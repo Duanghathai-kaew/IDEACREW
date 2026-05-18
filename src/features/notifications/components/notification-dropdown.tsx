@@ -1,0 +1,484 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import {
+  Bell,
+  CheckCircle2,
+  Clock,
+  FileText,
+  Trash2,
+  Users,
+  XCircle,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { NotificationCategory, NotificationItem } from "@/features/notifications/types/notification.type";
+import { ApplicantApplicationStatus, CreatorProjectStatus } from "@/types/status";
+
+const tabConfig: { key: NotificationCategory; label: string }[] = [
+  { key: "my-project", label: "โปรเจกต์ของฉัน" },
+  { key: "applied", label: "ที่ฉันสมัคร" },
+];
+
+const creatorStatusLabelMap: Record<CreatorProjectStatus, string> = {
+  draft: "แบบร่าง",
+  pending_approval: "รอการอนุมัติ",
+  rejected_by_admin: "ตีกลับโดยแอดมิน",
+  approved: "อนุมัติแล้ว",
+  open: "เปิดรับสมัคร",
+  reviewing: "กำลังดำเนินการ",
+  closed: "ปิดรับแล้ว",
+};
+
+const applicantStatusLabelMap: Record<ApplicantApplicationStatus, string> = {
+  pending: "รอการพิจารณา",
+  applied: "คุณสมัครแล้ว",
+  in_review: "อยู่ระหว่าง review",
+  rejected: "คุณไม่ผ่าน",
+  accepted: "คุณได้รับเลือกเข้าทีม",
+};
+
+const creatorStatusOrder: CreatorProjectStatus[] = [
+  "draft",
+  "pending_approval",
+  "approved",
+  "open",
+  "closed",
+  "rejected_by_admin",
+];
+
+const applicantStatusOrder: ApplicantApplicationStatus[] = [
+  "pending",
+  "applied",
+  "in_review",
+  "accepted",
+  "rejected",
+];
+
+type StatusTone =
+  | "gray"
+  | "yellow"
+  | "blue"
+  | "green"
+  | "red"
+  | "purple"
+  | "dark_gray";
+
+function isNewApplicantNotification(item: NotificationItem) {
+  return (
+    item.category === "my-project" &&
+    item.eventType.startsWith("new_applicant:")
+  );
+}
+
+function getStatusTone(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+): StatusTone {
+  if (isNewApplicant) return "purple";
+  if (status === "draft") return "gray";
+  if (status === "pending_approval" || status === "in_review") return "yellow";
+  if (status === "applied") return "blue";
+  if (
+    status === "approved" ||
+    status === "open" ||
+    status === "reviewing" ||
+    status === "accepted"
+  ) {
+    return "green";
+  }
+  if (status === "rejected_by_admin" || status === "rejected") return "red";
+  return "dark_gray";
+}
+
+function getStatusStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
+  if (tone === "green") return "bg-emerald-100 text-emerald-700";
+  if (tone === "yellow") return "bg-amber-100 text-amber-700";
+  if (tone === "blue") return "bg-sky-100 text-sky-700";
+  if (tone === "red") return "bg-rose-100 text-rose-700";
+  if (tone === "purple") return "bg-purple-100 text-purple-700";
+  if (tone === "gray") return "bg-slate-100 text-slate-700";
+  return "bg-slate-200 text-slate-800";
+}
+
+function getStatusTextStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
+  if (tone === "green") return "text-emerald-700";
+  if (tone === "yellow") return "text-amber-700";
+  if (tone === "blue") return "text-sky-700";
+  if (tone === "red") return "text-rose-700";
+  if (tone === "purple") return "text-purple-700";
+  if (tone === "gray") return "text-slate-700";
+  return "text-slate-800";
+}
+
+function getStatusDotStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
+  if (tone === "green") return "bg-emerald-500";
+  if (tone === "yellow") return "bg-amber-500";
+  if (tone === "blue") return "bg-sky-500";
+  if (tone === "red") return "bg-rose-500";
+  if (tone === "purple") return "bg-purple-500";
+  if (tone === "gray") return "bg-slate-500";
+  return "bg-slate-700";
+}
+
+function getUnreadHighlightStyles(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
+  if (tone === "green") return "bg-emerald-50/70";
+  if (tone === "yellow") return "bg-amber-50/70";
+  if (tone === "blue") return "bg-sky-50/70";
+  if (tone === "red") return "bg-rose-50/70";
+  if (tone === "purple") return "bg-purple-50/70";
+  if (tone === "gray") return "bg-slate-50/80";
+  return "bg-slate-100/70";
+}
+
+function getStatusLabel(item: NotificationItem) {
+  if (isNewApplicantNotification(item)) {
+    return "มีผู้สมัครเข้ามาใหม่";
+  }
+  if (item.category === "my-project") {
+    return creatorStatusLabelMap[item.status as CreatorProjectStatus];
+  }
+  return applicantStatusLabelMap[item.status as ApplicantApplicationStatus];
+}
+
+function getStatusIcon(
+  status: NotificationItem["status"],
+  isNewApplicant = false,
+) {
+  const tone = getStatusTone(status, isNewApplicant);
+  if (tone === "green") return CheckCircle2;
+  if (tone === "yellow") return Clock;
+  if (tone === "blue") return Bell;
+  if (tone === "red") return XCircle;
+  if (tone === "purple") return Users;
+  if (tone === "gray") return FileText;
+  return Users;
+}
+
+export default function NotificationDropdown({
+  onClose,
+  userId,
+  onUnreadCountChange,
+}: {
+  onClose: () => void;
+  userId: string;
+  onUnreadCountChange: (count: number) => void;
+}) {
+  const router = useRouter();
+  const [activeTab, setActiveTab] =
+    useState<NotificationCategory>("my-project");
+  const [items, setItems] = useState<NotificationItem[]>([]);
+
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchNotifications() {
+      try {
+        const response = await fetch(
+          `/api/notifications?userId=${encodeURIComponent(userId)}`,
+          { cache: "no-store" },
+        );
+        if (!response.ok) return;
+
+        const result = (await response.json()) as { data?: NotificationItem[] };
+        if (!mounted) return;
+
+        setItems(result.data ?? []);
+      } catch {
+        // Keep current data when request fails.
+      }
+    }
+
+    fetchNotifications();
+
+    return () => {
+      mounted = false;
+    };
+  }, [onUnreadCountChange, userId]);
+
+  const counts = useMemo(() => {
+    return {
+      "my-project": items.filter((item) => item.category === "my-project")
+        .length,
+      applied: items.filter((item) => item.category === "applied").length,
+    };
+  }, [items]);
+
+  const filtered = useMemo(
+    () => items.filter((item) => item.category === activeTab),
+    [items, activeTab],
+  );
+
+  useEffect(() => {
+    onUnreadCountChange(items.filter((item) => !item.isRead).length);
+  }, [items, onUnreadCountChange]);
+
+  const sortedItems = useMemo(
+    () =>
+      [...filtered].sort((a, b) => {
+        if (a.isRead === b.isRead) return 0;
+        return a.isRead ? 1 : -1;
+      }),
+    [filtered],
+  );
+
+  const statusSummary = useMemo(() => {
+    const counts = filtered.reduce<Record<string, number>>((acc, item) => {
+      const key = isNewApplicantNotification(item)
+        ? "new_applicant"
+        : activeTab === "my-project" && item.status === "reviewing"
+          ? "open"
+          : item.status;
+      acc[key] = (acc[key] ?? 0) + 1;
+      return acc;
+    }, {});
+
+    const order =
+      activeTab === "my-project"
+        ? (["new_applicant", ...creatorStatusOrder] as const)
+        : applicantStatusOrder;
+
+    return order
+      .filter((key) => (counts[key] ?? 0) > 0)
+      .map((key) => ({
+        key,
+        label:
+          key === "new_applicant"
+            ? "มีผู้สมัครเข้ามาใหม่"
+            : activeTab === "my-project"
+              ? creatorStatusLabelMap[key as CreatorProjectStatus]
+              : applicantStatusLabelMap[key as ApplicantApplicationStatus],
+        count: counts[key] ?? 0,
+      }));
+  }, [filtered, activeTab]);
+
+  async function markAllRead() {
+    try {
+      await fetch(
+        `/api/notifications/read-all?userId=${encodeURIComponent(userId)}`,
+        { method: "PATCH" },
+      );
+      setItems((prev) => prev.map((item) => ({ ...item, isRead: true })));
+    } catch {
+      // Keep previous state when request fails.
+    }
+  }
+
+  async function deleteAll() {
+    try {
+      await fetch(
+        `/api/notifications?userId=${encodeURIComponent(userId)}&category=${activeTab}`,
+        { method: "DELETE" },
+      );
+      setItems((prev) => prev.filter((item) => item.category !== activeTab));
+    } catch {
+      // Keep previous state when request fails.
+    }
+  }
+
+  async function handleDeleteItem(id: string) {
+    try {
+      const response = await fetch(
+        `/api/notifications/${id}?userId=${encodeURIComponent(userId)}`,
+        { method: "DELETE" },
+      );
+      if (!response.ok) return;
+      setItems((prev) => prev.filter((item) => item.id !== id));
+    } catch {
+      // Keep previous state when request fails.
+    }
+  }
+
+  async function handleClick(item: NotificationItem) {
+    if (!item.isRead) {
+      try {
+        await fetch(
+          `/api/notifications/${item.id}/read?userId=${encodeURIComponent(userId)}`,
+          { method: "PATCH" },
+        );
+      } catch {
+        // Keep going to destination page even if read update fails.
+      }
+      setItems((prev) =>
+        prev.map((entry) =>
+          entry.id === item.id ? { ...entry, isRead: true } : entry,
+        ),
+      );
+    }
+
+    if (item.projectId) {
+      router.push(`/project/${item.projectId}`);
+    }
+    onClose();
+  }
+
+  return (
+    <div className="absolute right-0 top-12 z-50 w-[360px] rounded-2xl shadow-2xl overflow-hidden border border-brand-100 bg-white">
+      <div className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 px-5 pt-4 pb-3 text-white">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5" />
+            <span className="font-semibold">การแจ้งเตือน</span>
+            <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs">
+              {items.filter((item) => !item.isRead).length} ใหม่
+            </span>
+          </div>
+          <button className="text-xs underline" onClick={markAllRead}>
+            อ่านทั้งหมด
+          </button>
+        </div>
+        <div className="mt-4 flex items-center gap-3">
+          {tabConfig.map((tab) => {
+            const isActive = tab.key === activeTab;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium transition-all ${
+                  isActive
+                    ? "bg-white text-brand-500 shadow"
+                    : "bg-white/20 text-white"
+                }`}
+              >
+                {tab.key === "my-project" ? (
+                  <Users className="w-3.5 h-3.5" />
+                ) : (
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                )}
+                {tab.label}
+                <span className="rounded-full bg-white/30 px-2 py-0.5 text-[10px]">
+                  {counts[tab.key]}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="max-h-[360px] overflow-y-auto bg-surface-warm">
+        {statusSummary.length > 0 && (
+          <div className="px-5 py-3 border-b border-brand-100 bg-white/80">
+            <div className="flex flex-wrap gap-2">
+              {statusSummary.map((item) => (
+                <span
+                  key={item.key}
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] ${getStatusStyles(
+                    item.key === "new_applicant" ? "open" : (item.key as NotificationItem["status"]),
+                    item.key === "new_applicant",
+                  )}`}
+                >
+                  <span>{item.label}</span>
+                  <span className="rounded-full bg-white/60 px-1.5 py-0.5 leading-none">
+                    {item.count}
+                  </span>
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+        {filtered.length === 0 ? (
+          <div className="px-6 py-10 text-center text-sm text-brand-400">
+            ยังไม่มีการแจ้งเตือนในแท็บนี้
+          </div>
+        ) : (
+          sortedItems.map((item) => {
+            const isNewApplicant = isNewApplicantNotification(item);
+            const StatusIcon = getStatusIcon(item.status, isNewApplicant);
+            return (
+              <div
+                key={item.id}
+                onClick={() => handleClick(item)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    void handleClick(item);
+                  }
+                }}
+                role="button"
+                tabIndex={0}
+                className={`w-full text-left px-5 py-4 border-b border-brand-100 hover:bg-white active:bg-white transition focus:outline-none ${
+                  item.isRead
+                    ? "bg-white/70"
+                    : getUnreadHighlightStyles(item.status, isNewApplicant)
+                }`}
+                style={{ WebkitTapHighlightColor: "transparent" }}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-10 h-10 rounded-xl flex items-center justify-center ${getStatusStyles(item.status, isNewApplicant)}`}
+                  >
+                    <StatusIcon className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <div className="flex items-center justify-between text-xs text-text-muted">
+                      <span>{item.title}</span>
+                      <span>{item.date}</span>
+                    </div>
+                    <span
+                      className={`inline-flex rounded-full px-2 py-0.5 text-[11px] ${getStatusStyles(item.status, isNewApplicant)}`}
+                    >
+                      {getStatusLabel(item)}
+                    </span>
+                    <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] text-slate-700">
+                      {item.projectTitle}
+                    </span>
+                    <p className="text-xs text-text-secondary">{item.message}</p>
+                    <div
+                      className={`flex items-center gap-3 text-[11px] ${getStatusTextStyles(item.status, isNewApplicant)}`}
+                    >
+                      <span>{item.isRead ? "อ่านแล้ว" : "ยังไม่อ่าน"}</span>
+                      <span>ดู</span>
+                    </div>
+                  </div>
+                  <div className="mt-1 flex items-center gap-2">
+                    <button
+                      type="button"
+                      aria-label="Delete notification"
+                      className="rounded-md p-1 text-slate-400 hover:bg-slate-100 hover:text-rose-500"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleDeleteItem(item.id);
+                      }}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                    {!item.isRead && (
+                      <span
+                        className={`h-2 w-2 rounded-full ${getStatusDotStyles(item.status, isNewApplicant)}`}
+                      />
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      <div className="bg-white px-5 py-3">
+        <button
+          onClick={deleteAll}
+          className="flex items-center justify-center w-full gap-2 rounded-lg border border-brand-100 py-2 text-xs text-brand-500"
+        >
+          <Trash2 className="w-4 h-4" />
+          ลบการแจ้งเตือนทั้งหมด
+        </button>
+      </div>
+    </div>
+  );
+}
