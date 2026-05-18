@@ -27,7 +27,7 @@ export const PositionsSection: React.FC<PositionsSectionProps> = ({
     <div className="mb-8 rounded-[20px] border border-[rgb(253_94_75/0.16)] bg-white p-8 shadow-[0_10px_30px_rgb(253_94_75/0.1)]">
       <SectionHeader
         icon={<Calendar className="w-5 h-5" />}
-        title="คุณลักษณะที่ค้องการ"
+        title="คุณลักษณะที่ต้องการ"
       >
         <button
           type="button"
