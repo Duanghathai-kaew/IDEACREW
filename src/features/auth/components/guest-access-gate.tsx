@@ -1,5 +1,6 @@
 "use client";
 
+import { RootAppLoadingSkeleton } from "@/components/shared/loading-skeletons";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -18,12 +19,8 @@ export function GuestAccessGate({ children }: { children: React.ReactNode }) {
     }
   }, [isGuestAllowedPath, isLoading, router, user]);
 
-  if (isLoading && !isGuestAllowedPath) {
-    return null;
-  }
-
-  if (!user && !isGuestAllowedPath) {
-    return null;
+  if (!isGuestAllowedPath && (isLoading || !user)) {
+    return <RootAppLoadingSkeleton />;
   }
 
   return <>{children}</>;
