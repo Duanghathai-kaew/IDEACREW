@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 
 import { AuthProvider } from "@/features/auth/components/auth-provider";
 import { GuestAccessGate } from "@/features/auth/components/guest-access-gate";
@@ -25,9 +24,7 @@ export default function RootLayout({
     <html lang="th">
       <body className="font-sans antialiased bg-[#FFF9F6]">
         <AuthProvider>
-          <Suspense fallback={null}>
-            <GuestAccessGate>{children}</GuestAccessGate>
-          </Suspense>
+          <GuestAccessGate>{children}</GuestAccessGate>
         </AuthProvider>
       </body>
     </html>

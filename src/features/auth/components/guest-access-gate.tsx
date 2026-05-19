@@ -1,6 +1,5 @@
 "use client";
 
-import { RootAppLoadingSkeleton } from "@/components/shared/loading-skeletons";
 import { useAuth } from "@/features/auth/components/auth-provider";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -10,7 +9,8 @@ export function GuestAccessGate({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
 
-  const isGuestAllowedPath = pathname === "/" || pathname === "/login";
+  const isGuestAllowedPath =
+    pathname === "/" || pathname === "/login" || pathname.startsWith("/admin");
 
   useEffect(() => {
     if (isLoading) return;
@@ -19,8 +19,8 @@ export function GuestAccessGate({ children }: { children: React.ReactNode }) {
     }
   }, [isGuestAllowedPath, isLoading, router, user]);
 
-  if (!isGuestAllowedPath && (isLoading || !user)) {
-    return <RootAppLoadingSkeleton />;
+  if (!user && !isGuestAllowedPath) {
+    return null;
   }
 
   return <>{children}</>;
