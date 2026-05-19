@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { adminLogoutAction } from "@/features/admin/actions/admin-logout.action";
 import { cn } from "@/lib/utils";
 
 const TABS = [
@@ -69,13 +70,15 @@ export function AdminNavbar() {
           <div className="grid h-9 w-9 place-items-center rounded-full bg-linear-to-br from-indigo-500 to-violet-500 text-xs font-semibold text-white">
             AD
           </div>
-          <button
-            type="button"
-            className="rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
-            aria-label="Logout"
-          >
-            <LogOut className="h-4 w-4" />
-          </button>
+          <form action={adminLogoutAction}>
+            <button
+              type="submit"
+              className="rounded-md p-2 text-slate-500 transition hover:bg-slate-100 hover:text-slate-700"
+              aria-label="Logout"
+            >
+              <LogOut className="h-4 w-4" />
+            </button>
+          </form>
         </div>
       </div>
 

@@ -1,6 +1,6 @@
-import { getAdminProjects } from "@/features/applications/actions/project-applications.action";
-import { PageHeader } from "@/features/admin/components/page-header";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/features/admin/components/page-header";
+import { getAdminProjects } from "@/features/applications/actions/project-applications.action";
 
 function formatReadableDate(date: string) {
   if (!date) return "-";
