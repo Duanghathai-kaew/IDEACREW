@@ -2,22 +2,10 @@
 
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { z } from "zod";
 
+import { adminLoginSchema } from "@/features/admin/schemas/admin-login.schema";
+import type { AdminLoginState } from "@/features/admin/types/admin-login.type";
 import { ADMIN_SESSION_COOKIE_NAME } from "@/lib/auth/admin-session";
-
-const adminLoginSchema = z.object({
-  username: z.string().trim().min(1, "Username is required"),
-  password: z.string().trim().min(1, "Password is required"),
-});
-
-export type AdminLoginState = {
-  error: string | null;
-};
-
-export const initialAdminLoginState: AdminLoginState = {
-  error: null,
-};
 
 export async function adminLoginAction(
   _prevState: AdminLoginState,

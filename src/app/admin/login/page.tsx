@@ -13,10 +13,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  adminLoginAction,
-  initialAdminLoginState,
-} from "@/features/admin/actions/admin-login.action";
+import { adminLoginAction } from "@/features/admin/actions/admin-login.action";
+import { initialAdminLoginState } from "@/features/admin/types/admin-login.type";
 
 function LoginSubmitButton() {
   const { pending } = useFormStatus();
