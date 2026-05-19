@@ -11,7 +11,7 @@ export default function LoginPage() {
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center">
             <Image
-              src="/logo.png"
+              src="/logo.svg"
               alt="IDEACREW logo"
               width={80}
               height={80}

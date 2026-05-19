@@ -1,15 +1,21 @@
-"use client";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 
-import AddProjectModal from "@/features/projects/components/add-project-modal";
-import { useAuth } from "@/features/auth/components/auth-provider";
-import NotificationDropdown from "@/features/notifications/components/notification-dropdown";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/features/auth/components/auth-provider";
+import NotificationDropdown from "@/features/notifications/components/notification-dropdown";
+import AddProjectModal from "@/features/projects/components/add-project-modal";
 import { Bell, CircleUserRound, LogOut, Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+
+const MENU_ITEMS = [
+  { key: "home", label: "หน้าหลัก", href: "/" },
+  { key: "my-project", label: "โปรเจกต์ของฉัน", href: "/my-project" },
+] as const;
+
+const GUEST_MENU_ITEMS = [MENU_ITEMS[0]] as const;
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -26,6 +32,17 @@ export default function Navbar() {
   const active: "home" | "my-project" = pathname?.startsWith("/my-project")
     ? "my-project"
     : "home";
+  const mounted = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
+  const isAuthenticated = mounted && Boolean(user);
+  const menuItems = isAuthenticated ? MENU_ITEMS : GUEST_MENU_ITEMS;
+  const shouldAutoOpenDraftModal =
+    isAuthenticated &&
+    pathname?.startsWith("/my-project") &&
+    Boolean(draftIdFromQuery);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -40,11 +57,11 @@ export default function Navbar() {
   }, []);
 
   useEffect(() => {
-    let mounted = true;
+    let isActive = true;
 
     async function fetchUnreadCount() {
       if (!user?.id) {
-        if (mounted) setUnreadCount(0);
+        if (isActive) setUnreadCount(0);
         return;
       }
 
@@ -58,12 +75,11 @@ export default function Navbar() {
         const result = (await response.json()) as {
           data?: Array<{ isRead: boolean }>;
         };
-        if (!mounted) return;
+        if (!isActive) return;
 
-        const nextUnreadCount = (result.data ?? []).filter(
-          (item) => !item.isRead,
-        ).length;
-        setUnreadCount(nextUnreadCount);
+        setUnreadCount(
+          (result.data ?? []).filter((item) => !item.isRead).length,
+        );
       } catch {
         // Keep previous count when request fails.
       }
@@ -72,25 +88,9 @@ export default function Navbar() {
     fetchUnreadCount();
 
     return () => {
-      mounted = false;
+      isActive = false;
     };
   }, [user?.id]);
-
-  const shouldAutoOpenDraftModal =
-    Boolean(user) &&
-    pathname?.startsWith("/my-project") &&
-    Boolean(draftIdFromQuery);
-
-  const menuItems: Array<{
-    key: "home" | "my-project";
-    label: string;
-    href: string;
-  }> = user
-    ? [
-        { key: "home", label: "หน้าหลัก", href: "/" },
-        { key: "my-project", label: "โปรเจกต์ของฉัน", href: "/my-project" },
-      ]
-    : [{ key: "home", label: "หน้าหลัก", href: "/" }];
 
   async function handleLogout() {
     try {
@@ -101,18 +101,20 @@ export default function Navbar() {
     } catch {
       // Continue local sign out even if network request fails.
     }
+
     await signOut();
     setOpen(false);
     router.push("/");
   }
 
   function requireAuth(action: () => void) {
-    if (!user) {
+    if (!isAuthenticated) {
       setOpen(false);
       setIsNotiOpen(false);
       router.push("/login");
       return;
     }
+
     action();
   }
 
@@ -121,6 +123,10 @@ export default function Navbar() {
     if (shouldAutoOpenDraftModal) {
       router.replace("/my-project");
     }
+  }
+
+  if (!mounted) {
+    return <nav className="h-16 animate-pulse border-b bg-white" />;
   }
 
   return (
@@ -134,12 +140,11 @@ export default function Navbar() {
         />
       )}
       <div className="mx-auto flex max-w-7xl items-center justify-between overflow-visible px-6 py-4">
-        <div className="flex items-center w-full">
-          {/* Logo */}
+        <div className="flex w-full items-center">
           <div className="flex items-center">
             <Link href="/" aria-label="Go to home">
               <Image
-                src="/logo-text.png"
+                src="/logo-text.svg"
                 alt="IDEACREW"
                 width={193}
                 height={67}
@@ -149,12 +154,12 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Menu */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex flex-1 justify-center">
             <div className="hidden gap-6 md:flex">
               {menuItems.map(({ key, label, href }) => (
                 <button
                   key={key}
+                  type="button"
                   onClick={() => router.push(href)}
                   className={`text-nav pb-1 ${
                     active === key
@@ -168,8 +173,7 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Desktop Actions */}
-          <div className="hidden md:flex items-center gap-6">
+          <div className="hidden items-center gap-6 md:flex">
             <div className="relative z-50 flex items-center" ref={notiRef}>
               <button
                 type="button"
@@ -212,10 +216,12 @@ export default function Navbar() {
             <button
               type="button"
               className="icon-btn"
-              onClick={user ? handleLogout : () => router.push("/login")}
-              aria-label={user ? "Logout" : "Login"}
+              onClick={
+                isAuthenticated ? handleLogout : () => router.push("/login")
+              }
+              aria-label={isAuthenticated ? "Logout" : "Login"}
             >
-              {user ? (
+              {isAuthenticated ? (
                 <LogOut className="icon-sm text-orange-500" />
               ) : (
                 <span className="text-xs font-semibold text-orange-500">
@@ -225,8 +231,11 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile Toggle */}
-          <button className="md:hidden" onClick={() => setOpen(!open)}>
+          <button
+            type="button"
+            className="md:hidden"
+            onClick={() => setOpen(!open)}
+          >
             <div className="icon-btn">
               {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
             </div>
@@ -234,12 +243,12 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {open && (
-        <div className="md:hidden border-t bg-white px-6 py-4 space-y-4">
-          {menuItems.map(({ label, href }) => (
+        <div className="space-y-4 border-t bg-white px-6 py-4 md:hidden">
+          {menuItems.map(({ key, label, href }) => (
             <button
-              key={label}
+              key={key}
+              type="button"
               className="block w-full text-left text-nav"
               onClick={() => {
                 router.push(href);
@@ -277,10 +286,12 @@ export default function Navbar() {
             <button
               type="button"
               className="icon-btn"
-              onClick={user ? handleLogout : () => router.push("/login")}
-              aria-label={user ? "Logout" : "Login"}
+              onClick={
+                isAuthenticated ? handleLogout : () => router.push("/login")
+              }
+              aria-label={isAuthenticated ? "Logout" : "Login"}
             >
-              {user ? (
+              {isAuthenticated ? (
                 <LogOut className="icon-sm text-orange-500" />
               ) : (
                 <span className="text-xs font-semibold text-orange-500">
@@ -295,7 +306,6 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Add Project Modal */}
       <AddProjectModal
         isOpen={isModalOpen || shouldAutoOpenDraftModal}
         onClose={handleCloseModal}

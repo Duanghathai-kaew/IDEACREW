@@ -10,9 +10,9 @@ export const metadata: Metadata = {
   title: "IDEACREW",
   description: "Build Your Dream Team",
   icons: {
-    icon: "/logo.png",
-    shortcut: "/logo.png",
-    apple: "/logo.png",
+    icon: "/logo.svg",
+    shortcut: "/logo.svg",
+    apple: "/logo.svg",
   },
 };
 

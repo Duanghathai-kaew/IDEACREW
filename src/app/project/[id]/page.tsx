@@ -358,7 +358,7 @@ export default async function ProjectDetailPage({
                 >
                   <div className="flex items-center justify-center mb-4">
                     <Image
-                      src="/logo.png"
+                      src="/logo.svg"
                       alt="IdeaCrew logo"
                       width={61}
                       height={67}
