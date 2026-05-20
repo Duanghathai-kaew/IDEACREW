@@ -134,13 +134,6 @@ export default function Home() {
     selectedCategories.length +
     (statusFilter !== "open" ? 1 : 0);
 
-  const feedAnimationKey = [
-    keyword.trim().toLowerCase(),
-    selectedSkills.slice().sort().join(","),
-    selectedCategories.slice().sort().join(","),
-    statusFilter,
-  ].join("|");
-
   const sidebarProps = {
     selectedSkills,
     onSkillsChange: setSelectedSkills,
@@ -160,8 +153,8 @@ export default function Home() {
         <SearchBar key={`search-${resetSignal}`} onSearch={handleSearch} />
       </div>
 
-      <main className="mx-auto grid w-full min-w-0 max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-4 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-[280px_1fr]">
-        <aside className="hidden min-w-0 lg:block">
+      <main className="mx-auto grid w-full min-w-0 max-w-7xl flex-1 grid-cols-1 items-start gap-4 px-4 py-4 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-[280px_1fr]">
+        <aside className="hidden min-w-0 lg:block lg:self-start">
           <Sidebar {...sidebarProps} />
         </aside>
 
@@ -171,7 +164,6 @@ export default function Home() {
             onOpen={() => setMobileFiltersOpen(true)}
           />
           <ProjectFeed
-            key={feedAnimationKey}
             projects={filtered}
             hasActiveFilters={canReset || keyword.trim() !== ""}
           />
@@ -184,7 +176,6 @@ export default function Home() {
         activeFilterCount={activeFilterCount}
         {...sidebarProps}
       />
-
     </div>
   );
 }
