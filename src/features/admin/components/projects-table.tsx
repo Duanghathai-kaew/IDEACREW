@@ -496,7 +496,7 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              <div className="space-y-6 px-8 py-6">
+              <div className="flex-1 overflow-y-auto space-y-6 px-8 py-6">
                 {/* Description */}
                 <section className="rounded-2xl border border-slate-200 bg-white p-6">
                   <h3 className="mb-4 text-xl font-semibold text-slate-900">
