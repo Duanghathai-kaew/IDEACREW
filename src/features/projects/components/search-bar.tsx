@@ -35,19 +35,6 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             aria-describedby={helperTextId}
             className="h-12 min-h-11 w-full rounded-xl bg-white pl-11"
           />
-          <p
-            id={helperTextId}
-            className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 sm:text-sm"
-          >
-            <span className="font-medium text-slate-600">ค้นหาได้จาก:</span>
-            <span>ชื่อโปรเจกต์</span>
-            <span aria-hidden="true">•</span>
-            <span>ตำแหน่งที่เปิดรับ</span>
-            <span aria-hidden="true">•</span>
-            <span>ทักษะ</span>
-            <span aria-hidden="true">•</span>
-            <span>หมวดหมู่</span>
-          </p>
         </div>
 
         <Button
