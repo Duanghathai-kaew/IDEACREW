@@ -1,6 +1,8 @@
 "use client";
 
+import { ChevronDown, ChevronUp } from "lucide-react";
 import Image from "next/image";
+import * as React from "react";
 
 import type { ProjectFilterOption } from "@/features/projects/types/filter-options.type";
 
@@ -30,6 +32,9 @@ function toggle(list: string[], value: string) {
     : [...list, value];
 }
 
+// จำกัดจำนวนสูงสุดที่จะแสดงในตอนแรกก่อนกด "ดูเพิ่มเติม"
+const INITIAL_DISPLAY_LIMIT = 6;
+
 export default function Sidebar({
   selectedSkills,
   onSkillsChange,
@@ -45,16 +50,32 @@ export default function Sidebar({
 }: SidebarProps) {
   const isDrawer = variant === "drawer";
 
+  // State สำหรับควบคุมการย่อขยายของกลุ่มทักษะและหมวดหมู่
+  const [showAllSkills, setShowAllSkills] = React.useState(false);
+  const [showAllCategories, setShowAllCategories] = React.useState(false);
+
+  // ตัดแบ่งอาร์เรย์ตามการสั่งเปิด-ปิด ย่อขยาย
+  const displayedSkills = showAllSkills
+    ? skillOptions
+    : skillOptions.slice(0, INITIAL_DISPLAY_LIMIT);
+
+  const displayedCategories = showAllCategories
+    ? categoryOptions
+    : categoryOptions.slice(0, INITIAL_DISPLAY_LIMIT);
+
   return (
     <aside
       className={
         isDrawer
           ? "flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[20px] bg-white shadow-none"
-          : "sidebar-enter lg:sticky lg:top-24 lg:z-20 lg:self-start lg:max-h-[calc(100vh-100px)] lg:overflow-hidden"
+          : /* คุมความสูงสูงสุดด้วย max-h เพื่อให้กล่องหดตามเนื้อหาจริงได้ และไม่ยืดทะลุขอบจอ */
+            "sidebar-enter lg:sticky lg:top-24 lg:z-20 lg:self-start lg:max-h-[calc(100vh-120px)] lg:w-full lg:flex-col lg:overflow-hidden"
       }
     >
-      <div className="flex h-full min-h-0 flex-col overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
-        <div className="flex items-center gap-3 bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 px-4.5 py-4 font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.15)]">
+      {/* กล่องสีขาวหลัก: ถอด h-full ออกแล้วใส่ max-h-full คู่กับ min-h-0 เพื่อรองรับการยืดหด (Fit Content) */}
+      <div className="flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
+        {/* Header ส่วนหัวตัวกรอง */}
+        <div className="flex items-center gap-3 bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 px-4.5 py-4 font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.15)] shrink-0">
           <Image
             src="/logo.svg"
             alt="IdeaCrew logo"
@@ -65,22 +86,26 @@ export default function Sidebar({
           <span>ตัวกรอง</span>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-hidden">
-          <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5">
-            <div className="mb-7 border-b border-slate-200/80 pb-5">
-              <p className="mb-2.5 block font-medium">ทักษะที่ต้องการ</p>
+        {/* Content Area: ใส่ min-h-0 เพื่อปล่อยให้ย่อยหดตัวตามจริง และสกรอลล์ในนี้เมื่อยาวเกินหน้าจอเท่านั้น */}
+        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 custom-scrollbar">
+          {/* Section: ทักษะที่ต้องการ */}
+          <div className="mb-7 border-b border-slate-200/80 pb-5">
+            <p className="mb-2.5 block font-medium text-slate-800">
+              ทักษะที่ต้องการ
+            </p>
+            <div className="space-y-1">
               {skillOptions.length > 0 ? (
-                skillOptions.map((option) => (
+                displayedSkills.map((option) => (
                   <label
                     key={option.key}
-                    className={`mb-2 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-200 ${
+                    className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                       selectedSkills.includes(option.key)
-                        ? "bg-rose-50 text-rose-700"
+                        ? "bg-rose-50 text-rose-700 font-medium"
                         : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     <input
-                      className="accent-brand-500"
+                      className="accent-brand-500 h-4 w-4 cursor-pointer rounded"
                       type="checkbox"
                       checked={selectedSkills.includes(option.key)}
                       onChange={() =>
@@ -91,26 +116,53 @@ export default function Sidebar({
                   </label>
                 ))
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-400 py-2">
                   ยังไม่มีทักษะที่เปิดใช้งาน
                 </p>
               )}
             </div>
 
-            <div className="mb-7 border-b border-slate-200/80 pb-5">
-              <p className="mb-2.5 block font-medium">หมวดหมู่</p>
+            {/* ปุ่มเปิด-ปิดสำหรับ ทักษะ */}
+            {skillOptions.length > INITIAL_DISPLAY_LIMIT && (
+              <button
+                type="button"
+                onClick={() => setShowAllSkills(!showAllSkills)}
+                className="mt-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-brand-600 hover:text-brand-700 transition"
+              >
+                {showAllSkills ? (
+                  <>
+                    <span>แสดงน้อยลง</span>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      ดูเพิ่มเติม ({skillOptions.length - INITIAL_DISPLAY_LIMIT}
+                      )
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Section: หมวดหมู่ */}
+          <div className="mb-7 border-b border-slate-200/80 pb-5">
+            <p className="mb-2.5 block font-medium text-slate-800">หมวดหมู่</p>
+            <div className="space-y-1">
               {categoryOptions.length > 0 ? (
-                categoryOptions.map((option) => (
+                displayedCategories.map((option) => (
                   <label
                     key={option.key}
-                    className={`mb-2 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-200 ${
+                    className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                       selectedCategories.includes(option.key)
-                        ? "bg-amber-50 text-amber-700"
+                        ? "bg-amber-50 text-amber-700 font-medium"
                         : "text-slate-700 hover:bg-slate-50"
                     }`}
                   >
                     <input
-                      className="accent-brand-500"
+                      className="accent-brand-500 h-4 w-4 cursor-pointer rounded"
                       type="checkbox"
                       checked={selectedCategories.includes(option.key)}
                       onChange={() =>
@@ -123,25 +175,52 @@ export default function Sidebar({
                   </label>
                 ))
               ) : (
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-slate-400 py-2">
                   ยังไม่มีหมวดหมู่ที่เปิดใช้งาน
                 </p>
               )}
             </div>
 
-            <div>
-              <p className="mb-2.5 block font-medium">สถานะ</p>
+            {/* ปุ่มเปิด-ปิดสำหรับ หมวดหมู่ */}
+            {categoryOptions.length > INITIAL_DISPLAY_LIMIT && (
+              <button
+                type="button"
+                onClick={() => setShowAllCategories(!showAllCategories)}
+                className="mt-2 flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-amber-600 hover:text-amber-700 transition"
+              >
+                {showAllCategories ? (
+                  <>
+                    <span>แสดงน้อยลง</span>
+                    <ChevronUp className="h-3.5 w-3.5" />
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      ดูเพิ่มเติม (
+                      {categoryOptions.length - INITIAL_DISPLAY_LIMIT})
+                    </span>
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </>
+                )}
+              </button>
+            )}
+          </div>
+
+          {/* Section: สถานะ */}
+          <div className="mb-4">
+            <p className="mb-2.5 block font-medium text-slate-800">สถานะ</p>
+            <div className="space-y-1">
               {statusOptions.map((option) => (
                 <label
                   key={option.id}
-                  className={`mb-2 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-200 ${
+                  className={`flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 ${
                     status === option.id
-                      ? "bg-emerald-50 text-emerald-700"
+                      ? "bg-emerald-50 text-emerald-700 font-medium"
                       : "text-slate-700 hover:bg-slate-50"
                   }`}
                 >
                   <input
-                    className="accent-brand-500"
+                    className="accent-brand-500 h-4 w-4 cursor-pointer"
                     type="radio"
                     name="status"
                     checked={status === option.id}
@@ -151,16 +230,17 @@ export default function Sidebar({
                 </label>
               ))}
             </div>
-
-            <button
-              type="button"
-              onClick={onReset}
-              disabled={!canReset}
-              className="mt-5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
-            >
-              ล้างตัวกรอง
-            </button>
           </div>
+
+          {/* ปุ่มล้างตัวกรอง */}
+          <button
+            type="button"
+            onClick={onReset}
+            disabled={!canReset}
+            className="mt-5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
+          >
+            ล้างตัวกรอง
+          </button>
         </div>
       </div>
     </aside>
