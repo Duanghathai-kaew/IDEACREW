@@ -815,7 +815,7 @@ export function ProjectsTable() {
               </div>
 
               {/* Footer */}
-              <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-200 bg-white px-6 py-5 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
+              <div className="shrink-0 border-t border-slate-200 bg-white px-6 py-5">
                 <DialogFooter className="!flex !flex-row items-center justify-end gap-3">
                   <Button
                     type="button"
