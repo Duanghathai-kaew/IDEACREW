@@ -6,7 +6,6 @@ import MobileFilterDrawer, {
 } from "@/components/layout/mobile-filter-drawer";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
-import SiteFooter from "@/components/layout/site-footer";
 import Hero from "@/components/shared/hero";
 import ProjectFeed from "@/features/projects/components/project-feed";
 import SearchBar from "@/features/projects/components/search-bar";
@@ -186,7 +185,6 @@ export default function Home() {
         {...sidebarProps}
       />
 
-      <SiteFooter />
     </div>
   );
 }

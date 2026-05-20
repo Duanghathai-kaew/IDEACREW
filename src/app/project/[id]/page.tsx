@@ -1,5 +1,4 @@
 import Navbar from "@/components/layout/navbar";
-import SiteFooter from "@/components/layout/site-footer";
 import { ProjectApplicationControls } from "@/features/applications/components/project-application-controls";
 import { RecruitmentProgressSection } from "@/features/applications/components/recruitment-progress-section";
 import { TeamMembersSection } from "@/features/applications/components/team-members-section";
@@ -440,7 +439,6 @@ export default async function ProjectDetailPage({
           </div>
         </div>
       </div>
-      <SiteFooter />
     </>
   );
 }
