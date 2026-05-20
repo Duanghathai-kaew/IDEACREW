@@ -361,13 +361,11 @@ export function ProjectsTable() {
           </Select>
         </div>
       </div>
-
       {error && (
         <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
           {error}
         </div>
       )}
-
       <DataTable
         rows={paginated}
         columns={columns}
@@ -378,7 +376,7 @@ export function ProjectsTable() {
         emptyText={isLoading ? "Loading projects..." : "No projects found"}
         onRowClick={(project) => setSelectedProjectId(project.id)}
       />
-
+      ฃ
       <Dialog
         open={Boolean(selectedProject)}
         onOpenChange={(open) => {
@@ -388,122 +386,302 @@ export function ProjectsTable() {
           }
         }}
       >
-        <DialogContent className="max-w-3xl">
+        <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-0">
           {selectedProject ? (
             <>
-              <DialogHeader>
-                <DialogTitle>{selectedProject.title}</DialogTitle>
-                <DialogDescription>
-                  Project detail and moderation actions
-                </DialogDescription>
-              </DialogHeader>
+              {/* Header */}
+              <div className="border-b border-slate-100 px-8 py-6">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-3">
+                    <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
+                      {selectedProject.approvalStatus}
+                    </Badge>
 
-              <div className="space-y-5 text-sm text-slate-600">
-                <div className="grid gap-3 md:grid-cols-2">
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="font-medium text-slate-800">Owner</p>
-                    <p>{selectedProject.ownerName}</p>
-                    <p className="text-xs text-slate-500">
-                      {selectedProject.ownerEmail || "-"}
-                    </p>
+                    <div>
+                      <DialogTitle className="text-3xl font-bold text-slate-900">
+                        {selectedProject.title}
+                      </DialogTitle>
+
+                      <DialogDescription className="mt-2 text-base text-slate-500">
+                        {selectedProject.description ||
+                          "No description provided"}
+                      </DialogDescription>
+                    </div>
                   </div>
-                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
-                    <p className="font-medium text-slate-800">Applicants</p>
-                    <p>{selectedProject.applicantCount}</p>
-                    <p className="text-xs text-slate-500">
-                      Completion{" "}
+
+                  <div className="text-right text-sm text-slate-400">
+                    Submitted: {formatReadableDate(selectedProject.createdAt)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6 px-8 py-6">
+                {/* Description */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-4 text-xl font-semibold text-slate-900">
+                    Description
+                  </h3>
+
+                  <p className="leading-7 text-slate-600">
+                    {selectedProject.description || "No description available"}
+                  </p>
+                </section>
+
+                {/* Owner Info */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                    Owner Information
+                  </h3>
+
+                  <div className="grid gap-6 md:grid-cols-3">
+                    <div>
+                      <p className="mb-1 text-sm text-slate-400">Owner Name</p>
+
+                      <p className="font-medium text-slate-800">
+                        {selectedProject.ownerName}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="mb-1 text-sm text-slate-400">Email</p>
+
+                      <p className="font-medium text-slate-800">
+                        {selectedProject.ownerEmail || "-"}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="mb-1 text-sm text-slate-400">Applicants</p>
+
+                      <p className="font-medium text-slate-800">
+                        {selectedProject.applicantCount}
+                      </p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Project Info */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                    Project Information
+                  </h3>
+
+                  <div className="grid gap-6 md:grid-cols-2">
+                    <div>
+                      <p className="mb-1 text-sm text-slate-400">Deadline</p>
+
+                      <p className="font-medium text-slate-800">
+                        {formatReadableDate(selectedProject.applicationEndDate)}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p className="mb-1 text-sm text-slate-400">
+                        Project Status
+                      </p>
+
+                      <Badge
+                        variant="outline"
+                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${getLifecycleBadgeClass(
+                          selectedProject.projectStatus,
+                        )}`}
+                      >
+                        {selectedProject.projectStatus}
+                      </Badge>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Recruitment Progress */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <div className="mb-4 flex items-center justify-between">
+                    <h3 className="text-xl font-semibold text-slate-900">
+                      Recruitment Progress
+                    </h3>
+
+                    <span className="text-sm text-slate-500">
                       {selectedProject.recruitmentProgress.completionRate}%
-                    </p>
+                    </span>
                   </div>
-                </div>
 
-                <div>
-                  <p className="mb-1 font-medium text-slate-800">Description</p>
-                  <p className="rounded-lg border border-slate-200 bg-white p-3">
-                    {selectedProject.description || "No description"}
-                  </p>
-                </div>
+                  <div className="mb-3 flex items-center justify-between text-sm text-slate-500">
+                    <span>
+                      {selectedProject.recruitmentProgress.acceptedCount}/
+                      {selectedProject.recruitmentProgress.totalNeeded} accepted
+                    </span>
 
-                <div>
-                  <p className="mb-1 font-medium text-slate-800">
-                    Recruitment progress
-                  </p>
-                  <div className="rounded-lg border border-slate-200 bg-white p-3">
-                    <div className="mb-2 flex items-center justify-between text-xs text-slate-500">
-                      <span>
-                        {selectedProject.recruitmentProgress.acceptedCount}/
-                        {selectedProject.recruitmentProgress.totalNeeded}{" "}
-                        accepted
-                      </span>
-                      <span>
-                        {selectedProject.recruitmentProgress.completionRate}%
-                      </span>
-                    </div>
-                    <div className="h-2 rounded-full bg-slate-100">
-                      <div
-                        className={`h-2 rounded-full ${getProgressClass(selectedProject.recruitmentProgress.completionRate)}`}
-                        style={{
-                          width: calculateProgressWidth(
-                            selectedProject.recruitmentProgress.completionRate,
-                          ),
-                        }}
-                      />
-                    </div>
+                    <span>{selectedProject.applicantCount} applicants</span>
                   </div>
-                </div>
 
-                <div>
-                  <p className="mb-2 font-medium text-slate-800">Positions</p>
-                  <div className="space-y-2">
+                  <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${getProgressClass(
+                        selectedProject.recruitmentProgress.completionRate,
+                      )}`}
+                      style={{
+                        width: calculateProgressWidth(
+                          selectedProject.recruitmentProgress.completionRate,
+                        ),
+                      }}
+                    />
+                  </div>
+                </section>
+
+                {/* Positions */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                    Positions
+                  </h3>
+
+                  <div className="space-y-4">
                     {selectedProject.positions.map((position) => (
                       <div
                         key={position.id}
-                        className="rounded-lg border border-slate-200 bg-white p-3"
+                        className="rounded-2xl border border-slate-200 p-5"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <p className="font-medium text-slate-800">
-                            {position.title}
-                          </p>
-                          <p className="text-xs text-slate-500">
-                            {position.acceptedCount}/{position.neededCount}{" "}
-                            accepted · {position.applicantCount} applicants
-                          </p>
+                        <div className="flex items-start justify-between gap-4">
+                          <div>
+                            <p className="text-lg font-semibold text-slate-800">
+                              {position.title}
+                            </p>
+
+                            <p className="mt-1 text-sm text-slate-500">
+                              {position.acceptedCount}/{position.neededCount}{" "}
+                              accepted · {position.applicantCount} applicants
+                            </p>
+                          </div>
+
+                          <Badge variant="outline" className="rounded-full">
+                            {position.neededCount} needed
+                          </Badge>
                         </div>
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {position.requiredSkills.length > 0 ? (
-                            position.requiredSkills.map((skill) => (
-                              <span
-                                key={skill}
-                                className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600"
-                              >
-                                {skill}
+
+                        {/* Skills */}
+                        <div className="mt-5">
+                          <p className="mb-2 text-sm font-medium text-slate-700">
+                            Required Skills
+                          </p>
+
+                          <div className="flex flex-wrap gap-2">
+                            {position.requiredSkills.length > 0 ? (
+                              position.requiredSkills.map((skill) => (
+                                <span
+                                  key={skill}
+                                  className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
+                                >
+                                  {skill}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-sm text-slate-400">
+                                No required skills
                               </span>
-                            ))
-                          ) : (
-                            <span className="text-xs text-slate-400">
-                              No required skills
-                            </span>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </section>
 
-                <div>
-                  <p className="mb-1 font-medium text-slate-800">
-                    Reject reason
-                  </p>
-                  <Textarea
-                    value={rejectReason}
-                    onChange={(event) => setRejectReason(event.target.value)}
-                    placeholder="Provide a reason for rejection"
-                    className="min-h-24"
-                  />
-                </div>
+                {/* Tags */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                    Tags
+                  </h3>
+
+                  <div className="flex flex-wrap gap-2">
+                    {selectedProject.tags?.length ? (
+                      selectedProject.tags.map((tag) => (
+                        <Badge
+                          key={tag.id}
+                          variant="secondary"
+                          className="rounded-full"
+                        >
+                          {tag.name}
+                        </Badge>
+                      ))
+                    ) : (
+                      <p className="text-sm text-slate-400">
+                        No tags available
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* Assets / Links */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                    Assets / Links
+                  </h3>
+
+                  <div className="flex flex-col gap-3">
+                    {selectedProject.githubUrl && (
+                      <a
+                        href={selectedProject.githubUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        GitHub Repository
+                      </a>
+                    )}
+
+                    {selectedProject.demoUrl && (
+                      <a
+                        href={selectedProject.demoUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-blue-600 underline"
+                      >
+                        Demo Link
+                      </a>
+                    )}
+
+                    {!selectedProject.githubUrl && !selectedProject.demoUrl && (
+                      <p className="text-sm text-slate-400">
+                        No links attached
+                      </p>
+                    )}
+                  </div>
+                </section>
+
+                {/* Approval Decision */}
+                <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                    Approval Decision
+                  </h3>
+
+                  <div className="flex gap-8">
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <input type="radio" name="decision" />
+                      Approve Project
+                    </label>
+
+                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                      <input type="radio" name="decision" />
+                      Reject Project
+                    </label>
+                  </div>
+
+                  {/* Reject Reason */}
+                  <div className="mt-6">
+                    <p className="mb-2 text-sm font-medium text-slate-700">
+                      Decision Rationale & Feedback
+                    </p>
+
+                    <Textarea
+                      value={rejectReason}
+                      onChange={(event) => setRejectReason(event.target.value)}
+                      placeholder="Enter detailed comments for the project owner..."
+                      className="min-h-32"
+                    />
+                  </div>
+                </section>
               </div>
 
-              <DialogFooter>
+              {/* Footer */}
+              <DialogFooter className="border-t border-slate-100 px-8 py-5">
                 <Button
                   type="button"
                   variant="outline"
@@ -514,6 +692,7 @@ export function ProjectsTable() {
                 >
                   Close
                 </Button>
+
                 <Button
                   type="button"
                   variant="outline"
@@ -525,9 +704,10 @@ export function ProjectsTable() {
                 >
                   Reject
                 </Button>
+
                 <Button
                   type="button"
-                  className="bg-emerald-600 text-white hover:bg-emerald-700"
+                  className="bg-indigo-600 text-white hover:bg-indigo-700"
                   disabled={actionProjectId === selectedProject.id}
                   onClick={() => void handleApprove(selectedProject.id)}
                 >

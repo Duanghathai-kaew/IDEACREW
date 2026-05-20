@@ -29,11 +29,6 @@ export default function LoginPage() {
         <div className="rounded-3xl border border-slate-100 bg-white p-8 shadow-md">
           <LoginForm />
         </div>
-
-        {/* Footer */}
-        <p className="mt-8 text-center text-xs text-slate-500">
-          © 2025 IDEACREW. สงวนลิขสิทธิ์
-        </p>
       </div>
     </main>
   );
