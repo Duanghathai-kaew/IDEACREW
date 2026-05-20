@@ -1,5 +1,16 @@
 do $$
 begin
+  delete from public.project_categories
+  where lower(btrim(category_name)) = 'htrs';
+
+  delete from public.project_position_skills
+  where lower(btrim(skill_name)) = 'htrs';
+
+  update public.project_positions
+  set required_skills = array_remove(coalesce(required_skills, '{}'::text[]), 'htrs')
+  where required_skills is not null
+    and 'htrs' = any(required_skills);
+
   update public.project_categories
   set type = 'skill'
   where lower(btrim(category_name)) in (
