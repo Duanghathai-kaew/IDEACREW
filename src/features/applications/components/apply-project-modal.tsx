@@ -3,12 +3,6 @@
 import { Check, Plus, Send, X } from "lucide-react";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
-import {
-  getApplyProfilePrefill,
-  getProjectPositions,
-  ProjectPositionOption,
-  submitProjectApplication,
-} from "@/features/applications/actions/project-applications.action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,6 +15,12 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  getApplyProfilePrefill,
+  getProjectPositions,
+  ProjectPositionOption,
+  submitProjectApplication,
+} from "@/features/applications/actions/project-applications.action";
 
 type Props = {
   open: boolean;
@@ -57,26 +57,14 @@ export function ApplyProjectModal({
   );
 
   function formatSubmitError(message: string) {
-    if (message.includes("already applied")) {
+    if (message.includes("already applied"))
       return "คุณได้ส่งใบสมัครโปรเจกต์นี้แล้ว";
-    }
-
-    if (message.includes("not open for applications")) {
+    if (message.includes("not open for applications"))
       return "โปรเจกต์นี้ปิดรับสมัครแล้ว";
-    }
-
-    if (message.includes("cannot apply to their own project")) {
+    if (message.includes("cannot apply to their own project"))
       return "คุณเป็นเจ้าของโปรเจกต์นี้";
-    }
-
-    if (message.includes("already filled")) {
-      return "ตำแหน่งนี้เต็มแล้ว";
-    }
-
-    if (message.includes("Position not found")) {
-      return "ตำแหน่งที่เลือกไม่พบ";
-    }
-
+    if (message.includes("already filled")) return "ตำแหน่งนี้เต็มแล้ว";
+    if (message.includes("Position not found")) return "ตำแหน่งที่เลือกไม่พบ";
     return message;
   }
 
@@ -106,9 +94,7 @@ export function ApplyProjectModal({
       if (positionsResult.ok) {
         setPositions(positionsResult.data);
         const firstAvailable = positionsResult.data.find((p) => !p.isFull);
-        if (firstAvailable) {
-          setSelectedPositionId(firstAvailable.id);
-        }
+        if (firstAvailable) setSelectedPositionId(firstAvailable.id);
       } else {
         setPositions([]);
         setError("ไม่สามารถโหลดตำแหน่งได้ กรุณาลองใหม่อีกครั้ง");
@@ -116,7 +102,6 @@ export function ApplyProjectModal({
     }
 
     bootstrap();
-
     return () => {
       mounted = false;
     };
@@ -166,8 +151,9 @@ export function ApplyProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[min(95dvh,calc(100dvh-1rem))] w-[calc(100%-1rem)] max-w-4xl overflow-y-auto rounded-3xl p-4 sm:w-[96vw] sm:p-6 md:p-8">
-        <DialogHeader className="space-y-2">
+      <DialogContent className="grid max-h-[85vh] w-[calc(100%-1rem)] max-w-4xl grid-rows-[auto_1fr_auto] gap-0 overflow-hidden rounded-3xl p-0 sm:w-[96vw]">
+        {/* Header */}
+        <DialogHeader className="space-y-2 px-4 pt-4 pb-4 sm:px-6 sm:pt-6 md:px-8">
           <DialogTitle className="text-xl sm:text-2xl">
             สมัครเข้าร่วมโปรเจกต์
           </DialogTitle>
@@ -176,51 +162,54 @@ export function ApplyProjectModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-8">
-          {/* POSITION SELECTION */}
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-lg font-semibold text-slate-800">
-                เลือกตำแหน่งที่สมัคร
-              </h3>
-              <p className="mt-1 text-sm text-slate-500">
-                เลือกตำแหน่งที่คุณต้องการสมัคร (จำเป็น)
-              </p>
-            </div>
+        {/* Scrollable body — min-h-0 คือ key fix */}
+        <div className="min-h-0 overflow-y-auto border-t px-4 pb-4 sm:px-6 md:px-8">
+          <div className="space-y-8 pt-4">
+            {/* POSITION SELECTION */}
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-800">
+                  เลือกตำแหน่งที่สมัคร
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  เลือกตำแหน่งที่คุณต้องการสมัคร (จำเป็น)
+                </p>
+              </div>
 
-            {loadingPositions ? (
-              <div className="space-y-3">
-                {[1, 2].map((i) => (
-                  <div
-                    key={i}
-                    className="animate-pulse rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
-                  >
-                    <div className="space-y-2">
-                      <div className="h-4 w-32 rounded bg-slate-200" />
-                      <div className="h-3 w-16 rounded bg-slate-200" />
-                      <div className="mt-3 flex gap-1">
-                        <div className="h-6 w-16 rounded-full bg-slate-200" />
-                        <div className="h-6 w-16 rounded-full bg-slate-200" />
+              {loadingPositions ? (
+                <div className="space-y-3">
+                  {[1, 2].map((i) => (
+                    <div
+                      key={i}
+                      className="animate-pulse rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4"
+                    >
+                      <div className="space-y-2">
+                        <div className="h-4 w-32 rounded bg-slate-200" />
+                        <div className="h-3 w-16 rounded bg-slate-200" />
+                        <div className="mt-3 flex gap-1">
+                          <div className="h-6 w-16 rounded-full bg-slate-200" />
+                          <div className="h-6 w-16 rounded-full bg-slate-200" />
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : availablePositions.length === 0 ? (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
-                <p className="text-sm font-semibold text-slate-700">
-                  โปรเจกต์นี้ไม่มีตำแหน่งว่างในตอนนี้
-                </p>
-                <p className="mt-1 text-xs text-slate-600">
-                  ทุกตำแหน่งเต็มแล้วหรือปิดรับชั่วคราว กรุณาตรวจสอบอีกครั้งภายหลัง
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
-                {availablePositions.map((position) => {
-                  return (
+                  ))}
+                </div>
+              ) : availablePositions.length === 0 ? (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-6 text-center">
+                  <p className="text-sm font-semibold text-slate-700">
+                    โปรเจกต์นี้ไม่มีตำแหน่งว่างในตอนนี้
+                  </p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    ทุกตำแหน่งเต็มแล้วหรือปิดรับชั่วคราว
+                    กรุณาตรวจสอบอีกครั้งภายหลัง
+                  </p>
+                </div>
+              ) : (
+                <div className="grid gap-3 sm:grid-cols-1 md:grid-cols-2">
+                  {availablePositions.map((position) => (
                     <button
                       key={position.id}
+                      type="button"
                       onClick={() =>
                         !position.isFull && setSelectedPositionId(position.id)
                       }
@@ -269,173 +258,174 @@ export function ApplyProjectModal({
                         )}
                       </div>
                     </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              )}
+            </div>
 
-          {/* MOTIVATION MESSAGE */}
-          <div className="space-y-3">
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-800">
-                ทำไมคุณอยากเข้าร่วม?
-              </span>
-              <p className="mt-1 text-xs text-slate-500">
-                เล่าเหตุผล ความสนใจ และสิ่งที่คุณอยากมีส่วนร่วม
-              </p>
-            </label>
-            <Textarea
-              value={motivationMessage}
-              onChange={(event) => setMotivationMessage(event.target.value)}
-              placeholder="เช่น: ฉันรักการออกแบบ UI และต้องการสร้างประสบการณ์ที่ดี..."
-              className="min-h-32 rounded-xl"
-            />
-          </div>
-
-          {/* SKILLS */}
-          <div className="space-y-3">
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-800">
-                ทักษะของคุณ
-              </span>
-              <p className="mt-1 text-xs text-slate-500">
-                เพิ่มทักษะที่เกี่ยวข้อง
-              </p>
-            </label>
-            <div className="flex gap-2">
-              <Input
-                value={skillDraft}
-                onChange={(event) => setSkillDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addSkill();
-                  }
-                }}
-                placeholder="เช่น: React, TypeScript, Figma..."
-                className="rounded-xl"
+            {/* MOTIVATION MESSAGE */}
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-sm font-semibold text-slate-800">
+                  ทำไมคุณอยากเข้าร่วม?
+                </span>
+                <p className="mt-1 text-xs text-slate-500">
+                  เล่าเหตุผล ความสนใจ และสิ่งที่คุณอยากมีส่วนร่วม
+                </p>
+              </label>
+              <Textarea
+                value={motivationMessage}
+                onChange={(event) => setMotivationMessage(event.target.value)}
+                placeholder="เช่น: ฉันรักการออกแบบ UI และต้องการสร้างประสบการณ์ที่ดี..."
+                className="min-h-32 rounded-xl"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addSkill}
-                className="rounded-xl"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
-            {skills.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {skills.map((skill) => (
-                  <Badge
-                    key={skill}
-                    variant="secondary"
-                    className="rounded-full border-orange-200 bg-orange-100 px-3 py-1 text-sm text-orange-800"
-                  >
-                    {skill}
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setSkills((current) =>
-                          current.filter((item) => item !== skill),
-                        )
-                      }
-                      className="ml-1"
-                      aria-label={`Remove ${skill}`}
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </Badge>
-                ))}
-              </div>
-            )}
-          </div>
 
-          {/* PORTFOLIO URLS */}
-          <div className="space-y-3">
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-800">
-                Portfolio / Links
-              </span>
-              <p className="mt-1 text-xs text-slate-500">
-                เพิ่มลิงค์ไปยังผลงาน GitHub profile หรือ portfolio ของคุณ
-              </p>
-            </label>
-            <div className="flex gap-2">
-              <Input
-                value={portfolioDraft}
-                onChange={(event) => setPortfolioDraft(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    addPortfolioUrl();
-                  }
-                }}
-                placeholder="https://github.com/... หรือ https://portfolio.com/..."
-                className="rounded-xl"
+            {/* SKILLS */}
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-sm font-semibold text-slate-800">
+                  ทักษะของคุณ
+                </span>
+                <p className="mt-1 text-xs text-slate-500">
+                  เพิ่มทักษะที่เกี่ยวข้อง
+                </p>
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={skillDraft}
+                  onChange={(event) => setSkillDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addSkill();
+                    }
+                  }}
+                  placeholder="เช่น: React, TypeScript, Figma..."
+                  className="rounded-xl"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addSkill}
+                  className="rounded-xl"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {skills.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {skills.map((skill) => (
+                    <Badge
+                      key={skill}
+                      variant="secondary"
+                      className="rounded-full border-orange-200 bg-orange-100 px-3 py-1 text-sm text-orange-800"
+                    >
+                      {skill}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setSkills((current) =>
+                            current.filter((item) => item !== skill),
+                          )
+                        }
+                        className="ml-1"
+                        aria-label={`Remove ${skill}`}
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+                    </Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* PORTFOLIO URLS */}
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-sm font-semibold text-slate-800">
+                  Portfolio / Links
+                </span>
+                <p className="mt-1 text-xs text-slate-500">
+                  เพิ่มลิงค์ไปยังผลงาน GitHub profile หรือ portfolio ของคุณ
+                </p>
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={portfolioDraft}
+                  onChange={(event) => setPortfolioDraft(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addPortfolioUrl();
+                    }
+                  }}
+                  placeholder="https://github.com/... หรือ https://portfolio.com/..."
+                  className="rounded-xl"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={addPortfolioUrl}
+                  className="rounded-xl"
+                >
+                  <Plus className="h-4 w-4" />
+                </Button>
+              </div>
+              {portfolioUrls.length > 0 && (
+                <div className="space-y-2">
+                  {portfolioUrls.map((url) => (
+                    <div
+                      key={url}
+                      className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
+                    >
+                      <span className="truncate text-sm">{url}</span>
+                      <button
+                        type="button"
+                        className="text-slate-400 hover:text-rose-500"
+                        onClick={() =>
+                          setPortfolioUrls((current) =>
+                            current.filter((item) => item !== url),
+                          )
+                        }
+                        aria-label={`Remove ${url}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* ADDITIONAL NOTE */}
+            <div className="space-y-3">
+              <label className="block">
+                <span className="text-sm font-semibold text-slate-800">
+                  ข้อมูลเพิ่มเติม (Bio)
+                </span>
+                <p className="mt-1 text-xs text-slate-500">
+                  บอกเล่าเกี่ยวกับตัวคุณให้เพิ่มเติม
+                </p>
+              </label>
+              <Textarea
+                value={additionalNote}
+                onChange={(event) => setAdditionalNote(event.target.value)}
+                placeholder="ตัวอย่าง: ฉันศึกษา Software Engineering ที่ Chulalongkorn University..."
+                className="min-h-24 rounded-xl"
               />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={addPortfolioUrl}
-                className="rounded-xl"
-              >
-                <Plus className="h-4 w-4" />
-              </Button>
             </div>
-            {portfolioUrls.length > 0 && (
-              <div className="space-y-2">
-                {portfolioUrls.map((url) => (
-                  <div
-                    key={url}
-                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700"
-                  >
-                    <span className="truncate text-sm">{url}</span>
-                    <button
-                      type="button"
-                      className="text-slate-400 hover:text-rose-500"
-                      onClick={() =>
-                        setPortfolioUrls((current) =>
-                          current.filter((item) => item !== url),
-                        )
-                      }
-                      aria-label={`Remove ${url}`}
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
+
+            {error && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+                {error}
               </div>
             )}
           </div>
-
-          {/* ADDITIONAL NOTE */}
-          <div className="space-y-3">
-            <label className="block">
-              <span className="text-sm font-semibold text-slate-800">
-                ข้อมูลเพิ่มเติม (Bio)
-              </span>
-              <p className="mt-1 text-xs text-slate-500">
-                บอกเล่าเกี่ยวกับตัวคุณให้เพิ่มเติม
-              </p>
-            </label>
-            <Textarea
-              value={additionalNote}
-              onChange={(event) => setAdditionalNote(event.target.value)}
-              placeholder="ตัวอย่าง: ฉันศึกษา Software Engineering ที่ Chulalongkorn University..."
-              className="min-h-24 rounded-xl"
-            />
-          </div>
-
-          {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
-              {error}
-            </div>
-          )}
         </div>
 
-        <DialogFooter className="gap-3 pt-6">
+        {/* Footer */}
+        <DialogFooter className="border-t bg-white px-4 py-4 sm:px-6 md:px-8">
           <Button
             type="button"
             variant="outline"
