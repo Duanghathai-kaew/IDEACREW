@@ -1,11 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Editor } from "@/components/blocks/editor-00/editor";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import {
+  mockProfile,
+  ProfileData,
+  ProfileLink,
+} from "@/features/projects/services/project-mock-data";
 import { SerializedEditorState } from "lexical";
 import { CalendarDays, Mail, MapPin, Phone } from "lucide-react";
-import { Editor } from "@/components/blocks/editor-00/editor";
-import { mockProfile, ProfileData, ProfileLink } from "@/features/projects/services/project-mock-data";
-import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import { useEffect, useMemo, useState } from "react";
 
 const inputBase =
   "w-full rounded-xl border border-brand-100 bg-white px-3 py-2 text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-brand-200";
@@ -52,10 +56,18 @@ function emptyLink(): ProfileLink {
 }
 
 function emptyProject() {
-  return { title: "", role: "", year: "", description: "", tags: [] as string[] };
+  return {
+    title: "",
+    role: "",
+    year: "",
+    description: "",
+    tags: [] as string[],
+  };
 }
 
-function buildSerializedEditorStateFromText(text: string): SerializedEditorState {
+function buildSerializedEditorStateFromText(
+  text: string,
+): SerializedEditorState {
   return {
     root: {
       children: [
@@ -87,7 +99,9 @@ function buildSerializedEditorStateFromText(text: string): SerializedEditorState
   } as unknown as SerializedEditorState;
 }
 
-function isSerializedEditorState(value: unknown): value is SerializedEditorState {
+function isSerializedEditorState(
+  value: unknown,
+): value is SerializedEditorState {
   if (!value || typeof value !== "object") return false;
   const root = (value as { root?: unknown }).root;
   return !!root && typeof root === "object";
@@ -125,9 +139,7 @@ function extractBioDisplayText(bio: string) {
     const paragraphs = parsed.root?.children ?? [];
     const lines = paragraphs
       .map((paragraph) =>
-        (paragraph.children ?? [])
-          .map((child) => child.text ?? "")
-          .join(""),
+        (paragraph.children ?? []).map((child) => child.text ?? "").join(""),
       )
       .map((line) => line.trim())
       .filter(Boolean);
@@ -486,7 +498,9 @@ export default function ProfilePage({
                     onChange={(e) =>
                       setDraft((prev) => ({
                         ...prev,
-                        studentId: e.target.value.replace(/\D/g, "").slice(0, 10),
+                        studentId: e.target.value
+                          .replace(/\D/g, "")
+                          .slice(0, 10),
                         year: deriveYearFromStudentId(
                           e.target.value.replace(/\D/g, "").slice(0, 10),
                         ),
@@ -575,7 +589,6 @@ export default function ProfilePage({
                 แนะนำตัวสั้น ๆ: ความถนัด ประสบการณ์ หรือประเภทงานที่อยากทำ
               </p>
               <Editor
-                placeholder="พิมพ์แนะนำตัว เช่น ทักษะ ประสบการณ์ และงานที่สนใจ"
                 editorSerializedState={parseBioToEditorState(draft.bio)}
                 onSerializedChange={(value) =>
                   setDraft((prev) => ({
