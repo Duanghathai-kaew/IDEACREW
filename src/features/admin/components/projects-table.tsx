@@ -376,7 +376,7 @@ export function ProjectsTable() {
         emptyText={isLoading ? "Loading projects..." : "No projects found"}
         onRowClick={(project) => setSelectedProjectId(project.id)}
       />
-      ฃ
+
       <Dialog
         open={Boolean(selectedProject)}
         onOpenChange={(open) => {

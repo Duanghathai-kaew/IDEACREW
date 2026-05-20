@@ -163,7 +163,7 @@ export function fetchAdminProjects() {
   return supabaseAdminClient
     .from("projects")
     .select(
-      "id,title,description,owner_id,approval_status,status,created_at,application_end_date",
+      "id,title,description,owner_id,approval_status,status,created_at,application_end_date,project_categories(id,category_name)",
     )
     .order("created_at", { ascending: false });
 }

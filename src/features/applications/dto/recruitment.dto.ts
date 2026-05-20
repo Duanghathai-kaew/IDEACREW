@@ -25,6 +25,12 @@ export type AdminProjectPosition = {
   isFull: boolean;
 };
 
+export type AdminProjectTag = {
+  id: string;
+  name: string;
+  type: string | null;
+};
+
 export type AdminRecruitmentProgress = {
   totalPositions: number;
   filledPositions: number;
@@ -45,5 +51,6 @@ export type AdminProject = {
   applicationEndDate: string;
   applicantCount: number;
   positions: AdminProjectPosition[];
+  tags: AdminProjectTag[];
   recruitmentProgress: AdminRecruitmentProgress;
 };

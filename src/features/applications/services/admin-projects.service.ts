@@ -21,6 +21,16 @@ export async function getAdminProjects(): Promise<
     return { ok: false, error: error.message };
   }
 
+  if (process.env.NODE_ENV !== "production") {
+    const firstProject = (projects ?? [])[0] as
+      | { id: string; project_categories?: unknown }
+      | undefined;
+    console.log("[adminProjects/raw]", {
+      projectId: firstProject?.id ?? null,
+      projectCategories: firstProject?.project_categories ?? null,
+    });
+  }
+
   const projectRows = (projects ?? []) as Array<{
     id: string;
     title: string;
@@ -30,6 +40,10 @@ export async function getAdminProjects(): Promise<
     status: string | null;
     created_at: string | null;
     application_end_date: string | null;
+    project_categories?: Array<{
+      id: string;
+      category_name: string;
+    }> | null;
   }>;
 
   if (projectRows.length === 0) {
@@ -123,6 +137,11 @@ export async function getAdminProjects(): Promise<
         applicationEndDate: project.application_end_date,
         applicantCount: applicantCountByProjectId.get(project.id) ?? 0,
         positions,
+        tags:
+          project.project_categories?.map((category) => ({
+            id: category.id,
+            name: category.category_name,
+          })) ?? [],
       });
     }),
   };

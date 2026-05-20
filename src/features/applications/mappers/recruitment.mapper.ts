@@ -134,6 +134,7 @@ export function buildAdminProject(input: {
   applicationEndDate: string | null;
   applicantCount: number;
   positions: AdminProjectPosition[];
+  tags: AdminProject["tags"];
 }): AdminProject {
   return {
     id: input.id,
@@ -150,6 +151,7 @@ export function buildAdminProject(input: {
     applicationEndDate: input.applicationEndDate ?? "",
     applicantCount: input.applicantCount,
     positions: input.positions,
+    tags: input.tags,
     recruitmentProgress: buildAdminRecruitmentProgress(input.positions),
   };
 }
