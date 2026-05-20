@@ -466,7 +466,7 @@ export function ProjectsTable() {
           }
         }}
       >
-        <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden p-0">
+        <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-visible p-0">
           {" "}
           {selectedProject ? (
             <>
@@ -603,7 +603,7 @@ export function ProjectsTable() {
                       <span>{selectedProject.applicantCount} applicants</span>
                     </div>
 
-                    <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                    <div className="h-3 overflow-visible rounded-full bg-slate-100">
                       <div
                         className={`h-full rounded-full ${getProgressClass(
                           selectedProject.recruitmentProgress.completionRate,
@@ -814,8 +814,8 @@ export function ProjectsTable() {
                 </div>
               </div>
               {/* Footer */}
-              <div className="sticky bottom-0 z-10 shrink-0 border-t bg-white px-6 py-4">
-                <DialogFooter className="flex-row justify-end gap-3">
+              <div className="sticky bottom-0 z-10 shrink-0 border-t bg-white px-6 py-5">
+                <DialogFooter className="!flex !flex-row items-center justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"
