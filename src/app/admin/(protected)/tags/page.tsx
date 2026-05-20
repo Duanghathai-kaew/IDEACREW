@@ -3,6 +3,7 @@ import { getAdminTagsService } from "@/features/admin/services/get-admin-tags.se
 import { Badge } from "@/components/ui/badge";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { revalidatePath } from "next/cache";
+import { TagFilters } from "./tag-filters";
 
 const statusBadgeClasses: Record<string, string> = {
   enabled: "bg-emerald-100 text-emerald-700 border-emerald-200",
@@ -81,48 +82,18 @@ export default async function AdminTagsPage({
       )}
 
       <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-        <form className="grid gap-4 md:grid-cols-2">
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Type
-            </label>
-            <select
-              name="type"
-              defaultValue={typeFilter}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600"
-            >
-              {typeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Status
-            </label>
-            <select
-              name="status"
-              defaultValue={statusFilter}
-              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600"
-            >
-              {statusOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className="flex items-end gap-2">
-            <button
-              type="submit"
-              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600"
-            >
-              Apply filters
-            </button>
-          </div>
-        </form>
+        <TagFilters
+          typeFilter={typeFilter}
+          statusFilter={statusFilter}
+          typeOptions={typeOptions.map((option) => ({
+            value: option.value,
+            label: option.label,
+          }))}
+          statusOptions={statusOptions.map((option) => ({
+            value: option.value,
+            label: option.label,
+          }))}
+        />
       </section>
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">

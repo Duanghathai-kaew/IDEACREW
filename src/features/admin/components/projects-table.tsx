@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowUpDown, Check, Eye, Loader2, Search, X } from "lucide-react";
+import {
+  ArrowUpDown,
+  Check,
+  ChevronDown,
+  Eye,
+  Loader2,
+  Search,
+  X,
+} from "lucide-react";
 import * as React from "react";
 
 import {
@@ -24,7 +32,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 
 const PAGE_SIZE = 8;
@@ -35,6 +47,57 @@ const approvalFilters = [
   { value: "approved", label: "Approved" },
   { value: "rejected", label: "Rejected" },
 ] as const;
+
+function ApprovalStatusFilter({
+  value,
+  onChange,
+}: {
+  value: "all" | "pending" | "approved" | "rejected";
+  onChange: (value: "all" | "pending" | "approved" | "rejected") => void;
+}) {
+  const selectedLabel =
+    approvalFilters.find((option) => option.value === value)?.label ?? value;
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="outline"
+          className="h-11 w-full justify-between rounded-xl border-slate-200 bg-slate-50 px-3 text-sm font-medium text-slate-700 shadow-none hover:bg-slate-50"
+        >
+          <span>{selectedLabel}</span>
+          <ChevronDown className="h-4 w-4 text-slate-400" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-(--radix-popover-trigger-width) p-1"
+        align="start"
+      >
+        <div className="space-y-1">
+          {approvalFilters.map((option) => {
+            const selected = option.value === value;
+            return (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => onChange(option.value)}
+                className={`flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm transition ${
+                  selected
+                    ? "bg-rose-50 text-rose-700"
+                    : "text-slate-600 hover:bg-slate-50"
+                }`}
+              >
+                <span>{option.label}</span>
+                {selected ? <Check className="h-4 w-4" /> : null}
+              </button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function formatReadableDate(date: string) {
   if (!date) return "-";
@@ -381,25 +444,10 @@ export function ProjectsTable() {
           <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
             Approval Status
           </label>
-          <Select
+          <ApprovalStatusFilter
             value={statusFilter}
-            onChange={(event) =>
-              setStatusFilter(
-                event.target.value as
-                  | "all"
-                  | "pending"
-                  | "approved"
-                  | "rejected",
-              )
-            }
-            className="h-11 rounded-xl border-slate-200 bg-slate-50"
-          >
-            {approvalFilters.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            onChange={setStatusFilter}
+          />
         </div>
       </div>
       {error && (
