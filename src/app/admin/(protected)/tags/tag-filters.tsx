@@ -1,6 +1,5 @@
 "use client";
 
-import * as React from "react";
 import { Check, ChevronDown } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -99,13 +98,13 @@ export function TagFilters({
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <FilterMenu
-        label="Type"
+        label="ประเภทแท็ก"
         value={typeFilter}
         options={typeOptions}
         queryKey="type"
       />
       <FilterMenu
-        label="Status"
+        label="สถานะ"
         value={statusFilter}
         options={statusOptions}
         queryKey="status"

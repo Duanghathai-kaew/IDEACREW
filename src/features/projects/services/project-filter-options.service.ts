@@ -41,18 +41,26 @@ export async function getPublicProjectFilterOptionsService() {
     };
   }
 
-  const [positionRowsRes, categoryRowsRes] = await Promise.all([
-    supabaseAdminClient
-      .from("project_positions")
-      .select("id,project_id,required_skills")
-      .in("project_id", approvedProjectIds),
-    supabaseAdminClient
-      .from("project_categories")
-      .select("category_name,project_id")
-      .eq("status", "enabled")
-      .eq("type", "category")
-      .in("project_id", approvedProjectIds),
-  ]);
+  const [positionRowsRes, categoryRowsRes, skillTagRowsRes] = await Promise.all(
+    [
+      supabaseAdminClient
+        .from("project_positions")
+        .select("id,project_id,required_skills")
+        .in("project_id", approvedProjectIds),
+      supabaseAdminClient
+        .from("project_categories")
+        .select("category_name,project_id")
+        .eq("status", "enabled")
+        .eq("type", "category")
+        .in("project_id", approvedProjectIds),
+      supabaseAdminClient
+        .from("project_categories")
+        .select("category_name,project_id")
+        .eq("status", "enabled")
+        .eq("type", "skill")
+        .in("project_id", approvedProjectIds),
+    ],
+  );
 
   if (positionRowsRes.error) {
     return {
@@ -65,6 +73,13 @@ export async function getPublicProjectFilterOptionsService() {
     return {
       options: { skills: [], categories: [] } satisfies ProjectFilterOptions,
       error: categoryRowsRes.error.message,
+    };
+  }
+
+  if (skillTagRowsRes.error) {
+    return {
+      options: { skills: [], categories: [] } satisfies ProjectFilterOptions,
+      error: skillTagRowsRes.error.message,
     };
   }
 
@@ -162,6 +177,28 @@ export async function getPublicProjectFilterOptionsService() {
       optionByKey.set(key, {
         label,
         type: "category",
+        projectIds: new Set([row.project_id]),
+      });
+      continue;
+    }
+
+    existing.projectIds.add(row.project_id);
+  }
+
+  for (const row of (skillTagRowsRes.data ?? []) as Array<{
+    category_name: string;
+    project_id: string;
+  }>) {
+    const label = row.category_name.trim();
+    if (!label) continue;
+
+    const key = buildFilterKey("skill", label);
+    const existing = optionByKey.get(key);
+
+    if (!existing) {
+      optionByKey.set(key, {
+        label,
+        type: "skill",
         projectIds: new Set([row.project_id]),
       });
       continue;

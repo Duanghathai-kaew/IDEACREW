@@ -33,6 +33,14 @@ export async function getAdminTagsService() {
     enabled: 3,
   };
 
+  function normalizeTag(value: string) {
+    return value.trim();
+  }
+
+  function normalizeTagKey(value: string) {
+    return normalizeTag(value).toLowerCase().replace(/\s+/g, " ");
+  }
+
   const tagByKey = new Map<
     string,
     {
@@ -44,7 +52,7 @@ export async function getAdminTagsService() {
   >();
 
   for (const row of rows) {
-    const name = row.category_name.trim();
+    const name = normalizeTag(row.category_name);
     if (!name) continue;
     const type = row.type === "skill" ? "skill" : "category";
     const status =
@@ -54,7 +62,7 @@ export async function getAdminTagsService() {
       row.status === "disabled"
         ? row.status
         : "pending";
-    const key = `${type}::${name}`;
+    const key = `${type}::${normalizeTagKey(name)}`;
     const existing = tagByKey.get(key);
     if (!existing) {
       tagByKey.set(key, {

@@ -1,6 +1,6 @@
+import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/features/admin/components/page-header";
 import { getAdminTagsService } from "@/features/admin/services/get-admin-tags.service";
-import { Badge } from "@/components/ui/badge";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { revalidatePath } from "next/cache";
 import { TagFilters } from "./tag-filters";
@@ -105,7 +105,7 @@ export default async function AdminTagsPage({
                   Tag
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
-                  Type
+                  ประเภทแท็ก
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Usage

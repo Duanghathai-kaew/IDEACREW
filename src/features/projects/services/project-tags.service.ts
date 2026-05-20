@@ -1,5 +1,5 @@
-import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import type { ProjectFormData } from "@/features/projects/types/project.type";
+import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 
 const TAG_TYPES = ["category", "skill"] as const;
 
@@ -15,23 +15,42 @@ function normalizeTag(value: string) {
   return value.trim();
 }
 
+function normalizeTagKey(value: string) {
+  return normalizeTag(value).toLowerCase().replace(/\s+/g, " ");
+}
+
 function buildTagInputs(formData: ProjectFormData): TagInput[] {
-  const categories = new Set(
-    formData.categories.map(normalizeTag).filter(Boolean),
-  );
-  const skills = new Set(
-    formData.positions
-      .flatMap((position) => position.skills)
-      .map(normalizeTag)
-      .filter(Boolean),
-  );
+  const categories = new Map<string, string>();
+  for (const value of formData.categories) {
+    const name = normalizeTag(value);
+    if (!name) continue;
+    const key = normalizeTagKey(name);
+    if (!categories.has(key)) {
+      categories.set(key, name);
+    }
+  }
+
+  const skills = new Map<string, string>();
+  for (const value of formData.positions.flatMap(
+    (position) => position.skills,
+  )) {
+    const name = normalizeTag(value);
+    if (!name) continue;
+    const key = normalizeTagKey(name);
+    if (!skills.has(key)) {
+      skills.set(key, name);
+    }
+  }
 
   return [
-    ...Array.from(categories).map((name) => ({
+    ...Array.from(categories.values()).map((name) => ({
       name,
       type: "category" as const,
     })),
-    ...Array.from(skills).map((name) => ({ name, type: "skill" as const })),
+    ...Array.from(skills.values()).map((name) => ({
+      name,
+      type: "skill" as const,
+    })),
   ];
 }
 
@@ -42,7 +61,7 @@ function toKey(input: {
 }) {
   const type = input.type === "skill" ? "skill" : "category";
   const name = normalizeTag(input.category_name ?? input.name ?? "");
-  return `${type}::${name}`;
+  return `${type}::${normalizeTagKey(name)}`;
 }
 
 export async function syncProjectCategoriesForProject(input: {

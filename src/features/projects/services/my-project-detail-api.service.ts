@@ -92,6 +92,18 @@ function mapBenefits(benefits: string[] | null): Benefit[] {
   );
 }
 
+function normalizeProjectFormDataForStorage(
+  formData: ProjectFormData,
+): ProjectFormData {
+  return {
+    ...formData,
+    positions: formData.positions.map((position) => ({
+      ...position,
+      requiredSkills: position.skills,
+    })),
+  };
+}
+
 type UpdateBody = {
   title?: string;
   summary?: string;
@@ -291,6 +303,7 @@ export async function patchMyProjectByIdService(input: {
     ),
     workMode: mapWorkMode(nextFormData.workMode),
   };
+  const storageFormData = normalizeProjectFormDataForStorage(filteredFormData);
 
   const { data: updated, error: updateError } = await supabaseAdminClient.rpc(
     "update_my_project_with_relations",
@@ -298,7 +311,7 @@ export async function patchMyProjectByIdService(input: {
       p_project_id: input.id,
       p_owner_id: input.ownerId,
       p_status: status,
-      p_form_data: filteredFormData,
+      p_form_data: storageFormData,
     },
   );
 
@@ -308,7 +321,7 @@ export async function patchMyProjectByIdService(input: {
   try {
     await syncProjectCategoriesForProject({
       projectId: input.id,
-      formData: filteredFormData,
+      formData: storageFormData,
     });
   } catch (syncError) {
     return {
