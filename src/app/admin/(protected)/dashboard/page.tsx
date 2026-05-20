@@ -29,7 +29,8 @@ export default async function AdminDashboardPage() {
     ).length,
   };
 
-  const latestProjects = [...projects]
+  const latestPendingProjects = projects
+    .filter((project) => project.approvalStatus === "pending")
     .sort(
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
@@ -86,10 +87,10 @@ export default async function AdminDashboardPage() {
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-200 px-5 py-4">
           <h2 className="text-base font-semibold text-slate-900">
-            Recent Projects
+            Pending Projects
           </h2>
           <p className="mt-1 text-sm text-slate-500">
-            Showing latest 10 submissions
+            Showing latest 10 pending submissions
           </p>
         </div>
 
@@ -115,7 +116,7 @@ export default async function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {latestProjects.map((project) => (
+              {latestPendingProjects.map((project) => (
                 <tr key={project.id}>
                   <td className="px-4 py-3">
                     <p className="font-medium text-slate-700">
