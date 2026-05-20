@@ -33,6 +33,10 @@ const initialFormData: ProjectFormData = {
   applicationStartDate: "",
   applicationEndDate: "",
   benefits: [],
+  compensationEnabled: false,
+  compensationAmount: null,
+  compensationType: null,
+  compensationNote: "",
   compensationDetail: "",
   positions: [
     {

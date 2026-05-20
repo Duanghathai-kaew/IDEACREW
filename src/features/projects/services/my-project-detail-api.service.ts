@@ -7,6 +7,10 @@ import {
   Benefit,
   ProjectFormData,
 } from "@/features/projects/types/project.type";
+import {
+  mapDbCompensation,
+  parseLegacyCompensationDetail,
+} from "@/features/projects/utils/compensation.utils";
 import { createMyProjectStatusNotification } from "@/lib/server/notifications";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { CreatorProjectStatus } from "@/types/status";
@@ -25,7 +29,45 @@ type DbProject = {
   application_end_date: string | null;
   benefits: string[] | null;
   compensation_detail: string | null;
+  compensation_enabled: boolean | null;
+  compensation_amount: number | string | null;
+  compensation_type: string | null;
+  compensation_note: string | null;
 };
+
+function mapProjectToFormCompensation(project: DbProject) {
+  const mapped = mapDbCompensation(project);
+
+  if (mapped.type) {
+    return {
+      compensationEnabled: mapped.enabled,
+      compensationAmount: mapped.amount,
+      compensationType: mapped.type,
+      compensationNote: mapped.note ?? "",
+      compensationDetail: mapped.displayText ?? "",
+    };
+  }
+
+  const legacyText = (project.compensation_detail ?? "").trim();
+  if (!legacyText) {
+    return {
+      compensationEnabled: mapped.enabled,
+      compensationAmount: null,
+      compensationType: null,
+      compensationNote: "",
+      compensationDetail: "",
+    };
+  }
+
+  const parsed = parseLegacyCompensationDetail(legacyText);
+  return {
+    compensationEnabled: true,
+    compensationAmount: parsed.amount ?? null,
+    compensationType: parsed.type ?? null,
+    compensationNote: parsed.note ?? legacyText,
+    compensationDetail: legacyText,
+  };
+}
 
 type DbCategory = { category_name: string };
 type DbPosition = {
@@ -126,7 +168,7 @@ export async function getMyProjectByIdService(input: {
   const { data, error } = await supabaseAdminClient
     .from("projects")
     .select(
-      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,status,benefits,compensation_detail",
+      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,status,benefits,compensation_detail,compensation_enabled,compensation_amount,compensation_type,compensation_note",
     )
     .eq("id", input.id)
     .eq("owner_id", input.ownerId)
@@ -189,6 +231,8 @@ export async function getMyProjectByIdService(input: {
     qualificationsByPositionId.set(row.position_id, current);
   }
 
+  const compensationFields = mapProjectToFormCompensation(project);
+
   const formData: ProjectFormData = {
     title: project.title,
     categories: ((categories as DbCategory[] | null) ?? []).map(
@@ -205,7 +249,7 @@ export async function getMyProjectByIdService(input: {
       ? project.application_end_date.slice(0, 10)
       : "",
     benefits: mapBenefits(project.benefits),
-    compensationDetail: project.compensation_detail ?? "",
+    ...compensationFields,
     positions:
       positionRows.length > 0
         ? positionRows.map((position) => ({

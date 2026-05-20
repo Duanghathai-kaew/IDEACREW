@@ -1,4 +1,5 @@
 import { Benefit, Project } from "@/features/projects/types/project.type";
+import { mapDbCompensation } from "@/features/projects/utils/compensation.utils";
 import { resolveProjectRecruitmentStatus } from "@/features/projects/utils/project-recruitment-status";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { unstable_noStore as noStore } from "next/cache";
@@ -15,6 +16,10 @@ type DbProject = {
   application_end_date: string | null;
   benefits: string[] | null;
   compensation_detail: string | null;
+  compensation_enabled: boolean | null;
+  compensation_amount: number | string | null;
+  compensation_type: string | null;
+  compensation_note: string | null;
   status: string | null;
   approval_status: string | null;
   created_at: string | null;
@@ -63,7 +68,7 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
   const { data: project, error } = await supabaseAdminClient
     .from("projects")
     .select(
-      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,approval_status,created_at",
+      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,compensation_enabled,compensation_amount,compensation_type,compensation_note,status,approval_status,created_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -140,6 +145,8 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
     qualificationsByPosition.set(row.position_id, current);
   }
 
+  const compensation = mapDbCompensation(projectRow);
+
   return {
     id: projectRow.id,
     ownerId: projectRow.owner_id,
@@ -154,7 +161,11 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
     applicationStartDate: projectRow.application_start_date ?? "2025-01-01",
     applicationEndDate: projectRow.application_end_date ?? "2025-01-01",
     benefits: mapBenefitArray(projectRow.benefits),
-    compensationDetail: projectRow.compensation_detail ?? "",
+    compensationEnabled: compensation.enabled,
+    compensationAmount: compensation.amount,
+    compensationType: compensation.type,
+    compensationNote: compensation.note ?? undefined,
+    compensationDetail: compensation.displayText ?? "",
     status: mapProjectStatus(projectRow.status),
     positions: positionRows.map((position) => ({
       id: position.id,

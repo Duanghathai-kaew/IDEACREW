@@ -9,6 +9,7 @@ import {
   getBenefitLabel,
   getWorkModeLabel,
 } from "@/features/projects/services/project-detail-mock-data";
+import { getCompensationDisplayText } from "@/features/projects/utils/compensation.utils";
 import {
   getProjectRecruitmentStatusLabel,
   getProjectRecruitmentStatusPillClass,
@@ -55,6 +56,7 @@ export default async function ProjectDetailPage({
   const projectSkills = Array.from(
     new Set(project.positions.flatMap((position) => position.skills)),
   );
+  const compensationDisplay = getCompensationDisplayText(project);
 
   return (
     <>
@@ -324,22 +326,25 @@ export default async function ProjectDetailPage({
                     ))}
                   </div>
 
-                  {project.compensationDetail && (
+                  {compensationDisplay && (
                     <div
-                      className="mt-4 p-4 rounded-lg border-l-4"
+                      className="mt-4 rounded-lg border-l-4 p-4"
                       style={{
                         background: "var(--form-secondary)",
                         borderColor: "var(--form-accent)",
                       }}
                     >
                       <h4
-                        className="font-semibold mb-1"
+                        className="mb-1 font-semibold"
                         style={{ color: "var(--form-accent)" }}
                       >
                         รายละเอียดค่าตอบแทน
                       </h4>
-                      <p style={{ color: "var(--form-text-primary)" }}>
-                        {project.compensationDetail}
+                      <p
+                        className="whitespace-pre-line"
+                        style={{ color: "var(--form-text-primary)" }}
+                      >
+                        {compensationDisplay}
                       </p>
                     </div>
                   )}

@@ -1,3 +1,4 @@
+import type { CompensationType } from "@/features/projects/types/compensation.type";
 import { CreatorProjectStatus } from "@/types/status";
 
 export type WorkMode = "onsite" | "hybrid" | "online";
@@ -26,6 +27,11 @@ export interface Project {
   applicationEndDate: string;
 
   benefits: Benefit[];
+  compensationEnabled?: boolean;
+  compensationAmount?: number | null;
+  compensationType?: CompensationType | null;
+  compensationNote?: string;
+  /** Legacy free-text or formatted preview for display */
   compensationDetail?: string;
 
   status: ProjectStatus;
@@ -49,17 +55,4 @@ export interface Position {
   preferredQualifications?: string;
 }
 
-// Form data interface (สำหรับฟอร์ม ไม่รวม id, createdBy, createdAt)
-export interface ProjectFormData {
-  title: string;
-  categories: string[];
-  summary: string;
-  description: string;
-  workMode: WorkMode;
-  workingHours?: string;
-  applicationStartDate: string;
-  applicationEndDate: string;
-  benefits: Benefit[];
-  compensationDetail?: string;
-  positions: Omit<Position, "id" | "projectId">[];
-}
+export type { ProjectFormData } from "@/features/projects/schemas/projects-api.schema";

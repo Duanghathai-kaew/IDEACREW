@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { CompensationFields } from "@/features/projects/components/compensation-fields";
 import {
   normalizeProjectFormData,
   projectFormDataSchema,
@@ -24,6 +25,7 @@ import {
   useWatch,
   type FieldErrors,
   type FieldPath,
+  type Resolver,
 } from "react-hook-form";
 
 const categoryOptions = [
@@ -359,24 +361,7 @@ function BenefitsField() {
         ))}
       </div>
 
-      {showCompensation && (
-        <div className="mt-4">
-          <label className="mb-2 block text-sm font-medium text-slate-700">
-            รายละเอียดค่าตอบแทน <span className="text-rose-600">*</span>
-          </label>
-          <Input
-            {...register("compensationDetail")}
-            placeholder="เช่น 5,000 บาท/เดือน หรือเบี้ยเลี้ยงตามรอบงาน"
-            aria-invalid={Boolean(
-              getFieldError(formState.errors, "compensationDetail"),
-            )}
-            className="h-11 rounded-xl bg-white"
-          />
-          <FieldError
-            message={getFieldError(formState.errors, "compensationDetail")}
-          />
-        </div>
-      )}
+      <CompensationFields show={showCompensation} />
 
       <FieldError message={errorMessage} />
     </div>
@@ -505,7 +490,9 @@ export function ProjectCreateForm({
   onSubmitProject,
 }: ProjectCreateFormProps) {
   const methods = useForm<ProjectFormData>({
-    resolver: zodResolver(projectFormDataSchema),
+    resolver: zodResolver(
+      projectFormDataSchema,
+    ) as Resolver<ProjectFormData>,
     defaultValues: initialValues,
     mode: "onTouched",
   });
@@ -520,7 +507,6 @@ export function ProjectCreateForm({
     reset(initialValues);
   }, [initialValues, reset]);
 
-  const compensationSelected = watch("benefits").includes("compensation");
   const categoryError = getFieldError(formState.errors, "categories");
   const titleError = getFieldError(formState.errors, "title");
   const summaryError = getFieldError(formState.errors, "summary");

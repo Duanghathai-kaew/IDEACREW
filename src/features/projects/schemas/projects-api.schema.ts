@@ -1,4 +1,5 @@
-import type { ProjectFormData } from "@/features/projects/types/project.type";
+import { COMPENSATION_TYPES } from "@/features/projects/types/compensation.type";
+import { resolveFormCompensation } from "@/features/projects/utils/compensation.utils";
 import { z } from "zod";
 
 const statusSchema = z.enum([
@@ -25,6 +26,14 @@ const requiredTextSchema = (message: string) =>
   z.string().trim().min(1, message);
 
 const optionalTextSchema = z.string().trim().default("");
+
+const compensationTypeSchema = z.enum(COMPENSATION_TYPES);
+
+const compensationAmountSchema = z.preprocess((value) => {
+  if (value === "" || value === null || value === undefined) return null;
+  if (typeof value === "number" && Number.isNaN(value)) return null;
+  return value;
+}, z.number().min(0, "จำนวนค่าตอบแทนต้องไม่ต่ำกว่า 0").nullable().optional());
 
 const tagListSchema = (message: string) =>
   z.array(z.string()).superRefine((items, ctx) => {
@@ -81,6 +90,13 @@ export const projectFormDataSchema = z
     applicationStartDate: requiredTextSchema("กรุณาเลือกวันเริ่มรับสมัคร"),
     applicationEndDate: requiredTextSchema("กรุณาเลือกวันปิดรับสมัคร"),
     benefits: z.array(benefitSchema),
+    compensationEnabled: z.boolean().optional(),
+    compensationAmount: compensationAmountSchema,
+    compensationType: z.preprocess(
+      (value) => (value === "" || value === undefined ? null : value),
+      compensationTypeSchema.nullable().optional(),
+    ),
+    compensationNote: optionalTextSchema,
     compensationDetail: optionalTextSchema,
     positions: z.array(positionInputSchema),
   })
@@ -117,16 +133,35 @@ export const projectFormDataSchema = z
       }
     }
 
-    if (data.benefits.includes("compensation") && !data.compensationDetail) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "กรุณาระบุรายละเอียดค่าตอบแทน",
-        path: ["compensationDetail"],
-      });
+    const hasCompensationBenefit = data.benefits.includes("compensation");
+    const compensationEnabled =
+      data.compensationEnabled ?? hasCompensationBenefit;
+
+    if (hasCompensationBenefit || compensationEnabled) {
+      if (!data.compensationType) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "กรุณาเลือกประเภทค่าตอบแทน",
+          path: ["compensationType"],
+        });
+        return;
+      }
+
+      if (data.compensationType !== "none") {
+        const amount = data.compensationAmount;
+        if (amount == null || Number.isNaN(amount) || amount <= 0) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: "กรุณาระบุจำนวนค่าตอบแทน",
+            path: ["compensationAmount"],
+          });
+        }
+      }
     }
   });
 
-export type ProjectFormSchema = z.infer<typeof projectFormDataSchema>;
+export type ProjectFormData = z.infer<typeof projectFormDataSchema>;
+export type ProjectFormSchema = ProjectFormData;
 
 export function normalizeProjectFormData(
   formData: ProjectFormData,
@@ -149,6 +184,8 @@ export function normalizeProjectFormData(
     return normalized;
   };
 
+  const compensation = resolveFormCompensation(formData);
+
   return {
     ...formData,
     title: formData.title.trim().replace(/\s+/g, " "),
@@ -157,9 +194,11 @@ export function normalizeProjectFormData(
     workingHours: (formData.workingHours ?? "").trim().replace(/\s+/g, " "),
     applicationStartDate: formData.applicationStartDate.trim(),
     applicationEndDate: formData.applicationEndDate.trim(),
-    compensationDetail: (formData.compensationDetail ?? "")
-      .trim()
-      .replace(/\s+/g, " "),
+    compensationEnabled: compensation.enabled,
+    compensationAmount: compensation.amount,
+    compensationType: compensation.type,
+    compensationNote: compensation.note ?? "",
+    compensationDetail: compensation.detailText,
     categories: uniqueTrimmed(formData.categories),
     positions: formData.positions.map(
       (position: ProjectFormData["positions"][number]) => ({

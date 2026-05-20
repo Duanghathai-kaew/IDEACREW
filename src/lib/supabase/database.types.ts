@@ -533,6 +533,10 @@ export type Database = {
           application_start_date: string | null;
           benefits: string[];
           compensation_detail: string | null;
+          compensation_enabled: boolean;
+          compensation_amount: number | null;
+          compensation_type: Database["public"]["Enums"]["compensation_type"] | null;
+          compensation_note: string | null;
           created_at: string;
           description: string | null;
           id: string;
@@ -550,6 +554,10 @@ export type Database = {
           application_start_date?: string | null;
           benefits?: string[];
           compensation_detail?: string | null;
+          compensation_enabled?: boolean;
+          compensation_amount?: number | null;
+          compensation_type?: Database["public"]["Enums"]["compensation_type"] | null;
+          compensation_note?: string | null;
           created_at?: string;
           description?: string | null;
           id?: string;
@@ -567,6 +575,10 @@ export type Database = {
           application_start_date?: string | null;
           benefits?: string[];
           compensation_detail?: string | null;
+          compensation_enabled?: boolean;
+          compensation_amount?: number | null;
+          compensation_type?: Database["public"]["Enums"]["compensation_type"] | null;
+          compensation_note?: string | null;
           created_at?: string;
           description?: string | null;
           id?: string;
@@ -633,6 +645,12 @@ export type Database = {
     };
     Enums: {
       application_status: "applied" | "in_review" | "rejected" | "accepted";
+      compensation_type:
+        | "per_project"
+        | "per_month"
+        | "per_hour"
+        | "revenue_share"
+        | "none";
       notification_category: "my-project" | "applied";
       project_status:
         | "draft"
@@ -774,6 +792,13 @@ export const Constants = {
   public: {
     Enums: {
       application_status: ["applied", "in_review", "rejected", "accepted"],
+      compensation_type: [
+        "per_project",
+        "per_month",
+        "per_hour",
+        "revenue_share",
+        "none",
+      ],
       notification_category: ["my-project", "applied"],
       project_status: [
         "draft",
