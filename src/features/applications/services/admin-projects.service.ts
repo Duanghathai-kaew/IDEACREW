@@ -11,7 +11,7 @@ import {
   fetchAdminProjects,
 } from "@/features/applications/repositories/applications.repository";
 import { insertNotification } from "@/features/applications/repositories/notifications.repository";
-import { approvePendingTagsForProject } from "@/features/projects/services/project-tags.service";
+import { enableSelectedTags } from "@/features/projects/services/project-tags.service";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 
 export async function getAdminProjects(): Promise<
@@ -152,7 +152,10 @@ export async function getAdminProjects(): Promise<
   };
 }
 
-export async function approveProject(projectId: string): Promise<ActionResult> {
+export async function approveProject(
+  projectId: string,
+  selectedTagIds: string[],
+): Promise<ActionResult> {
   const { error } = await supabaseAdminClient
     .from("projects")
     .update({
@@ -185,7 +188,7 @@ export async function approveProject(projectId: string): Promise<ActionResult> {
   }
 
   try {
-    await approvePendingTagsForProject(projectId);
+    await enableSelectedTags({ projectId, selectedTagIds });
   } catch (approveTagsError) {
     return {
       ok: false,

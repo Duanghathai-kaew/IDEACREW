@@ -100,12 +100,18 @@ export async function syncProjectCategoriesForProject(input: {
   }
 }
 
-export async function approvePendingTagsForProject(projectId: string) {
+export async function enableSelectedTags(input: {
+  projectId: string;
+  selectedTagIds: string[];
+}) {
+  if (input.selectedTagIds.length === 0) return;
+
   const { error } = await supabaseAdminClient
     .from("project_categories")
     .update({ status: "enabled" })
-    .eq("project_id", projectId)
-    .eq("status", "pending");
+    .eq("project_id", input.projectId)
+    .eq("status", "pending")
+    .in("id", input.selectedTagIds);
 
   if (error) {
     throw new Error(error.message);

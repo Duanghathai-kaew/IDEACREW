@@ -89,6 +89,9 @@ export function ProjectsTable() {
   const [actionProjectId, setActionProjectId] = React.useState<string | null>(
     null,
   );
+  const [selectedPendingTagIds, setSelectedPendingTagIds] = React.useState<
+    string[]
+  >([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -96,6 +99,37 @@ export function ProjectsTable() {
     () => projects.find((project) => project.id === selectedProjectId) ?? null,
     [projects, selectedProjectId],
   );
+
+  const approvedTags = React.useMemo(
+    () =>
+      selectedProject?.tags.filter((tag) => tag.status === "enabled") ?? [],
+    [selectedProject],
+  );
+
+  const pendingTags = React.useMemo(
+    () =>
+      selectedProject?.tags.filter((tag) => tag.status === "pending") ?? [],
+    [selectedProject],
+  );
+
+  const otherTags = React.useMemo(
+    () =>
+      selectedProject?.tags.filter(
+        (tag) => tag.status && tag.status !== "enabled" && tag.status !== "pending",
+      ) ?? [],
+    [selectedProject],
+  );
+
+  React.useEffect(() => {
+    if (!selectedProject) {
+      setSelectedPendingTagIds([]);
+      return;
+    }
+    const pendingIds = selectedProject.tags
+      .filter((tag) => tag.status === "pending")
+      .map((tag) => tag.id);
+    setSelectedPendingTagIds(pendingIds);
+  }, [selectedProject]);
 
   const fetchProjects = React.useCallback(async () => {
     setIsLoading(true);
@@ -168,7 +202,7 @@ export function ProjectsTable() {
 
   const handleApprove = async (projectId: string) => {
     setActionProjectId(projectId);
-    const result = await approveProject(projectId);
+    const result = await approveProject(projectId, selectedPendingTagIds);
     console.log("[approveProject]", result);
 
     if (!result.ok) {
@@ -203,6 +237,14 @@ export function ProjectsTable() {
     setActionProjectId(null);
     setRejectReason("");
     setSelectedProjectId(null);
+  };
+
+  const togglePendingTag = (tagId: string) => {
+    setSelectedPendingTagIds((prev) =>
+      prev.includes(tagId)
+        ? prev.filter((id) => id !== tagId)
+        : [...prev, tagId],
+    );
   };
 
   const columns: DataTableColumn<AdminProject>[] = [
@@ -590,30 +632,91 @@ export function ProjectsTable() {
                     Tags
                   </h3>
 
-                  <div className="flex flex-wrap gap-2">
-                    {selectedProject.tags?.length ? (
-                      selectedProject.tags.map((tag) => (
-                        <Badge
-                          key={tag.id}
-                          variant="secondary"
-                          className={`rounded-full ${
-                            tag.status === "pending"
-                              ? "bg-amber-100 text-amber-700 border-amber-200"
-                              : ""
-                          }`}
-                        >
-                          {tag.name}
-                          {tag.status === "pending"
-                            ? " (Pending Approval)"
-                            : ""}
-                        </Badge>
-                      ))
-                    ) : (
-                      <p className="text-sm text-slate-400">
-                        No tags available
-                      </p>
-                    )}
-                  </div>
+                  {selectedProject.tags?.length ? (
+                    <div className="space-y-6">
+                      {approvedTags.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                            Approved Tags
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {approvedTags.map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant="secondary"
+                                className="rounded-full"
+                              >
+                                {tag.name}
+                                <span className="ml-2 text-[11px] font-medium text-slate-500">
+                                  {tag.type === "skill" ? "Skill" : "Category"}
+                                </span>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {pendingTags.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                            Pending Tags Requiring Approval
+                          </p>
+                          <div className="space-y-2">
+                            {pendingTags.map((tag) => (
+                              <label
+                                key={tag.id}
+                                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-100 bg-amber-50/50 px-4 py-3"
+                              >
+                                <div className="flex items-center gap-3">
+                                  <input
+                                    type="checkbox"
+                                    className="h-4 w-4 accent-amber-500"
+                                    checked={selectedPendingTagIds.includes(tag.id)}
+                                    onChange={() => togglePendingTag(tag.id)}
+                                  />
+                                  <div>
+                                    <p className="text-sm font-semibold text-slate-800">
+                                      {tag.name}
+                                    </p>
+                                    <p className="text-xs text-slate-500">
+                                      {tag.type === "skill" ? "Skill" : "Category"}
+                                    </p>
+                                  </div>
+                                </div>
+                                <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
+                                  Pending Approval
+                                </Badge>
+                              </label>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {otherTags.length > 0 && (
+                        <div className="space-y-3">
+                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                            Other Tags
+                          </p>
+                          <div className="flex flex-wrap gap-2">
+                            {otherTags.map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant="outline"
+                                className="rounded-full border-slate-200 text-slate-500"
+                              >
+                                {tag.name}
+                                <span className="ml-2 text-[11px] font-medium">
+                                  {tag.type === "skill" ? "Skill" : "Category"}
+                                </span>
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-slate-400">No tags available</p>
+                  )}
                 </section>
 
                 {/* Approval Decision */}

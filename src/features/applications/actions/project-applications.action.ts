@@ -88,8 +88,11 @@ export async function rejectApplication(
   return result;
 }
 
-export async function approveProject(projectId: string) {
-  const result = await approveProjectService(projectId);
+export async function approveProject(
+  projectId: string,
+  selectedTagIds: string[],
+) {
+  const result = await approveProjectService(projectId, selectedTagIds);
   if (result.ok) {
     revalidatePath("/my-project");
     revalidatePath("/admin/projects");
