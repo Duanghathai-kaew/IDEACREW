@@ -30,6 +30,28 @@ type Props = {
   onSuccess: () => void;
 };
 
+function extractPlainText(value: string): string {
+  try {
+    const parsed = JSON.parse(value);
+    const texts: string[] = [];
+
+    function walk(node: any) {
+      if (typeof node.text === "string" && node.text !== "") {
+        texts.push(node.text);
+      }
+      if (Array.isArray(node.children)) {
+        node.children.forEach(walk);
+      }
+    }
+
+    const root = parsed.root ?? parsed;
+    walk(root);
+    return texts.join(" ").trim();
+  } catch {
+    return value;
+  }
+}
+
 export function ApplyProjectModal({
   open,
   projectId,
@@ -87,7 +109,7 @@ export function ApplyProjectModal({
       if (prefillResult.ok) {
         setSkills(prefillResult.data.skills);
         setPortfolioUrls(prefillResult.data.portfolioUrls);
-        setAdditionalNote(prefillResult.data.bio);
+        setAdditionalNote(extractPlainText(prefillResult.data.bio));
       }
 
       setLoadingPositions(false);
