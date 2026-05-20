@@ -466,7 +466,7 @@ export function ProjectsTable() {
           }
         }}
       >
-        <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-visible p-0">
+        <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden p-0">
           {" "}
           {selectedProject ? (
             <>
