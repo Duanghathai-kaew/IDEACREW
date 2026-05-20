@@ -1,26 +1,8 @@
 "use client";
 
-import {
-  ArrowUpDown,
-  Check,
-  ChevronDown,
-  Eye,
-  Loader2,
-  Search,
-  X,
-} from "lucide-react";
+import { ArrowUpDown, Check, ChevronDown, Eye, Search } from "lucide-react";
 import * as React from "react";
 
-import {
-  approveProject,
-  getAdminProjects,
-  rejectProject,
-  type AdminProject,
-} from "@/features/applications/actions/project-applications.action";
-import {
-  DataTable,
-  DataTableColumn,
-} from "@/features/admin/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,7 +10,6 @@ import {
   DialogContent,
   DialogDescription,
   DialogFooter,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -38,6 +19,16 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DataTable,
+  DataTableColumn,
+} from "@/features/admin/components/data-table";
+import {
+  approveProject,
+  getAdminProjects,
+  rejectProject,
+  type AdminProject,
+} from "@/features/applications/actions/project-applications.action";
 
 const PAGE_SIZE = 8;
 
@@ -475,7 +466,8 @@ export function ProjectsTable() {
           }
         }}
       >
-        <DialogContent className="max-h-[90vh] max-w-5xl overflow-y-auto rounded-3xl border border-slate-200 bg-white p-0">
+        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden">
+          {" "}
           {selectedProject ? (
             <>
               {/* Header */}
@@ -680,7 +672,7 @@ export function ProjectsTable() {
                   </h3>
 
                   {selectedProject.tags?.length ? (
-                    <div className="space-y-6">
+                    <div className="flex-1 overflow-y-auto space-y-6 px-6">
                       {approvedTags.length > 0 && (
                         <div className="space-y-3">
                           <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -805,39 +797,30 @@ export function ProjectsTable() {
               </div>
 
               {/* Footer */}
-              <DialogFooter className="border-t border-slate-100 px-8 py-5">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setSelectedProjectId(null);
-                    setRejectReason("");
-                  }}
-                >
-                  Close
-                </Button>
+              <div className="shrink-0 border-t bg-white p-4">
+                <DialogFooter>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="border-rose-200 text-rose-700 hover:bg-rose-50"
+                    disabled={actionProjectId === selectedProject.id}
+                    onClick={() =>
+                      void handleReject(selectedProject.id, rejectReason)
+                    }
+                  >
+                    Reject
+                  </Button>
 
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="border-rose-200 text-rose-700 hover:bg-rose-50"
-                  disabled={actionProjectId === selectedProject.id}
-                  onClick={() =>
-                    void handleReject(selectedProject.id, rejectReason)
-                  }
-                >
-                  Reject
-                </Button>
-
-                <Button
-                  type="button"
-                  className="bg-indigo-600 text-white hover:bg-indigo-700"
-                  disabled={actionProjectId === selectedProject.id}
-                  onClick={() => void handleApprove(selectedProject.id)}
-                >
-                  Approve
-                </Button>
-              </DialogFooter>
+                  <Button
+                    type="button"
+                    className="bg-indigo-600 text-white hover:bg-indigo-700"
+                    disabled={actionProjectId === selectedProject.id}
+                    onClick={() => void handleApprove(selectedProject.id)}
+                  >
+                    Approve
+                  </Button>
+                </DialogFooter>
+              </div>
             </>
           ) : null}
         </DialogContent>
