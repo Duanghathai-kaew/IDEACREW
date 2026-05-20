@@ -3,17 +3,19 @@ import { z } from "zod";
 import { createMyProjectStatusNotification } from "@/features/notifications/services/notification.service";
 import { toSimpleProjects } from "@/features/projects/mappers/project-api.mapper";
 import {
-  createProjectBodySchema,
-  projectsQuerySchema,
-} from "@/features/projects/schemas/projects-api.schema";
-import {
   createProjectWithRelations,
   fetchProjectsForFeed,
 } from "@/features/projects/repositories/projects.repository";
-import { SimpleProject } from "@/features/projects/services/simple-project-mock-data";
+import {
+  createProjectBodySchema,
+  projectsQuerySchema,
+} from "@/features/projects/schemas/projects-api.schema";
 import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
+import { SimpleProject } from "@/features/projects/services/simple-project-mock-data";
+import { unstable_noStore as noStore } from "next/cache";
 
 export async function getProjectsFeedService(_query: unknown) {
+  noStore();
   projectsQuerySchema.parse(_query);
 
   const [

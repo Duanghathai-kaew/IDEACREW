@@ -1,4 +1,5 @@
 import { Benefit, Project } from "@/features/projects/types/project.type";
+import { resolveProjectRecruitmentStatus } from "@/features/projects/utils/project-recruitment-status";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -46,18 +47,7 @@ function mapBenefitArray(raw: string[] | null): Benefit[] {
 }
 
 function mapProjectStatus(status: string | null): Project["status"] {
-  switch (status) {
-    case "draft":
-    case "pending_approval":
-    case "rejected_by_admin":
-    case "approved":
-    case "open":
-    case "reviewing":
-    case "closed":
-      return status;
-    default:
-      return "closed";
-  }
+  return resolveProjectRecruitmentStatus(status);
 }
 
 function mapWorkMode(mode: string | null): Project["workMode"] {
@@ -71,22 +61,14 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
   const { data: project, error } = await supabaseAdminClient
     .from("projects")
     .select(
-      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,approval_status,created_at",
+      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,created_at",
     )
     .eq("id", id)
     .maybeSingle();
 
   if (error || !project) return null;
 
-  const projectRow = project as DbProject & {
-    approval_status?: string | null;
-  };
-  const approvalStatus =
-    projectRow.approval_status === "pending" ||
-    projectRow.approval_status === "approved" ||
-    projectRow.approval_status === "rejected"
-      ? projectRow.approval_status
-      : "approved";
+  const projectRow = project as DbProject;
 
   const [{ data: profile }, { data: categories }, { data: positions }] =
     await Promise.all([
@@ -160,7 +142,6 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
     benefits: mapBenefitArray(projectRow.benefits),
     compensationDetail: projectRow.compensation_detail ?? "",
     status: mapProjectStatus(projectRow.status),
-    approvalStatus,
     positions: positionRows.map((position) => ({
       id: position.id,
       projectId: position.project_id,

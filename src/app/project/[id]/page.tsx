@@ -10,6 +10,11 @@ import {
   getWorkModeLabel,
 } from "@/features/projects/services/project-detail-mock-data";
 import {
+  getProjectRecruitmentStatusLabel,
+  getProjectRecruitmentStatusPillClass,
+  resolveProjectRecruitmentStatus,
+} from "@/features/projects/utils/project-recruitment-status";
+import {
   ArrowLeft,
   Award,
   Calendar,
@@ -45,7 +50,8 @@ export default async function ProjectDetailPage({
   const project = dbProject;
 
   const avatar = project.createdBy.slice(0, 2).toUpperCase();
-  const isOpen = project.status === "open";
+  const recruitmentStatus = resolveProjectRecruitmentStatus(project.status);
+  const isOpen = recruitmentStatus === "open";
   const projectSkills = Array.from(
     new Set(project.positions.flatMap((position) => position.skills)),
   );
@@ -103,27 +109,11 @@ export default async function ProjectDetailPage({
               </div>
               <div className="text-sm text-gray-500">
                 <span
-                  className={`inline-block rounded-full px-2.5 py-1 text-xs ${
-                    project.approvalStatus === "pending"
-                      ? "bg-amber-100 text-amber-700"
-                      : project.approvalStatus === "rejected"
-                        ? "bg-rose-100 text-rose-700"
-                        : project.status === "closed"
-                          ? "bg-slate-100 text-slate-600"
-                          : isOpen
-                            ? "bg-emerald-100 text-emerald-700"
-                            : "bg-rose-100 text-rose-700"
-                  }`}
+                  className={`inline-block rounded-full px-2.5 py-1 text-xs ${getProjectRecruitmentStatusPillClass(
+                    project.status,
+                  )}`}
                 >
-                  {project.approvalStatus === "pending"
-                    ? "รออนุมัติจากแอดมิน"
-                    : project.approvalStatus === "rejected"
-                      ? "ถูกปฏิเสธ"
-                      : project.status === "closed"
-                        ? "ปิดรับสมัครแล้ว"
-                        : isOpen
-                          ? "เปิดรับสมัคร"
-                          : "ปิดรับสมัครแล้ว"}
+                  {getProjectRecruitmentStatusLabel(project.status)}
                 </span>
               </div>
             </div>
@@ -379,7 +369,6 @@ export default async function ProjectDetailPage({
                       project.applicationEndDate,
                     )}
                     projectStatus={project.status}
-                    approvalStatus={project.approvalStatus}
                   />
                 </div>
 

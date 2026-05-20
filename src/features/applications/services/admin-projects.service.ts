@@ -13,10 +13,27 @@ import {
 import { insertNotification } from "@/features/applications/repositories/notifications.repository";
 import { enableSelectedTags } from "@/features/projects/services/project-tags.service";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
+import { unstable_noStore as noStore } from "next/cache";
+
+function mapAdminTagStatus(
+  status: string | null,
+): AdminProject["tags"][number]["status"] {
+  if (
+    status === "pending" ||
+    status === "enabled" ||
+    status === "rejected" ||
+    status === "disabled"
+  ) {
+    return status;
+  }
+
+  return null;
+}
 
 export async function getAdminProjects(): Promise<
   ActionResult<AdminProject[]>
 > {
+  noStore();
   const { data: projects, error } = await fetchAdminProjects();
   if (error) {
     return { ok: false, error: error.message };
@@ -145,7 +162,7 @@ export async function getAdminProjects(): Promise<
             id: category.id,
             name: category.category_name,
             type: category.type,
-            status: category.status,
+            status: mapAdminTagStatus(category.status),
           })) ?? [],
       });
     }),

@@ -1,8 +1,9 @@
 import { MyProject } from "@/features/projects/services/my-project-mock-data";
 import { SimpleProject } from "@/features/projects/services/simple-project-mock-data";
+import { resolveProjectRecruitmentStatus } from "@/features/projects/utils/project-recruitment-status";
 
 export function mapProjectFeedStatus(status: string | null): "open" | "closed" {
-  return status === "open" ? "open" : "closed";
+  return resolveProjectRecruitmentStatus(status);
 }
 
 export function mapMyProjectStatus(status: string | null): MyProject["status"] {
@@ -40,7 +41,10 @@ export function toSimpleProjects(args: {
     owner_id: string;
   }>;
   ownerNameById: Map<string, string>;
-  positionsByProjectId: Map<string, { role: string; needed: number; skills: string[] }[]>;
+  positionsByProjectId: Map<
+    string,
+    { role: string; needed: number; skills: string[] }[]
+  >;
   categoriesByProjectId: Map<string, string[]>;
 }): SimpleProject[] {
   return args.projectRows.map((project) => ({
@@ -53,4 +57,3 @@ export function toSimpleProjects(args: {
     positions: args.positionsByProjectId.get(project.id) ?? [],
   }));
 }
-

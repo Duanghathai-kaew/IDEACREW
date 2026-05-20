@@ -29,7 +29,6 @@ export interface Project {
   compensationDetail?: string;
 
   status: ProjectStatus;
-  approvalStatus?: "pending" | "approved" | "rejected";
 
   positions: Position[];
 
