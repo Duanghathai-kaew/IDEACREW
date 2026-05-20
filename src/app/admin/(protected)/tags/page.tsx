@@ -34,8 +34,37 @@ async function updateTagStatusAction(formData: FormData) {
   revalidatePath("/admin/tags");
 }
 
-export default async function AdminTagsPage() {
+const typeOptions = [
+  { value: "all", label: "All" },
+  { value: "category", label: "Category" },
+  { value: "skill", label: "Skill" },
+] as const;
+
+const statusOptions = [
+  { value: "all", label: "All" },
+  { value: "enabled", label: "Enabled" },
+  { value: "pending", label: "Pending" },
+  { value: "rejected", label: "Rejected" },
+  { value: "disabled", label: "Disabled" },
+] as const;
+
+type TagFilterValue = (typeof typeOptions)[number]["value"];
+type StatusFilterValue = (typeof statusOptions)[number]["value"];
+
+export default async function AdminTagsPage({
+  searchParams,
+}: {
+  searchParams?: { type?: string; status?: string };
+}) {
   const { tags: adminTags, error } = await getAdminTagsService();
+  const typeFilter = (searchParams?.type ?? "all") as TagFilterValue;
+  const statusFilter = (searchParams?.status ?? "all") as StatusFilterValue;
+
+  const filteredTags = adminTags.filter((tag) => {
+    if (typeFilter !== "all" && tag.type !== typeFilter) return false;
+    if (statusFilter !== "all" && tag.status !== statusFilter) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
@@ -50,6 +79,51 @@ export default async function AdminTagsPage() {
           {error}
         </div>
       )}
+
+      <section className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <form className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Type
+            </label>
+            <select
+              name="type"
+              defaultValue={typeFilter}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600"
+            >
+              {typeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-2">
+            <label className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+              Status
+            </label>
+            <select
+              name="status"
+              defaultValue={statusFilter}
+              className="h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 text-sm text-slate-600"
+            >
+              {statusOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex items-end gap-2">
+            <button
+              type="submit"
+              className="h-11 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-600"
+            >
+              Apply filters
+            </button>
+          </div>
+        </form>
+      </section>
 
       <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
         <div className="overflow-x-auto">
@@ -74,8 +148,8 @@ export default async function AdminTagsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {adminTags.length > 0 ? (
-                adminTags.map((tag) => (
+              {filteredTags.length > 0 ? (
+                filteredTags.map((tag) => (
                   <tr key={tag.id}>
                     <td className="px-4 py-3 text-sm font-medium text-slate-800">
                       {tag.name}

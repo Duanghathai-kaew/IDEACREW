@@ -101,21 +101,20 @@ export function ProjectsTable() {
   );
 
   const approvedTags = React.useMemo(
-    () =>
-      selectedProject?.tags.filter((tag) => tag.status === "enabled") ?? [],
+    () => selectedProject?.tags.filter((tag) => tag.status === "enabled") ?? [],
     [selectedProject],
   );
 
   const pendingTags = React.useMemo(
-    () =>
-      selectedProject?.tags.filter((tag) => tag.status === "pending") ?? [],
+    () => selectedProject?.tags.filter((tag) => tag.status === "pending") ?? [],
     [selectedProject],
   );
 
   const otherTags = React.useMemo(
     () =>
       selectedProject?.tags.filter(
-        (tag) => tag.status && tag.status !== "enabled" && tag.status !== "pending",
+        (tag) =>
+          tag.status && tag.status !== "enabled" && tag.status !== "pending",
       ) ?? [],
     [selectedProject],
   );
@@ -671,7 +670,9 @@ export function ProjectsTable() {
                                   <input
                                     type="checkbox"
                                     className="h-4 w-4 accent-amber-500"
-                                    checked={selectedPendingTagIds.includes(tag.id)}
+                                    checked={selectedPendingTagIds.includes(
+                                      tag.id,
+                                    )}
                                     onChange={() => togglePendingTag(tag.id)}
                                   />
                                   <div>
@@ -679,7 +680,9 @@ export function ProjectsTable() {
                                       {tag.name}
                                     </p>
                                     <p className="text-xs text-slate-500">
-                                      {tag.type === "skill" ? "Skill" : "Category"}
+                                      {tag.type === "skill"
+                                        ? "Skill"
+                                        : "Category"}
                                     </p>
                                   </div>
                                 </div>
