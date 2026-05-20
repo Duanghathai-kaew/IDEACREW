@@ -1,11 +1,11 @@
 import { z } from "zod";
 
 import { MyProjectStatus } from "@/features/projects/services/my-project-mock-data";
+import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
 import {
   Benefit,
   ProjectFormData,
 } from "@/features/projects/types/project.type";
-import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
 import { createMyProjectStatusNotification } from "@/lib/server/notifications";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { CreatorProjectStatus } from "@/types/status";
@@ -32,6 +32,7 @@ type DbPosition = {
   title: string;
   needed_count: number;
   preferred_qualifications: string | null;
+  required_skills?: string[] | null;
 };
 type DbPositionSkill = { position_id: string; skill_name: string };
 type DbBasicQualification = { position_id: string; qualification_text: string };
@@ -184,7 +185,12 @@ export async function getMyProjectByIdService(input: {
         ? positionRows.map((position) => ({
             title: position.title,
             neededCount: position.needed_count,
-            skills: skillsByPositionId.get(position.id) ?? [],
+            skills: Array.from(
+              new Set([
+                ...(position.required_skills ?? []),
+                ...(skillsByPositionId.get(position.id) ?? []),
+              ]),
+            ),
             basicQualifications:
               qualificationsByPositionId.get(position.id) ?? [],
             preferredQualifications: position.preferred_qualifications ?? "",

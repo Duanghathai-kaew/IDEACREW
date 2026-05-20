@@ -31,6 +31,7 @@ type DbPosition = {
 };
 type DbCategory = { category_name: string };
 type DbBasicQualification = { position_id: string; qualification_text: string };
+type DbPositionSkill = { position_id: string; skill_name: string };
 
 const allowedBenefits: Benefit[] = [
   "certificate",
@@ -97,15 +98,30 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
 
   const profileRow = (profile as DbProfile | null) ?? null;
   const positionIds = positionRows.map((position) => position.id);
-  const qualificationRows =
+  const [legacySkillsResult, qualificationResult] =
     positionIds.length === 0
-      ? []
-      : (((
-          await supabaseAdminClient
+      ? [{ data: [] }, { data: [] }]
+      : await Promise.all([
+          supabaseAdminClient
+            .from("project_position_skills")
+            .select("position_id,skill_name")
+            .in("position_id", positionIds),
+          supabaseAdminClient
             .from("project_position_basic_qualifications")
             .select("position_id,qualification_text")
-            .in("position_id", positionIds)
-        ).data as DbBasicQualification[] | null) ?? []);
+            .in("position_id", positionIds),
+        ]);
+
+  const legacySkillRows = (legacySkillsResult.data ?? []) as DbPositionSkill[];
+  const qualificationRows = (qualificationResult.data ??
+    []) as DbBasicQualification[];
+
+  const skillsByPosition = new Map<string, string[]>();
+  for (const row of legacySkillRows) {
+    const current = skillsByPosition.get(row.position_id) ?? [];
+    current.push(row.skill_name);
+    skillsByPosition.set(row.position_id, current);
+  }
 
   const qualificationsByPosition = new Map<string, string[]>();
   for (const row of qualificationRows) {
@@ -135,7 +151,12 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
       projectId: position.project_id,
       title: position.title,
       neededCount: position.needed_count,
-      skills: position.required_skills ?? [],
+      skills: Array.from(
+        new Set([
+          ...(position.required_skills ?? []),
+          ...(skillsByPosition.get(position.id) ?? []),
+        ]),
+      ),
       basicQualifications: qualificationsByPosition.get(position.id) ?? [],
       preferredQualifications: position.preferred_qualifications ?? undefined,
     })),

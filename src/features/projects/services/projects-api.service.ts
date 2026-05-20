@@ -12,7 +12,20 @@ import {
 } from "@/features/projects/schemas/projects-api.schema";
 import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
 import { SimpleProject } from "@/features/projects/services/simple-project-mock-data";
+import type { ProjectFormData } from "@/features/projects/types/project.type";
 import { unstable_noStore as noStore } from "next/cache";
+
+function normalizeProjectFormDataForStorage(
+  formData: ProjectFormData,
+): ProjectFormData {
+  return {
+    ...formData,
+    positions: formData.positions.map((position) => ({
+      ...position,
+      requiredSkills: position.skills,
+    })),
+  };
+}
 
 export async function getProjectsFeedService(_query: unknown) {
   noStore();
@@ -113,11 +126,13 @@ export async function createProjectService(input: unknown) {
   }
 
   const approvalStatus = status === "pending_approval" ? "pending" : "approved";
+  const storageFormData = normalizeProjectFormDataForStorage(payload.formData);
+
   const { data: projectId, error } = await createProjectWithRelations({
     ownerId: payload.ownerId,
     status,
     approvalStatus,
-    formData: payload.formData,
+    formData: storageFormData,
   });
 
   if (error) {
@@ -127,7 +142,7 @@ export async function createProjectService(input: unknown) {
   try {
     await syncProjectCategoriesForProject({
       projectId: String(projectId),
-      formData: payload.formData,
+      formData: storageFormData,
     });
   } catch (syncError) {
     return {
