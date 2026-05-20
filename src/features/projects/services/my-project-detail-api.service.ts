@@ -143,6 +143,12 @@ export async function getMyProjectByIdService(input: {
       .eq("project_id", input.id),
   ]);
 
+  const { data: skillTags } = await supabaseAdminClient
+    .from("project_categories")
+    .select("category_name")
+    .eq("project_id", input.id)
+    .eq("type", "skill");
+
   const positionRows = (positions as DbPosition[] | null) ?? [];
   const positionIds = positionRows.map((position) => position.id);
 
@@ -161,6 +167,9 @@ export async function getMyProjectByIdService(input: {
         ]);
 
   const skillsByPositionId = new Map<string, string[]>();
+  const projectSkillTags = (
+    (skillTags as Array<{ category_name: string }> | null) ?? []
+  ).map((row) => row.category_name);
   for (const row of (skillsResult.data ?? []) as DbPositionSkill[]) {
     const current = skillsByPositionId.get(row.position_id) ?? [];
     current.push(row.skill_name);
@@ -199,6 +208,7 @@ export async function getMyProjectByIdService(input: {
             neededCount: position.needed_count,
             skills: Array.from(
               new Set([
+                ...projectSkillTags,
                 ...(position.required_skills ?? []),
                 ...(skillsByPositionId.get(position.id) ?? []),
               ]),

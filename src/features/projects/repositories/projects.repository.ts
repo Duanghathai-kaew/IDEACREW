@@ -19,25 +19,33 @@ export async function fetchProjectsForFeed() {
     ] as const;
   }
 
-  const [profilesRes, positionsRes, categoriesRes] = await Promise.all([
-    supabaseAdminClient.from("profiles").select("id,name"),
-    supabaseAdminClient
-      .from("project_positions")
-      .select("id,project_id,title,needed_count,required_skills")
-      .in("project_id", projectIds),
-    supabaseAdminClient
-      .from("project_categories")
-      .select("project_id,category_name")
-      .eq("status", "enabled")
-      .eq("type", "category")
-      .in("project_id", projectIds),
-  ]);
+  const [profilesRes, positionsRes, categoriesRes, skillTagsRes] =
+    await Promise.all([
+      supabaseAdminClient.from("profiles").select("id,name"),
+      supabaseAdminClient
+        .from("project_positions")
+        .select("id,project_id,title,needed_count,required_skills")
+        .in("project_id", projectIds),
+      supabaseAdminClient
+        .from("project_categories")
+        .select("project_id,category_name")
+        .eq("status", "enabled")
+        .eq("type", "category")
+        .in("project_id", projectIds),
+      supabaseAdminClient
+        .from("project_categories")
+        .select("project_id,category_name")
+        .eq("status", "enabled")
+        .eq("type", "skill")
+        .in("project_id", projectIds),
+    ]);
 
   return [
     { data: projects, error },
     profilesRes,
     positionsRes,
     categoriesRes,
+    skillTagsRes,
   ] as const;
 }
 

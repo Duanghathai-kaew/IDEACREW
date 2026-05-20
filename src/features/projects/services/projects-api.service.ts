@@ -36,13 +36,15 @@ export async function getProjectsFeedService(_query: unknown) {
     { data: profiles, error: profilesError },
     positionsRes,
     categoriesRes,
+    skillTagsRes,
   ] = await fetchProjectsForFeed();
 
   if (
     projectsError ||
     profilesError ||
     positionsRes.error ||
-    categoriesRes.error
+    categoriesRes.error ||
+    skillTagsRes.error
   ) {
     return {
       status: 500,
@@ -52,6 +54,7 @@ export async function getProjectsFeedService(_query: unknown) {
           profilesError?.message ||
           positionsRes.error?.message ||
           categoriesRes.error?.message ||
+          skillTagsRes.error?.message ||
           "Failed to fetch projects",
       },
     };
@@ -77,6 +80,10 @@ export async function getProjectsFeedService(_query: unknown) {
     required_skills: string[] | null;
   }>;
   const categoryRows = (categoriesRes.data ?? []) as Array<{
+    project_id: string;
+    category_name: string;
+  }>;
+  const skillTagRows = (skillTagsRes.data ?? []) as Array<{
     project_id: string;
     category_name: string;
   }>;
@@ -106,10 +113,44 @@ export async function getProjectsFeedService(_query: unknown) {
     categoriesByProjectId.set(row.project_id, current);
   }
 
+  const skillsByProjectId = new Map<string, string[]>();
+  for (const row of skillTagRows) {
+    const current = skillsByProjectId.get(row.project_id) ?? [];
+    current.push(row.category_name);
+    skillsByProjectId.set(row.project_id, current);
+  }
+
+  for (const row of positionRows) {
+    const current = skillsByProjectId.get(row.project_id) ?? [];
+    for (const skill of row.required_skills ?? []) {
+      current.push(skill);
+    }
+    skillsByProjectId.set(row.project_id, current);
+  }
+
+  const positionsWithSkillsByProjectId = new Map<
+    string,
+    { role: string; needed: number; skills: string[] }[]
+  >();
+  for (const row of positionRows) {
+    const current = positionsWithSkillsByProjectId.get(row.project_id) ?? [];
+    current.push({
+      role: row.title,
+      needed: row.needed_count,
+      skills: Array.from(
+        new Set([
+          ...(skillsByProjectId.get(row.project_id) ?? []),
+          ...(row.required_skills ?? []),
+        ]),
+      ),
+    });
+    positionsWithSkillsByProjectId.set(row.project_id, current);
+  }
+
   const data = toSimpleProjects({
     projectRows,
     ownerNameById,
-    positionsByProjectId,
+    positionsByProjectId: positionsWithSkillsByProjectId,
     categoriesByProjectId,
   }) as SimpleProject[];
 

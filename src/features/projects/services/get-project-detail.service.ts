@@ -94,6 +94,13 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
         .eq("project_id", id),
     ]);
 
+  const { data: skillTags } = await supabaseAdminClient
+    .from("project_categories")
+    .select("category_name")
+    .eq("project_id", id)
+    .eq("status", "enabled")
+    .eq("type", "skill");
+
   const positionRows = (positions as DbPosition[] | null) ?? [];
 
   const profileRow = (profile as DbProfile | null) ?? null;
@@ -117,6 +124,9 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
     []) as DbBasicQualification[];
 
   const skillsByPosition = new Map<string, string[]>();
+  const projectSkillTags = (
+    (skillTags as Array<{ category_name: string }> | null) ?? []
+  ).map((row) => row.category_name);
   for (const row of legacySkillRows) {
     const current = skillsByPosition.get(row.position_id) ?? [];
     current.push(row.skill_name);
@@ -153,6 +163,7 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
       neededCount: position.needed_count,
       skills: Array.from(
         new Set([
+          ...projectSkillTags,
           ...(position.required_skills ?? []),
           ...(skillsByPosition.get(position.id) ?? []),
         ]),
