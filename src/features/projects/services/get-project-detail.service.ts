@@ -26,10 +26,10 @@ type DbPosition = {
   project_id: string;
   title: string;
   needed_count: number;
+  required_skills: string[] | null;
   preferred_qualifications: string | null;
 };
 type DbCategory = { category_name: string };
-type DbPositionSkill = { position_id: string; skill_name: string };
 type DbBasicQualification = { position_id: string; qualification_text: string };
 
 const allowedBenefits: Benefit[] = [
@@ -87,39 +87,25 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
         .eq("type", "category"),
       supabaseAdminClient
         .from("project_positions")
-        .select("id,project_id,title,needed_count,preferred_qualifications")
+        .select(
+          "id,project_id,title,needed_count,required_skills,preferred_qualifications",
+        )
         .eq("project_id", id),
     ]);
 
   const positionRows = (positions as DbPosition[] | null) ?? [];
-  const positionIds = positionRows.map((position) => position.id);
-
-  const [positionSkillsResult, basicQualificationsResult] =
-    positionIds.length === 0
-      ? [{ data: [] }, { data: [] }]
-      : await Promise.all([
-          supabaseAdminClient
-            .from("project_position_skills")
-            .select("position_id,skill_name")
-            .in("position_id", positionIds),
-          supabaseAdminClient
-            .from("project_position_basic_qualifications")
-            .select("position_id,qualification_text")
-            .in("position_id", positionIds),
-        ]);
 
   const profileRow = (profile as DbProfile | null) ?? null;
-  const skillRows =
-    (positionSkillsResult.data as DbPositionSkill[] | null) ?? [];
+  const positionIds = positionRows.map((position) => position.id);
   const qualificationRows =
-    (basicQualificationsResult.data as DbBasicQualification[] | null) ?? [];
-
-  const skillsByPosition = new Map<string, string[]>();
-  for (const row of skillRows) {
-    const current = skillsByPosition.get(row.position_id) ?? [];
-    current.push(row.skill_name);
-    skillsByPosition.set(row.position_id, current);
-  }
+    positionIds.length === 0
+      ? []
+      : (((
+          await supabaseAdminClient
+            .from("project_position_basic_qualifications")
+            .select("position_id,qualification_text")
+            .in("position_id", positionIds)
+        ).data as DbBasicQualification[] | null) ?? []);
 
   const qualificationsByPosition = new Map<string, string[]>();
   for (const row of qualificationRows) {
@@ -149,7 +135,7 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
       projectId: position.project_id,
       title: position.title,
       neededCount: position.needed_count,
-      skills: skillsByPosition.get(position.id) ?? [],
+      skills: position.required_skills ?? [],
       basicQualifications: qualificationsByPosition.get(position.id) ?? [],
       preferredQualifications: position.preferred_qualifications ?? undefined,
     })),

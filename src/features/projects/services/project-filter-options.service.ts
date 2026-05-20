@@ -41,17 +41,30 @@ export async function getPublicProjectFilterOptionsService() {
     };
   }
 
-  const { data, error } = await supabaseAdminClient
-    .from("project_categories")
-    .select("category_name,type,status,project_id")
-    .eq("status", "enabled")
-    .in("type", ["skill", "category"])
-    .in("project_id", approvedProjectIds);
+  const [skillRowsRes, categoryRowsRes] = await Promise.all([
+    supabaseAdminClient
+      .from("project_positions")
+      .select("project_id,required_skills")
+      .in("project_id", approvedProjectIds),
+    supabaseAdminClient
+      .from("project_categories")
+      .select("category_name,project_id")
+      .eq("status", "enabled")
+      .eq("type", "category")
+      .in("project_id", approvedProjectIds),
+  ]);
 
-  if (error) {
+  if (skillRowsRes.error) {
     return {
       options: { skills: [], categories: [] } satisfies ProjectFilterOptions,
-      error: error.message,
+      error: skillRowsRes.error.message,
+    };
+  }
+
+  if (categoryRowsRes.error) {
+    return {
+      options: { skills: [], categories: [] } satisfies ProjectFilterOptions,
+      error: categoryRowsRes.error.message,
     };
   }
 
@@ -60,23 +73,44 @@ export async function getPublicProjectFilterOptionsService() {
     { label: string; type: "skill" | "category"; projectIds: Set<string> }
   >();
 
-  for (const row of (data ?? []) as Array<{
+  for (const row of (skillRowsRes.data ?? []) as Array<{
+    project_id: string;
+    required_skills: string[] | null;
+  }>) {
+    for (const skill of row.required_skills ?? []) {
+      const label = skill.trim();
+      if (!label) continue;
+
+      const key = buildFilterKey("skill", label);
+      const existing = optionByKey.get(key);
+
+      if (!existing) {
+        optionByKey.set(key, {
+          label,
+          type: "skill",
+          projectIds: new Set([row.project_id]),
+        });
+        continue;
+      }
+
+      existing.projectIds.add(row.project_id);
+    }
+  }
+
+  for (const row of (categoryRowsRes.data ?? []) as Array<{
     category_name: string;
-    type: string | null;
-    status: string | null;
     project_id: string;
   }>) {
     const label = row.category_name.trim();
     if (!label) continue;
 
-    const type = row.type === "skill" ? "skill" : "category";
-    const key = buildFilterKey(type, label);
+    const key = buildFilterKey("category", label);
     const existing = optionByKey.get(key);
 
     if (!existing) {
       optionByKey.set(key, {
         label,
-        type,
+        type: "category",
         projectIds: new Set([row.project_id]),
       });
       continue;

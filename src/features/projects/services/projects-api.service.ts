@@ -22,7 +22,6 @@ export async function getProjectsFeedService(_query: unknown) {
     { data: projects, error: projectsError },
     { data: profiles, error: profilesError },
     positionsRes,
-    positionSkillsRes,
     categoriesRes,
   ] = await fetchProjectsForFeed();
 
@@ -30,7 +29,6 @@ export async function getProjectsFeedService(_query: unknown) {
     projectsError ||
     profilesError ||
     positionsRes.error ||
-    positionSkillsRes.error ||
     categoriesRes.error
   ) {
     return {
@@ -40,7 +38,6 @@ export async function getProjectsFeedService(_query: unknown) {
           projectsError?.message ||
           profilesError?.message ||
           positionsRes.error?.message ||
-          positionSkillsRes.error?.message ||
           categoriesRes.error?.message ||
           "Failed to fetch projects",
       },
@@ -64,10 +61,7 @@ export async function getProjectsFeedService(_query: unknown) {
     project_id: string;
     title: string;
     needed_count: number;
-  }>;
-  const positionSkillRows = (positionSkillsRes.data ?? []) as Array<{
-    position_id: string;
-    skill_name: string;
+    required_skills: string[] | null;
   }>;
   const categoryRows = (categoriesRes.data ?? []) as Array<{
     project_id: string;
@@ -78,13 +72,6 @@ export async function getProjectsFeedService(_query: unknown) {
     profileRows.map((profile) => [profile.id, profile.name || "Unknown Team"]),
   );
 
-  const skillsByPositionId = new Map<string, string[]>();
-  for (const row of positionSkillRows) {
-    const current = skillsByPositionId.get(row.position_id) ?? [];
-    current.push(row.skill_name);
-    skillsByPositionId.set(row.position_id, current);
-  }
-
   const positionsByProjectId = new Map<
     string,
     { role: string; needed: number; skills: string[] }[]
@@ -94,7 +81,7 @@ export async function getProjectsFeedService(_query: unknown) {
     current.push({
       role: row.title,
       needed: row.needed_count,
-      skills: skillsByPositionId.get(row.id) ?? [],
+      skills: row.required_skills ?? [],
     });
     positionsByProjectId.set(row.project_id, current);
   }

@@ -23,7 +23,7 @@ export async function fetchProjectsForFeed() {
     supabaseAdminClient.from("profiles").select("id,name"),
     supabaseAdminClient
       .from("project_positions")
-      .select("id,project_id,title,needed_count")
+      .select("id,project_id,title,needed_count,required_skills")
       .in("project_id", projectIds),
     supabaseAdminClient
       .from("project_categories")
@@ -33,20 +33,10 @@ export async function fetchProjectsForFeed() {
       .in("project_id", projectIds),
   ]);
 
-  const positionIds = (positionsRes.data ?? []).map((position) => position.id);
-  const positionSkillsRes =
-    positionIds.length === 0
-      ? { data: [], error: null }
-      : await supabaseAdminClient
-          .from("project_position_skills")
-          .select("position_id,skill_name")
-          .in("position_id", positionIds);
-
   return [
     { data: projects, error },
     profilesRes,
     positionsRes,
-    positionSkillsRes,
     categoriesRes,
   ] as const;
 }

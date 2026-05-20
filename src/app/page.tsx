@@ -140,6 +140,28 @@ export default function Home() {
   }, [keyword, projects, selectedSkills, selectedCategories, statusFilter]);
 
   useEffect(() => {
+    if (process.env.NODE_ENV !== "development") return;
+
+    const fetchedSkillOptions = filterOptions.skills.map(
+      (option) => option.key,
+    );
+    const selectedSkillIds = selectedSkills.slice();
+    const matchedProjectIds = filtered.map((project) => project.id);
+    const projectSkillIds = projects.map((project) => ({
+      id: project.id,
+      skills: project.positions.flatMap((position) => position.skills),
+    }));
+
+    console.debug("[public-feed-skill-filter-debug]", {
+      fetchedSkillOptions,
+      selectedSkillIds,
+      projectSkillIds,
+      matchedProjectIds,
+      finalFilteredCount: filtered.length,
+    });
+  }, [filterOptions.skills, filtered, projects, selectedSkills]);
+
+  useEffect(() => {
     if (process.env.NODE_ENV === "production") return;
 
     console.debug("[public-feed-filters]", {
