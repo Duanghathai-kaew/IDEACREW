@@ -11,6 +11,7 @@ type SidebarProps = {
   onStatusChange: (next: "all" | "open" | "closed") => void;
   onReset: () => void;
   canReset: boolean;
+  variant?: "default" | "drawer";
 };
 
 const skillOptions = [
@@ -45,9 +46,18 @@ export default function Sidebar({
   onStatusChange,
   onReset,
   canReset,
+  variant = "default",
 }: SidebarProps) {
+  const isDrawer = variant === "drawer";
+
   return (
-    <aside className="sidebar-enter overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px] lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+    <aside
+      className={
+        isDrawer
+          ? "w-full overflow-hidden rounded-[20px] bg-white shadow-none"
+          : "sidebar-enter overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px] lg:sticky lg:top-24 lg:self-start lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto"
+      }
+    >
       <div className="flex items-center gap-3 bg-linear-to-r from-(--brand-500) via-(--brand-400) to-(--brand-300) px-[18px] py-4 font-semibold text-white">
         <Image
           src="/logo.svg"
@@ -65,7 +75,7 @@ export default function Sidebar({
           {skillOptions.map((option) => (
             <label
               key={option.id}
-              className={`mb-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-200 ${
+              className={`mb-2 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-200 ${
                 selectedSkills.includes(option.id)
                   ? "bg-rose-50 text-rose-700"
                   : "text-slate-700 hover:bg-slate-50"
@@ -89,7 +99,7 @@ export default function Sidebar({
           {categoryOptions.map((option) => (
             <label
               key={option.id}
-              className={`mb-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-200 ${
+              className={`mb-2 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-200 ${
                 selectedCategories.includes(option.id)
                   ? "bg-amber-50 text-amber-700"
                   : "text-slate-700 hover:bg-slate-50"
@@ -113,7 +123,7 @@ export default function Sidebar({
           {statusOptions.map((option) => (
             <label
               key={option.id}
-              className={`mb-2 flex cursor-pointer items-center gap-2.5 rounded-lg px-2 py-1.5 text-sm transition-all duration-200 ${
+              className={`mb-2 flex min-h-11 cursor-pointer items-center gap-2.5 rounded-lg px-2 py-2 text-sm transition-all duration-200 ${
                 status === option.id
                   ? "bg-emerald-50 text-emerald-700"
                   : "text-slate-700 hover:bg-slate-50"
@@ -135,7 +145,7 @@ export default function Sidebar({
           type="button"
           onClick={onReset}
           disabled={!canReset}
-          className="mt-5 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
+          className="mt-5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
         >
           ล้างตัวกรอง
         </button>

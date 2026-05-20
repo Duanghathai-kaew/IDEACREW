@@ -67,7 +67,7 @@ export function LoginForm() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
-          className="w-full rounded-md border px-3 py-2"
+          className="min-h-11 w-full rounded-md border px-3 py-2"
           aria-label="username"
         />
       </div>
@@ -79,7 +79,7 @@ export function LoginForm() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          className="w-full rounded-md border px-3 py-2"
+          className="min-h-11 w-full rounded-md border px-3 py-2"
           aria-label="password"
         />
       </div>
@@ -88,7 +88,7 @@ export function LoginForm() {
 
       <Button
         type="submit"
-        className="w-full rounded-xl py-2.5"
+        className="min-h-11 w-full rounded-xl py-2.5"
         disabled={loading}
       >
         {loading ? "Signing in..." : "Sign in"}

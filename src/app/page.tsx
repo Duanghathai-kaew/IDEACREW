@@ -1,8 +1,12 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
+import MobileFilterDrawer, {
+  MobileFilterToggle,
+} from "@/components/layout/mobile-filter-drawer";
 import Navbar from "@/components/layout/navbar";
 import Sidebar from "@/components/layout/sidebar";
+import SiteFooter from "@/components/layout/site-footer";
 import Hero from "@/components/shared/hero";
 import ProjectFeed from "@/features/projects/components/project-feed";
 import SearchBar from "@/features/projects/components/search-bar";
@@ -52,6 +56,7 @@ export default function Home() {
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
     "open",
   );
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -116,6 +121,7 @@ export default function Home() {
     setSelectedCategories([]);
     setStatusFilter("open");
     setResetSignal((prev) => prev + 1);
+    setMobileFiltersOpen(false);
   }
 
   const canReset =
@@ -124,6 +130,11 @@ export default function Home() {
     selectedCategories.length > 0 ||
     statusFilter !== "open";
 
+  const activeFilterCount =
+    selectedSkills.length +
+    selectedCategories.length +
+    (statusFilter !== "open" ? 1 : 0);
+
   const feedAnimationKey = [
     keyword.trim().toLowerCase(),
     selectedSkills.slice().sort().join(","),
@@ -131,26 +142,51 @@ export default function Home() {
     statusFilter,
   ].join("|");
 
+  const sidebarProps = {
+    selectedSkills,
+    onSkillsChange: setSelectedSkills,
+    selectedCategories,
+    onCategoriesChange: setSelectedCategories,
+    status: statusFilter,
+    onStatusChange: setStatusFilter,
+    onReset: handleResetFilters,
+    canReset,
+  };
+
   return (
-    <>
+    <div className="flex min-h-screen min-w-0 flex-col">
       <Navbar />
       <Hero />
-      <SearchBar key={`search-${resetSignal}`} onSearch={handleSearch} />
+      <div className="w-full px-4 sm:px-6">
+        <SearchBar key={`search-${resetSignal}`} onSearch={handleSearch} />
+      </div>
 
-      {/* ===== Main Layout ===== */}
-      <main className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-6 px-6 py-6 lg:grid-cols-[280px_1fr]">
-        <Sidebar
-          selectedSkills={selectedSkills}
-          onSkillsChange={setSelectedSkills}
-          selectedCategories={selectedCategories}
-          onCategoriesChange={setSelectedCategories}
-          status={statusFilter}
-          onStatusChange={setStatusFilter}
-          onReset={handleResetFilters}
-          canReset={canReset}
-        />
-        <ProjectFeed key={feedAnimationKey} projects={filtered} />
+      <main className="mx-auto grid w-full min-w-0 max-w-7xl flex-1 grid-cols-1 gap-4 px-4 py-4 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-[280px_1fr]">
+        <aside className="hidden min-w-0 lg:block">
+          <Sidebar {...sidebarProps} />
+        </aside>
+
+        <div className="flex min-w-0 flex-col gap-4">
+          <MobileFilterToggle
+            activeFilterCount={activeFilterCount}
+            onOpen={() => setMobileFiltersOpen(true)}
+          />
+          <ProjectFeed
+            key={feedAnimationKey}
+            projects={filtered}
+            hasActiveFilters={canReset || keyword.trim() !== ""}
+          />
+        </div>
       </main>
-    </>
+
+      <MobileFilterDrawer
+        open={mobileFiltersOpen}
+        onClose={() => setMobileFiltersOpen(false)}
+        activeFilterCount={activeFilterCount}
+        {...sidebarProps}
+      />
+
+      <SiteFooter />
+    </div>
   );
 }

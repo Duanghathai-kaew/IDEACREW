@@ -10,7 +10,10 @@ export function GuestAccessGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const isGuestAllowedPath =
-    pathname === "/" || pathname === "/login" || pathname.startsWith("/admin");
+    pathname === "/" ||
+    pathname === "/login" ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/project/");
 
   useEffect(() => {
     if (isLoading) return;

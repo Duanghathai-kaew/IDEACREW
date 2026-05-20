@@ -23,7 +23,7 @@ export function RootAppLoadingSkeleton() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-7xl px-6 py-8">
+        <main className="mx-auto w-full max-w-7xl px-4 py-6 sm:px-6">
           <section className="rounded-[28px] border border-white/70 bg-white/80 p-6 shadow-[0_12px_40px_rgb(253_94_75/0.08)] backdrop-blur md:p-8">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
               <div className="space-y-4">
@@ -43,8 +43,8 @@ export function RootAppLoadingSkeleton() {
             </div>
           </section>
 
-          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-[280px_1fr]">
-            <aside className="space-y-6">
+          <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-[280px_1fr] lg:gap-6">
+            <aside className="hidden lg:block">
               <section className="rounded-3xl border border-white/70 bg-white/80 p-5 shadow-[0_10px_30px_rgb(253_94_75/0.08)]">
                 <div className="mb-4 h-5 w-36 rounded-full bg-slate-200" />
                 <div className="space-y-3">
