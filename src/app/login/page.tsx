@@ -1,13 +1,12 @@
 "use client";
 
-import SiteFooter from "@/components/layout/site-footer";
 import { LoginForm } from "@/features/auth/components/login-form";
 import Image from "next/image";
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-screen flex-col bg-linear-to-br from-pink-50 via-pink-50 to-slate-50 px-4 py-10 sm:px-6 sm:py-16">
-      <div className="mx-auto w-full max-w-md flex-1">
+    <main className="min-h-screen bg-linear-to-br from-pink-50 via-pink-50 to-slate-50 px-4 py-10 sm:px-6 sm:py-16">
+      <div className="mx-auto w-full max-w-md">
         <div className="mb-6 text-center sm:mb-8">
           <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center sm:h-20 sm:w-20">
             <Image
@@ -31,7 +30,6 @@ export default function LoginPage() {
           <LoginForm />
         </div>
       </div>
-      <SiteFooter />
     </main>
   );
 }
