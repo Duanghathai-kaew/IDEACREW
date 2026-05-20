@@ -1,6 +1,38 @@
 import { PageHeader } from "@/features/admin/components/page-header";
 import { getAdminTagsService } from "@/features/admin/services/get-admin-tags.service";
 import { Badge } from "@/components/ui/badge";
+import { supabaseAdminClient } from "@/lib/supabase/admin-client";
+import { revalidatePath } from "next/cache";
+
+const statusBadgeClasses: Record<string, string> = {
+  enabled: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  pending: "bg-amber-100 text-amber-700 border-amber-200",
+  rejected: "bg-rose-100 text-rose-700 border-rose-200",
+  disabled: "bg-slate-100 text-slate-600 border-slate-200",
+};
+
+const statusActionLabels: Record<string, string> = {
+  enable: "Enable",
+  disable: "Disable",
+};
+
+async function updateTagStatusAction(formData: FormData) {
+  "use server";
+
+  const name = String(formData.get("name") ?? "").trim();
+  const type = String(formData.get("type") ?? "").trim();
+  const status = String(formData.get("status") ?? "").trim();
+
+  if (!name || !type || !status) return;
+
+  await supabaseAdminClient
+    .from("project_categories")
+    .update({ status })
+    .eq("category_name", name)
+    .eq("type", type);
+
+  revalidatePath("/admin/tags");
+}
 
 export default async function AdminTagsPage() {
   const { tags: adminTags, error } = await getAdminTagsService();
@@ -36,6 +68,9 @@ export default async function AdminTagsPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                   Status
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -55,13 +90,51 @@ export default async function AdminTagsPage() {
                       <Badge
                         variant="outline"
                         className={`rounded-full border px-2.5 py-1 text-xs font-semibold ${
-                          tag.status === "enabled"
-                            ? "bg-emerald-100 text-emerald-700 border-emerald-200"
-                            : "bg-slate-100 text-slate-600 border-slate-200"
+                          statusBadgeClasses[tag.status] ??
+                          statusBadgeClasses.disabled
                         }`}
                       >
                         {tag.status}
                       </Badge>
+                    </td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex flex-wrap gap-2">
+                        {tag.status === "enabled" && (
+                          <form action={updateTagStatusAction}>
+                            <input type="hidden" name="name" value={tag.name} />
+                            <input type="hidden" name="type" value={tag.type} />
+                            <input
+                              type="hidden"
+                              name="status"
+                              value="disabled"
+                            />
+                            <button
+                              type="submit"
+                              className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600"
+                            >
+                              {statusActionLabels.disable}
+                            </button>
+                          </form>
+                        )}
+                        {(tag.status === "disabled" ||
+                          tag.status === "rejected") && (
+                          <form action={updateTagStatusAction}>
+                            <input type="hidden" name="name" value={tag.name} />
+                            <input type="hidden" name="type" value={tag.type} />
+                            <input
+                              type="hidden"
+                              name="status"
+                              value="enabled"
+                            />
+                            <button
+                              type="submit"
+                              className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700"
+                            >
+                              {statusActionLabels.enable}
+                            </button>
+                          </form>
+                        )}
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -69,7 +142,7 @@ export default async function AdminTagsPage() {
                 <tr>
                   <td
                     className="px-4 py-8 text-center text-sm text-slate-500"
-                    colSpan={4}
+                    colSpan={5}
                   >
                     No tags found
                   </td>

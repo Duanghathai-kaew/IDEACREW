@@ -98,7 +98,9 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
       supabaseAdminClient
         .from("project_categories")
         .select("category_name")
-        .eq("project_id", id),
+        .eq("project_id", id)
+        .eq("status", "enabled")
+        .eq("type", "category"),
       supabaseAdminClient
         .from("project_positions")
         .select("id,project_id,title,needed_count,preferred_qualifications")

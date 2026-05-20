@@ -29,6 +29,7 @@ export type AdminProjectTag = {
   id: string;
   name: string;
   type: string | null;
+  status?: "pending" | "enabled" | "rejected" | "disabled" | null;
 };
 
 export type AdminRecruitmentProgress = {

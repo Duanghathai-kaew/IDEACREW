@@ -11,6 +11,7 @@ import {
   fetchProjectsForFeed,
 } from "@/features/projects/repositories/projects.repository";
 import { SimpleProject } from "@/features/projects/services/simple-project-mock-data";
+import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
 
 export async function getProjectsFeedService(_query: unknown) {
   projectsQuerySchema.parse(_query);
@@ -23,7 +24,13 @@ export async function getProjectsFeedService(_query: unknown) {
     categoriesRes,
   ] = await fetchProjectsForFeed();
 
-  if (projectsError || profilesError || positionsRes.error || positionSkillsRes.error || categoriesRes.error) {
+  if (
+    projectsError ||
+    profilesError ||
+    positionsRes.error ||
+    positionSkillsRes.error ||
+    categoriesRes.error
+  ) {
     return {
       status: 500,
       body: {
@@ -38,7 +45,10 @@ export async function getProjectsFeedService(_query: unknown) {
     };
   }
 
-  const profileRows = (profiles ?? []) as Array<{ id: string; name: string | null }>;
+  const profileRows = (profiles ?? []) as Array<{
+    id: string;
+    name: string | null;
+  }>;
   const positionRows = (positionsRes.data ?? []) as Array<{
     id: string;
     project_id: string;
@@ -123,6 +133,23 @@ export async function createProjectService(input: unknown) {
     return { status: 500, body: { error: error.message } };
   }
 
+  try {
+    await syncProjectCategoriesForProject({
+      projectId: String(projectId),
+      formData: payload.formData,
+    });
+  } catch (syncError) {
+    return {
+      status: 500,
+      body: {
+        error:
+          syncError instanceof Error
+            ? syncError.message
+            : "Failed to sync project tags",
+      },
+    };
+  }
+
   if (status === "approved" || status === "rejected_by_admin") {
     await createMyProjectStatusNotification({
       userId: payload.ownerId,
@@ -142,7 +169,10 @@ export async function createProjectService(input: unknown) {
 
 export function mapZodError(error: unknown) {
   if (error instanceof z.ZodError) {
-    return { status: 400, body: { error: "Invalid request payload", issues: error.issues } };
+    return {
+      status: 400,
+      body: { error: "Invalid request payload", issues: error.issues },
+    };
   }
   return null;
 }

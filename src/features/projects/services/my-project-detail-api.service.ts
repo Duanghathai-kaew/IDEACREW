@@ -5,6 +5,7 @@ import {
   Benefit,
   ProjectFormData,
 } from "@/features/projects/types/project.type";
+import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
 import { createMyProjectStatusNotification } from "@/lib/server/notifications";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 import { CreatorProjectStatus } from "@/types/status";
@@ -121,7 +122,8 @@ export async function getMyProjectByIdService(input: {
     supabaseAdminClient
       .from("project_categories")
       .select("category_name")
-      .eq("project_id", input.id),
+      .eq("project_id", input.id)
+      .eq("type", "category"),
     supabaseAdminClient
       .from("project_positions")
       .select("id,title,needed_count,preferred_qualifications")
@@ -296,6 +298,23 @@ export async function patchMyProjectByIdService(input: {
 
   if (updateError) return { status: 500, body: { error: updateError.message } };
   if (!updated) return { status: 404, body: { error: "Project not found" } };
+
+  try {
+    await syncProjectCategoriesForProject({
+      projectId: input.id,
+      formData: filteredFormData,
+    });
+  } catch (syncError) {
+    return {
+      status: 500,
+      body: {
+        error:
+          syncError instanceof Error
+            ? syncError.message
+            : "Failed to sync project tags",
+      },
+    };
+  }
 
   if (currentProject.status !== status) {
     await createMyProjectStatusNotification({

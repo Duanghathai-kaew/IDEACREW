@@ -5,48 +5,83 @@ export type AdminTag = {
   name: string;
   type: "skill" | "category";
   usageCount: number;
-  status: "enabled" | "disabled";
+  status: "enabled" | "pending" | "rejected" | "disabled";
 };
 
 export async function getAdminTagsService() {
-  const [categoriesRes, skillsRes] = await Promise.all([
-    supabaseAdminClient.from("project_categories").select("category_name"),
-    supabaseAdminClient.from("project_position_skills").select("skill_name"),
-  ]);
+  const { data, error } = await supabaseAdminClient
+    .from("project_categories")
+    .select("id,project_id,category_name,type,status");
 
-  const categoryCounts = new Map<string, number>();
-  for (const row of (categoriesRes.data ?? []) as Array<{ category_name: string }>) {
+  if (error) {
+    return { tags: [], error: error.message };
+  }
+
+  const rows = (data ?? []) as Array<{
+    id: string;
+    project_id: string;
+    category_name: string;
+    type: string | null;
+    status: string | null;
+  }>;
+
+  type TagStatus = AdminTag["status"];
+  const statusPriority: Record<TagStatus, number> = {
+    pending: 0,
+    rejected: 1,
+    disabled: 2,
+    enabled: 3,
+  };
+
+  const tagByKey = new Map<
+    string,
+    {
+      name: string;
+      type: "category" | "skill";
+      status: TagStatus;
+      usage: Set<string>;
+    }
+  >();
+
+  for (const row of rows) {
     const name = row.category_name.trim();
     if (!name) continue;
-    categoryCounts.set(name, (categoryCounts.get(name) ?? 0) + 1);
+    const type = row.type === "skill" ? "skill" : "category";
+    const status =
+      row.status === "enabled" ||
+      row.status === "pending" ||
+      row.status === "rejected" ||
+      row.status === "disabled"
+        ? row.status
+        : "pending";
+    const key = `${type}::${name}`;
+    const existing = tagByKey.get(key);
+    if (!existing) {
+      tagByKey.set(key, {
+        name,
+        type,
+        status,
+        usage: new Set([row.project_id]),
+      });
+      continue;
+    }
+    existing.usage.add(row.project_id);
+    if (statusPriority[status] < statusPriority[existing.status]) {
+      existing.status = status;
+    }
   }
 
-  const skillCounts = new Map<string, number>();
-  for (const row of (skillsRes.data ?? []) as Array<{ skill_name: string }>) {
-    const name = row.skill_name.trim();
-    if (!name) continue;
-    skillCounts.set(name, (skillCounts.get(name) ?? 0) + 1);
-  }
+  const tags: AdminTag[] = Array.from(tagByKey.values())
+    .map((tag, index) => ({
+      id: `${tag.type}-${index}-${tag.name}`,
+      name: tag.name,
+      type: tag.type,
+      usageCount: tag.usage.size,
+      status: tag.status,
+    }))
+    .sort(
+      (a, b) => b.usageCount - a.usageCount || a.name.localeCompare(b.name),
+    );
 
-  const tags: AdminTag[] = [
-    ...Array.from(categoryCounts.entries()).map(([name, usageCount], index) => ({
-      id: `category-${index}-${name}`,
-      name,
-      type: "category" as const,
-      usageCount,
-      status: usageCount > 0 ? ("enabled" as const) : ("disabled" as const),
-    })),
-    ...Array.from(skillCounts.entries()).map(([name, usageCount], index) => ({
-      id: `skill-${index}-${name}`,
-      name,
-      type: "skill" as const,
-      usageCount,
-      status: usageCount > 0 ? ("enabled" as const) : ("disabled" as const),
-    })),
-  ].sort((a, b) => b.usageCount - a.usageCount || a.name.localeCompare(b.name));
-
-  return {
-    tags,
-    error: categoriesRes.error?.message || skillsRes.error?.message || null,
-  };
+  return { tags, error: null };
 }

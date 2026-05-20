@@ -11,6 +11,7 @@ import {
   fetchAdminProjects,
 } from "@/features/applications/repositories/applications.repository";
 import { insertNotification } from "@/features/applications/repositories/notifications.repository";
+import { approvePendingTagsForProject } from "@/features/projects/services/project-tags.service";
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 
 export async function getAdminProjects(): Promise<
@@ -43,6 +44,8 @@ export async function getAdminProjects(): Promise<
     project_categories?: Array<{
       id: string;
       category_name: string;
+      type: string | null;
+      status: string | null;
     }> | null;
   }>;
 
@@ -141,6 +144,8 @@ export async function getAdminProjects(): Promise<
           project.project_categories?.map((category) => ({
             id: category.id,
             name: category.category_name,
+            type: category.type,
+            status: category.status,
           })) ?? [],
       });
     }),
@@ -177,6 +182,18 @@ export async function approveProject(projectId: string): Promise<ActionResult> {
       status: "approved",
       link: `/project/${projectId}`,
     });
+  }
+
+  try {
+    await approvePendingTagsForProject(projectId);
+  } catch (approveTagsError) {
+    return {
+      ok: false,
+      error:
+        approveTagsError instanceof Error
+          ? approveTagsError.message
+          : "Failed to approve pending tags",
+    };
   }
 
   return { ok: true, data: undefined };

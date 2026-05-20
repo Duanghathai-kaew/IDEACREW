@@ -14,7 +14,11 @@ export async function fetchProjectsForFeed() {
     supabaseAdminClient
       .from("project_position_skills")
       .select("position_id,skill_name"),
-    supabaseAdminClient.from("project_categories").select("project_id,category_name"),
+    supabaseAdminClient
+      .from("project_categories")
+      .select("project_id,category_name")
+      .eq("status", "enabled")
+      .eq("type", "category"),
   ]);
 }
 
@@ -50,7 +54,8 @@ export async function fetchMyProjectsMetadata(projectIds: string[]) {
     supabaseAdminClient
       .from("project_categories")
       .select("project_id,category_name")
-      .in("project_id", projectIds),
+      .in("project_id", projectIds)
+      .eq("type", "category"),
     supabaseAdminClient
       .from("project_positions")
       .select("project_id,title")

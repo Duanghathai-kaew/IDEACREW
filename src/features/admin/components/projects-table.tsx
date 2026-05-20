@@ -596,9 +596,16 @@ export function ProjectsTable() {
                         <Badge
                           key={tag.id}
                           variant="secondary"
-                          className="rounded-full"
+                          className={`rounded-full ${
+                            tag.status === "pending"
+                              ? "bg-amber-100 text-amber-700 border-amber-200"
+                              : ""
+                          }`}
                         >
                           {tag.name}
+                          {tag.status === "pending"
+                            ? " (Pending Approval)"
+                            : ""}
                         </Badge>
                       ))
                     ) : (
