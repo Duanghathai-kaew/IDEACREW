@@ -66,7 +66,7 @@ export default function Sidebar({
         </div>
 
         <div className="min-h-0 flex-1 overflow-hidden">
-          <div className="h-full min-h-0 overflow-y-auto px-5 py-5">
+          <div className="overflow-y-auto px-5 py-5">
             <div className="mb-7 border-b border-slate-200/80 pb-5">
               <p className="mb-2.5 block font-medium">ทักษะที่ต้องการ</p>
               {skillOptions.length > 0 ? (
