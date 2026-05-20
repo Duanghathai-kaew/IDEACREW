@@ -9,7 +9,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -467,11 +466,10 @@ export function ProjectsTable() {
         }}
       >
         <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden p-0">
-          {" "}
           {selectedProject ? (
             <>
-              {/* Header */}
-              <div className="border-b border-slate-100 px-8 py-6">
+              {/* Header: ล็อกอยู่กับที่ด้านบน */}
+              <div className="shrink-0 border-b border-slate-100 px-8 py-6">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-3">
                     <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
@@ -496,14 +494,14 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
+              {/* Main Content Area: ส่วนนี้เลื่อนขึ้นลงได้อิสระ โดยเพิ่ม pb-12 เผื่อระยะวิ่งด้านล่าง */}
+              <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6 pb-12">
                 <div className="space-y-6">
                   {/* Description */}
                   <section className="rounded-2xl border border-slate-200 bg-white p-6">
                     <h3 className="mb-4 text-xl font-semibold text-slate-900">
                       Description
                     </h3>
-
                     <p className="leading-7 text-slate-600">
                       {selectedProject.description ||
                         "No description available"}
@@ -515,31 +513,25 @@ export function ProjectsTable() {
                     <h3 className="mb-5 text-xl font-semibold text-slate-900">
                       Owner Information
                     </h3>
-
                     <div className="grid gap-6 md:grid-cols-3">
                       <div>
                         <p className="mb-1 text-sm text-slate-400">
                           Owner Name
                         </p>
-
                         <p className="font-medium text-slate-800">
                           {selectedProject.ownerName}
                         </p>
                       </div>
-
                       <div>
                         <p className="mb-1 text-sm text-slate-400">Email</p>
-
                         <p className="font-medium text-slate-800">
                           {selectedProject.ownerEmail || "-"}
                         </p>
                       </div>
-
                       <div>
                         <p className="mb-1 text-sm text-slate-400">
                           Applicants
                         </p>
-
                         <p className="font-medium text-slate-800">
                           {selectedProject.applicantCount}
                         </p>
@@ -552,23 +544,19 @@ export function ProjectsTable() {
                     <h3 className="mb-5 text-xl font-semibold text-slate-900">
                       Project Information
                     </h3>
-
                     <div className="grid gap-6 md:grid-cols-2">
                       <div>
                         <p className="mb-1 text-sm text-slate-400">Deadline</p>
-
                         <p className="font-medium text-slate-800">
                           {formatReadableDate(
                             selectedProject.applicationEndDate,
                           )}
                         </p>
                       </div>
-
                       <div>
                         <p className="mb-1 text-sm text-slate-400">
                           Project Status
                         </p>
-
                         <Badge
                           variant="outline"
                           className={`rounded-full border px-3 py-1 text-xs font-semibold ${getLifecycleBadgeClass(
@@ -587,22 +575,18 @@ export function ProjectsTable() {
                       <h3 className="text-xl font-semibold text-slate-900">
                         Recruitment Progress
                       </h3>
-
                       <span className="text-sm text-slate-500">
                         {selectedProject.recruitmentProgress.completionRate}%
                       </span>
                     </div>
-
                     <div className="mb-3 flex items-center justify-between text-sm text-slate-500">
                       <span>
                         {selectedProject.recruitmentProgress.acceptedCount}/
                         {selectedProject.recruitmentProgress.totalNeeded}{" "}
                         accepted
                       </span>
-
                       <span>{selectedProject.applicantCount} applicants</span>
                     </div>
-
                     <div className="h-3 overflow-visible rounded-full bg-slate-100">
                       <div
                         className={`h-full rounded-full ${getProgressClass(
@@ -622,7 +606,6 @@ export function ProjectsTable() {
                     <h3 className="mb-5 text-xl font-semibold text-slate-900">
                       Positions
                     </h3>
-
                     <div className="space-y-4">
                       {selectedProject.positions.map((position) => (
                         <div
@@ -634,24 +617,19 @@ export function ProjectsTable() {
                               <p className="text-lg font-semibold text-slate-800">
                                 {position.title}
                               </p>
-
                               <p className="mt-1 text-sm text-slate-500">
                                 {position.acceptedCount}/{position.neededCount}{" "}
                                 accepted · {position.applicantCount} applicants
                               </p>
                             </div>
-
                             <Badge variant="outline" className="rounded-full">
                               {position.neededCount} needed
                             </Badge>
                           </div>
-
-                          {/* Skills */}
                           <div className="mt-5">
                             <p className="mb-2 text-sm font-medium text-slate-700">
                               Required Skills
                             </p>
-
                             <div className="flex flex-wrap gap-2">
                               {position.requiredSkills.length > 0 ? (
                                 position.requiredSkills.map((skill) => (
@@ -674,14 +652,14 @@ export function ProjectsTable() {
                     </div>
                   </section>
 
-                  {/* Tags */}
+                  {/* Tags: แก้ไขตรงนี้ (เอา flex-1 overflow-y-auto ออกเพื่อไม่ให้ทำลายระดับความสูง) */}
                   <section className="rounded-2xl border border-slate-200 bg-white p-6">
                     <h3 className="mb-5 text-xl font-semibold text-slate-900">
                       Tags
                     </h3>
 
                     {selectedProject.tags?.length ? (
-                      <div className="flex-1 overflow-y-auto space-y-6 px-6">
+                      <div className="space-y-6">
                         {approvedTags.length > 0 && (
                           <div className="space-y-3">
                             <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -782,25 +760,21 @@ export function ProjectsTable() {
                     <h3 className="mb-5 text-xl font-semibold text-slate-900">
                       Approval Decision
                     </h3>
-
                     <div className="flex gap-8">
                       <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
                         <input type="radio" name="decision" />
                         Approve Project
                       </label>
-
                       <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
                         <input type="radio" name="decision" />
                         Reject Project
                       </label>
                     </div>
 
-                    {/* Reject Reason */}
                     <div className="mt-6">
                       <p className="mb-2 text-sm font-medium text-slate-700">
                         Decision Rationale & Feedback
                       </p>
-
                       <Textarea
                         value={rejectReason}
                         onChange={(event) =>
@@ -814,9 +788,9 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              {/* Footer */}
-              <div className="shrink-0 border-t border-slate-200 bg-white px-6 py-5">
-                <DialogFooter className="!flex !flex-row items-center justify-end gap-3">
+              {/* Footer: ล็อกอยู่กับที่ด้านล่างสุด ไม่โดนดันหายแน่นอน */}
+              <div className="shrink-0 border-t border-slate-200 bg-white px-8 py-5">
+                <div className="flex items-center justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"
@@ -837,7 +811,7 @@ export function ProjectsTable() {
                   >
                     Approve
                   </Button>
-                </DialogFooter>
+                </div>
               </div>
             </>
           ) : null}
