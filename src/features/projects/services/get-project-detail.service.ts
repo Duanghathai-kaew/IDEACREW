@@ -16,6 +16,7 @@ type DbProject = {
   benefits: string[] | null;
   compensation_detail: string | null;
   status: string | null;
+  approval_status: string | null;
   created_at: string | null;
 };
 
@@ -61,7 +62,7 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
   const { data: project, error } = await supabaseAdminClient
     .from("projects")
     .select(
-      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,created_at",
+      "id,owner_id,title,summary,description,work_mode,working_hours,application_start_date,application_end_date,benefits,compensation_detail,status,approval_status,created_at",
     )
     .eq("id", id)
     .maybeSingle();
@@ -69,6 +70,7 @@ export async function getProjectDetail(id: string): Promise<Project | null> {
   if (error || !project) return null;
 
   const projectRow = project as DbProject;
+  if (projectRow.approval_status !== "approved") return null;
 
   const [{ data: profile }, { data: categories }, { data: positions }] =
     await Promise.all([

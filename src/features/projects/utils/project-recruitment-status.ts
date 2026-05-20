@@ -3,7 +3,7 @@ export type ProjectRecruitmentStatus = "open" | "closed";
 export function resolveProjectRecruitmentStatus(
   status: string | null | undefined,
 ): ProjectRecruitmentStatus {
-  if (status === "open" || status === "reviewing" || status === "approved") {
+  if (status === "open" || status === "reviewing" || status === "recruiting") {
     return "open";
   }
 

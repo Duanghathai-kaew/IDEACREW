@@ -1,25 +1,54 @@
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
 
 export async function fetchProjectsForFeed() {
-  return Promise.all([
-    supabaseAdminClient
-      .from("projects")
-      .select("id,title,description,status,owner_id")
-      .in("status", ["open", "reviewing", "closed"])
-      .order("created_at", { ascending: false }),
+  const { data: projects, error } = await supabaseAdminClient
+    .from("projects")
+    .select("id,title,description,status,owner_id,approval_status")
+    .eq("approval_status", "approved")
+    .order("created_at", { ascending: false });
+
+  const projectIds = (projects ?? []).map((project) => project.id);
+
+  if (projectIds.length === 0) {
+    return [
+      { data: projects, error },
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+      { data: [], error: null },
+    ] as const;
+  }
+
+  const [profilesRes, positionsRes, categoriesRes] = await Promise.all([
     supabaseAdminClient.from("profiles").select("id,name"),
     supabaseAdminClient
       .from("project_positions")
-      .select("id,project_id,title,needed_count"),
-    supabaseAdminClient
-      .from("project_position_skills")
-      .select("position_id,skill_name"),
+      .select("id,project_id,title,needed_count")
+      .in("project_id", projectIds),
     supabaseAdminClient
       .from("project_categories")
       .select("project_id,category_name")
       .eq("status", "enabled")
-      .eq("type", "category"),
+      .eq("type", "category")
+      .in("project_id", projectIds),
   ]);
+
+  const positionIds = (positionsRes.data ?? []).map((position) => position.id);
+  const positionSkillsRes =
+    positionIds.length === 0
+      ? { data: [], error: null }
+      : await supabaseAdminClient
+          .from("project_position_skills")
+          .select("position_id,skill_name")
+          .in("position_id", positionIds);
+
+  return [
+    { data: projects, error },
+    profilesRes,
+    positionsRes,
+    positionSkillsRes,
+    categoriesRes,
+  ] as const;
 }
 
 export async function createProjectWithRelations(input: {

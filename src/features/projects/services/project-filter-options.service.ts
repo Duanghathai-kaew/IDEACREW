@@ -17,11 +17,36 @@ function buildFilterKey(type: "skill" | "category", label: string) {
 export async function getPublicProjectFilterOptionsService() {
   noStore();
 
+  const { data: approvedProjects, error: projectsError } =
+    await supabaseAdminClient
+      .from("projects")
+      .select("id")
+      .eq("approval_status", "approved");
+
+  if (projectsError) {
+    return {
+      options: { skills: [], categories: [] } satisfies ProjectFilterOptions,
+      error: projectsError.message,
+    };
+  }
+
+  const approvedProjectIds = (approvedProjects ?? []).map(
+    (project) => project.id,
+  );
+
+  if (approvedProjectIds.length === 0) {
+    return {
+      options: { skills: [], categories: [] } satisfies ProjectFilterOptions,
+      error: null,
+    };
+  }
+
   const { data, error } = await supabaseAdminClient
     .from("project_categories")
     .select("category_name,type,status,project_id")
     .eq("status", "enabled")
-    .in("type", ["skill", "category"]);
+    .in("type", ["skill", "category"])
+    .in("project_id", approvedProjectIds);
 
   if (error) {
     return {

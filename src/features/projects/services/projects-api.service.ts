@@ -51,6 +51,14 @@ export async function getProjectsFeedService(_query: unknown) {
     id: string;
     name: string | null;
   }>;
+  const projectRows = (projects ?? []) as Array<{
+    id: string;
+    title: string;
+    description: string | null;
+    status: string | null;
+    owner_id: string;
+    approval_status: string | null;
+  }>;
   const positionRows = (positionsRes.data ?? []) as Array<{
     id: string;
     project_id: string;
@@ -99,13 +107,7 @@ export async function getProjectsFeedService(_query: unknown) {
   }
 
   const data = toSimpleProjects({
-    projectRows: (projects ?? []) as Array<{
-      id: string;
-      title: string;
-      description: string | null;
-      status: string | null;
-      owner_id: string;
-    }>,
+    projectRows,
     ownerNameById,
     positionsByProjectId,
     categoriesByProjectId,
