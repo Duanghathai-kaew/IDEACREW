@@ -468,8 +468,8 @@ export function ProjectsTable() {
         <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden p-0">
           {selectedProject ? (
             <>
-              {/* Header: ล็อกอยู่กับที่ด้านบน */}
-              <div className="shrink-0 border-b border-slate-100 px-8 py-6">
+              {/* Header - ตรึงไว้ด้านบน ไม่เลื่อนตาม */}
+              <div className="shrink-0 border-b border-slate-100 px-8 py-6 bg-white">
                 <div className="flex items-start justify-between gap-4">
                   <div className="space-y-3">
                     <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
@@ -494,8 +494,8 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              {/* Main Content Area: ส่วนนี้เลื่อนขึ้นลงได้อิสระ โดยเพิ่ม pb-12 เผื่อระยะวิ่งด้านล่าง */}
-              <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6 pb-12">
+              {/* Main Scrollable Content - เฉพาะพื้นที่นี้ที่เลื่อนขึ้นลงได้ */}
+              <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
                 <div className="space-y-6">
                   {/* Description */}
                   <section className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -652,7 +652,7 @@ export function ProjectsTable() {
                     </div>
                   </section>
 
-                  {/* Tags: แก้ไขตรงนี้ (เอา flex-1 overflow-y-auto ออกเพื่อไม่ให้ทำลายระดับความสูง) */}
+                  {/* Tags */}
                   <section className="rounded-2xl border border-slate-200 bg-white p-6">
                     <h3 className="mb-5 text-xl font-semibold text-slate-900">
                       Tags
@@ -788,8 +788,8 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              {/* Footer: ล็อกอยู่กับที่ด้านล่างสุด ไม่โดนดันหายแน่นอน */}
-              <div className="shrink-0 border-t border-slate-200 bg-white px-8 py-5">
+              {/* Fixed Footer Area - ล็อกติดขอบล่างของหน้าต่างถาวร ไม่โดนดันทะลุจอ */}
+              <div className="shrink-0 border-t border-slate-200 bg-white px-8 py-5 z-20">
                 <div className="flex items-center justify-end gap-3">
                   <Button
                     type="button"
