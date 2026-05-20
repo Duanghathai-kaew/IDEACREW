@@ -9,7 +9,10 @@ import {
   rejectProject,
   type AdminProject,
 } from "@/features/applications/actions/project-applications.action";
-import { DataTable, DataTableColumn } from "@/features/admin/components/data-table";
+import {
+  DataTable,
+  DataTableColumn,
+} from "@/features/admin/components/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -212,7 +215,7 @@ export function ProjectsTable() {
           type="button"
           data-no-row-click="true"
           onClick={() => setSelectedProjectId(project.id)}
-          className="space-y-1 text-left"
+          className="space-y-1 text-left hover:opacity-80"
         >
           <p className="line-clamp-1 font-medium text-slate-700">
             {project.title}
@@ -295,10 +298,13 @@ export function ProjectsTable() {
     },
     {
       id: "actions",
-      header: "Actions",
-      className: "w-52",
+      header: "",
+      className: "w-16",
       cell: (project) => (
-        <div data-no-row-click="true" className="flex items-center gap-2">
+        <div
+          data-no-row-click="true"
+          className="flex items-center justify-center"
+        >
           <Button
             type="button"
             size="icon-sm"
@@ -307,33 +313,6 @@ export function ProjectsTable() {
             onClick={() => setSelectedProjectId(project.id)}
           >
             <Eye className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="border-emerald-200 text-emerald-700 hover:bg-emerald-50"
-            disabled={actionProjectId === project.id}
-            onClick={() => void handleApprove(project.id)}
-          >
-            {actionProjectId === project.id ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Check className="h-4 w-4" />
-            )}
-            Approve
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="outline"
-            className="border-rose-200 text-rose-700 hover:bg-rose-50"
-            onClick={() => {
-              setSelectedProjectId(project.id);
-            }}
-          >
-            <X className="h-4 w-4" />
-            Reject
           </Button>
         </div>
       ),
