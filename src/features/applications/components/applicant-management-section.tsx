@@ -4,13 +4,6 @@ import { ExternalLink, Search, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState, useTransition } from "react";
 
-import {
-  acceptApplication,
-  ApplicantCard,
-  ApplicationStatus,
-  getProjectApplicants,
-  rejectApplication,
-} from "@/features/applications/actions/project-applications.action";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -23,6 +16,13 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  acceptApplication,
+  ApplicantCard,
+  ApplicationStatus,
+  getProjectApplicants,
+  rejectApplication,
+} from "@/features/applications/actions/project-applications.action";
 
 type Props = {
   projectId: string;
@@ -64,7 +64,30 @@ function getStatusLabel(status: ApplicationStatus) {
       return "Unknown";
   }
 }
+function extractPlainText(value: string): string {
+  try {
+    const parsed = JSON.parse(value);
+    const texts: string[] = [];
 
+    function walk(node: any) {
+      if (typeof node.text === "string" && node.text.trim() !== "") {
+        texts.push(node.text);
+      }
+
+      if (Array.isArray(node.children)) {
+        node.children.forEach(walk);
+      }
+    }
+
+    const root = parsed.root ?? parsed;
+
+    walk(root);
+
+    return texts.join("\n").trim();
+  } catch {
+    return value;
+  }
+}
 export function ApplicantManagementSection({ projectId, ownerId }: Props) {
   const [applicants, setApplicants] = useState<ApplicantCard[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -476,7 +499,10 @@ export function ApplicantManagementSection({ projectId, ownerId }: Props) {
                       <p className="mb-2 text-xs font-medium uppercase tracking-wide text-slate-500">
                         Bio / Additional Note
                       </p>
-                      {selectedApplicant.additionalNote}
+
+                      <p className="whitespace-pre-wrap break-words">
+                        {extractPlainText(selectedApplicant.additionalNote)}
+                      </p>
                     </div>
                   )}
 
