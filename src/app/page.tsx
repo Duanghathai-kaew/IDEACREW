@@ -1,12 +1,15 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
-import Hero from "@/components/shared/hero";
 import Navbar from "@/components/layout/navbar";
+import Sidebar from "@/components/layout/sidebar";
+import Hero from "@/components/shared/hero";
 import ProjectFeed from "@/features/projects/components/project-feed";
 import SearchBar from "@/features/projects/components/search-bar";
-import Sidebar from "@/components/layout/sidebar";
-import { mockProjects, SimpleProject } from "@/features/projects/services/simple-project-mock-data";
+import {
+  mockProjects,
+  SimpleProject,
+} from "@/features/projects/services/simple-project-mock-data";
 
 const skillFilterKeywords: Record<string, string[]> = {
   frontend: [
@@ -47,7 +50,7 @@ export default function Home() {
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
-    "all",
+    "open",
   );
 
   useEffect(() => {
@@ -111,7 +114,7 @@ export default function Home() {
     setKeyword("");
     setSelectedSkills([]);
     setSelectedCategories([]);
-    setStatusFilter("all");
+    setStatusFilter("open");
     setResetSignal((prev) => prev + 1);
   }
 
@@ -119,7 +122,7 @@ export default function Home() {
     keyword.trim() !== "" ||
     selectedSkills.length > 0 ||
     selectedCategories.length > 0 ||
-    statusFilter !== "all";
+    statusFilter !== "open";
 
   const feedAnimationKey = [
     keyword.trim().toLowerCase(),
