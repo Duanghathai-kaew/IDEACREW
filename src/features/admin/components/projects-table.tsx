@@ -466,7 +466,7 @@ export function ProjectsTable() {
           }
         }}
       >
-        <DialogContent className="flex h-[90vh] max-w-5xl flex-col overflow-hidden">
+        <DialogContent className="flex h-[90vh] w-[95vw] max-w-6xl flex-col overflow-hidden p-0">
           {" "}
           {selectedProject ? (
             <>
@@ -496,7 +496,7 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto px-8 py-6">
+              <div className="min-h-0 flex-1 overflow-y-auto px-8 py-6">
                 <div className="space-y-6">
                   {/* Description */}
                   <section className="rounded-2xl border border-slate-200 bg-white p-6">
@@ -814,7 +814,7 @@ export function ProjectsTable() {
                 </div>
               </div>
               {/* Footer */}
-              <div className="shrink-0 border-t bg-white p-4">
+              <div className="sticky bottom-0 shrink-0 border-t bg-white p-4">
                 <DialogFooter>
                   <Button
                     type="button"
