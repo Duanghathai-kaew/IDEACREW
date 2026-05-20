@@ -9,10 +9,7 @@ import Sidebar from "@/components/layout/sidebar";
 import Hero from "@/components/shared/hero";
 import ProjectFeed from "@/features/projects/components/project-feed";
 import SearchBar from "@/features/projects/components/search-bar";
-import {
-  mockProjects,
-  SimpleProject,
-} from "@/features/projects/services/simple-project-mock-data";
+import { SimpleProject } from "@/features/projects/services/simple-project-mock-data";
 import { type ProjectFilterOptions } from "@/features/projects/types/filter-options.type";
 
 function normalizeFilterValue(value: string) {
@@ -41,7 +38,7 @@ function getProjectSearchText(project: SimpleProject) {
 }
 
 export default function Home() {
-  const [projects, setProjects] = useState<SimpleProject[]>(mockProjects);
+  const [projects, setProjects] = useState<SimpleProject[]>([]);
   const [filterOptions, setFilterOptions] = useState<ProjectFilterOptions>({
     skills: [],
     categories: [],
@@ -54,6 +51,8 @@ export default function Home() {
     "all",
   );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isProjectsLoading, setIsProjectsLoading] = useState(true);
+  const [isFilterOptionsLoading, setIsFilterOptionsLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
@@ -68,7 +67,9 @@ export default function Home() {
 
         setProjects(result.data);
       } catch {
-        // Keep mock data as fallback when API is not ready.
+        setProjects([]);
+      } finally {
+        if (mounted) setIsProjectsLoading(false);
       }
     }
 
@@ -89,6 +90,8 @@ export default function Home() {
         setFilterOptions(result.data);
       } catch {
         // Keep the filter list empty if the source of truth is unavailable.
+      } finally {
+        if (mounted) setIsFilterOptionsLoading(false);
       }
     }
 
@@ -136,6 +139,18 @@ export default function Home() {
     });
   }, [keyword, projects, selectedSkills, selectedCategories, statusFilter]);
 
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production") return;
+
+    console.debug("[public-feed-filters]", {
+      selectedSkills,
+      selectedCategories,
+      statusFilter,
+      matchedProjectIds: filtered.map((project) => project.id),
+      finalFilteredCount: filtered.length,
+    });
+  }, [filtered, selectedCategories, selectedSkills, statusFilter]);
+
   function handleSearch(nextKeyword: string) {
     setKeyword(nextKeyword);
   }
@@ -159,43 +174,6 @@ export default function Home() {
     selectedSkills.length +
     selectedCategories.length +
     (statusFilter !== "all" ? 1 : 0);
-
-  const statusLabel =
-    statusFilter === "open"
-      ? "เปิดรับ"
-      : statusFilter === "closed"
-        ? "ปิดรับแล้ว"
-        : "ทั้งหมด";
-
-  const optionLabelByKey = useMemo(() => {
-    return new Map(
-      [...filterOptions.skills, ...filterOptions.categories].map((option) => [
-        option.key,
-        option.label,
-      ]),
-    );
-  }, [filterOptions]);
-
-  const activeFilterSummary = useMemo(() => {
-    const labels = [
-      ...selectedSkills.map((skill) => optionLabelByKey.get(skill) ?? skill),
-      ...selectedCategories.map(
-        (category) => optionLabelByKey.get(category) ?? category,
-      ),
-    ];
-
-    if (statusFilter !== "all") {
-      labels.push(statusLabel);
-    }
-
-    return labels.length > 0 ? labels.join(" • ") : "แสดงผลลัพธ์ทั้งหมด";
-  }, [
-    optionLabelByKey,
-    selectedCategories,
-    selectedSkills,
-    statusFilter,
-    statusLabel,
-  ]);
 
   const sidebarProps = {
     selectedSkills,
@@ -228,28 +206,10 @@ export default function Home() {
             activeFilterCount={activeFilterCount}
             onOpen={() => setMobileFiltersOpen(true)}
           />
-          <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-[8px]">
-            <div className="min-w-0">
-              <p className="text-sm font-semibold text-slate-800">
-                ผลลัพธ์ {filtered.length} รายการ
-              </p>
-              <p className="truncate text-xs text-slate-500">
-                {activeFilterSummary}
-              </p>
-            </div>
-            {canReset && (
-              <button
-                type="button"
-                onClick={handleResetFilters}
-                className="min-h-10 shrink-0 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
-              >
-                ล้างตัวกรอง
-              </button>
-            )}
-          </div>
           <ProjectFeed
             projects={filtered}
             hasActiveFilters={canReset || keyword.trim() !== ""}
+            isLoading={isProjectsLoading || isFilterOptionsLoading}
           />
         </div>
       </main>
