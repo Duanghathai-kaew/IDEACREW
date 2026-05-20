@@ -18,38 +18,33 @@ export default function Hero() {
   }, []);
 
   return (
-    <section
-      className="w-full flex flex-col items-center justify-center py-16 px-4 md:py-24 md:px-0 relative overflow-hidden group"
-      style={{ minHeight: 320 }}
-    >
-      {/* วงกลมกราเดี้ยนจางๆ เล็ก 2 อัน ลอยซ้ายบนและขวาล่าง */}
+    <section className="relative flex w-full min-w-0 flex-col items-center justify-center overflow-hidden px-4 py-10 sm:px-6 sm:py-14 md:py-20 lg:py-24">
       <div
-        className="absolute z-0 left-1/2 top-1/2 w-45 h-45 rounded-full opacity-20 blur-2xl pointer-events-none -translate-x-[200%] -translate-y-1/2"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-32 w-32 -translate-x-[120%] -translate-y-1/2 rounded-full opacity-20 blur-2xl sm:h-36 sm:w-36 sm:-translate-x-[160%] md:-translate-x-[200%]"
         style={{
           background:
             "radial-gradient(circle at 60% 40%, #FD5E4B 0%, #FDB591 100%)",
         }}
       />
       <div
-        className="absolute z-0 left-1/2 top-1/2 w-35 h-35 rounded-full opacity-20 blur-2xl pointer-events-none translate-x-[140%] -translate-y-1/2"
+        className="pointer-events-none absolute left-1/2 top-1/2 z-0 h-28 w-28 translate-x-[80%] -translate-y-1/2 rounded-full opacity-20 blur-2xl sm:h-32 sm:w-32 sm:translate-x-[120%] md:translate-x-[140%]"
         style={{
           background:
             "radial-gradient(circle at 60% 40%, #FCCF00 0%, #FD5E4B 100%)",
         }}
       />
       <h1
-        className={`relative z-10 text-4xl md:text-6xl font-bold mb-2 tracking-tight text-center bg-linear-to-r from-[#ff9472] to-[#f2709c] text-transparent bg-clip-text transition-all duration-700 ${showH1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"} group-hover:scale-105 group-hover:drop-shadow-lg group-hover:duration-300`}
-        style={{ letterSpacing: "0.01em" }}
+        className={`relative z-10 mb-2 bg-linear-to-r from-[#ff9472] to-[#f2709c] bg-clip-text text-center text-3xl font-bold tracking-tight text-transparent transition-all duration-700 sm:text-4xl md:text-5xl lg:text-6xl ${showH1 ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
       >
         IDEACREW
       </h1>
       <h2
-        className={`relative z-10 text-xl md:text-3xl font-semibold text-gray-700 mb-4 text-center transition-all duration-700 ${showH2 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        className={`relative z-10 mb-3 text-center text-lg font-semibold text-gray-700 transition-all duration-700 sm:mb-4 sm:text-xl md:text-2xl lg:text-3xl ${showH2 ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
       >
         Build Your Dream Team
       </h2>
       <p
-        className={`relative z-10 max-w-2xl text-base md:text-lg text-gray-600 text-center transition-all duration-700 ${showP ? "opacity-100 translate-y-0" : "opacity-0 translate-y-8"}`}
+        className={`relative z-10 max-w-2xl px-2 text-center text-sm text-gray-600 transition-all duration-700 sm:text-base md:text-lg ${showP ? "translate-y-0 opacity-100" : "translate-y-8 opacity-0"}`}
       >
         ร่วมงานกับโปรเจกต์สุดเจ๋งของมหาวิทยาลัย พัฒนาทักษะและสร้างผลงานไปด้วยกัน
       </p>

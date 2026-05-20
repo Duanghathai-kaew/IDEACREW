@@ -46,6 +46,17 @@ export default function Navbar() {
     Boolean(draftIdFromQuery);
 
   useEffect(() => {
+    if (!open) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [open]);
+
+  useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!notiRef.current) return;
       if (!notiRef.current.contains(event.target as Node)) {
@@ -131,141 +142,48 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="sticky top-0 z-50 w-full overflow-visible border-b border-slate-200 bg-white">
+    <nav className="sticky top-0 z-50 w-full border-b border-slate-200 bg-white">
       {isNotiOpen && (
         <button
           type="button"
           aria-label="Close notifications"
-          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px]"
+          className="fixed inset-0 z-40 bg-black/30 backdrop-blur-[2px] md:hidden"
           onClick={() => setIsNotiOpen(false)}
         />
       )}
-      <div className="mx-auto flex max-w-7xl items-center justify-between overflow-visible px-6 py-4">
-        <div className="flex w-full items-center">
-          <div className="flex items-center">
-            <Link href="/" aria-label="Go to home">
-              <Image
-                src="/logo-text.svg"
-                alt="IDEACREW"
-                width={193}
-                height={67}
-                priority
-                className="h-9 w-auto"
-              />
-            </Link>
-          </div>
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-4 py-3 sm:px-6 sm:py-4">
+        <Link href="/" aria-label="Go to home" className="shrink-0">
+          <Image
+            src="/logo-text.svg"
+            alt="IDEACREW"
+            width={193}
+            height={67}
+            priority
+            className="h-8 w-auto sm:h-9"
+          />
+        </Link>
 
-          <div className="flex flex-1 justify-center">
-            <div className="hidden gap-6 md:flex">
-              {menuItems.map(({ key, label, href }) => (
-                <button
-                  key={key}
-                  type="button"
-                  onClick={() => router.push(href)}
-                  className={`text-nav pb-1 ${
-                    active === key
-                      ? "border-b-2 border-(--brand-500) text-(--brand-500)"
-                      : "text-slate-500"
-                  }`}
-                >
-                  {label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="hidden items-center gap-6 md:flex">
-            <div className="relative z-50 flex items-center" ref={notiRef}>
+        <div className="hidden flex-1 justify-center md:flex">
+          <div className="flex gap-6">
+            {menuItems.map(({ key, label, href }) => (
               <button
+                key={key}
                 type="button"
-                className="icon-btn"
-                onClick={() =>
-                  requireAuth(() => {
-                    setIsNotiOpen((prev) => !prev);
-                  })
-                }
+                onClick={() => router.push(href)}
+                className={`text-nav min-h-11 px-1 pb-1 ${
+                  active === key
+                    ? "border-b-2 border-(--brand-500) text-(--brand-500)"
+                    : "text-slate-500"
+                }`}
               >
-                <Bell className="icon-sm text-gray-600" />
+                {label}
               </button>
-              <Badge className="pointer-events-none absolute -right-0.5 -top-1.5 z-[1] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-br from-(--brand-500) to-(--brand-400) px-1.5 text-[0.85rem] font-medium text-white shadow-[0_2px_8px_rgb(253_94_75/0.22)]">
-                {unreadCount}
-              </Badge>
-              {isNotiOpen && (
-                <NotificationDropdown
-                  onClose={() => setIsNotiOpen(false)}
-                  userId={user?.id ?? ""}
-                  onUnreadCountChange={setUnreadCount}
-                />
-              )}
-            </div>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => requireAuth(() => router.push("/profile"))}
-            >
-              <CircleUserRound className="icon-sm text-gray-600" />
-            </button>
-            <span className="text-sm text-slate-600">
-              {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
-            </span>
-            <Button
-              className="rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
-              onClick={() => requireAuth(() => setIsModalOpen(true))}
-            >
-              เพิ่มโปรเจกต์
-            </Button>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={
-                isAuthenticated ? handleLogout : () => router.push("/login")
-              }
-              aria-label={isAuthenticated ? "Logout" : "Login"}
-            >
-              {isAuthenticated ? (
-                <LogOut className="icon-sm text-orange-500" />
-              ) : (
-                <span className="text-xs font-semibold text-orange-500">
-                  LOGIN
-                </span>
-              )}
-            </button>
+            ))}
           </div>
-
-          <button
-            type="button"
-            className="md:hidden"
-            onClick={() => setOpen(!open)}
-          >
-            <div className="icon-btn">
-              {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
-            </div>
-          </button>
         </div>
-      </div>
 
-      {open && (
-        <div className="space-y-4 border-t bg-white px-6 py-4 md:hidden">
-          {menuItems.map(({ key, label, href }) => (
-            <button
-              key={key}
-              type="button"
-              className="block w-full text-left text-nav"
-              onClick={() => {
-                router.push(href);
-                setOpen(false);
-              }}
-            >
-              {label}
-            </button>
-          ))}
-          <Button
-            className="w-full rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400)"
-            onClick={() => requireAuth(() => setIsModalOpen(true))}
-          >
-            เพิ่มโปรเจกต์
-          </Button>
-          <div className="flex items-center gap-4 pt-2">
+        <div className="hidden items-center gap-3 lg:gap-4 xl:flex">
+          <div className="relative z-50 flex items-center" ref={notiRef}>
             <button
               type="button"
               className="icon-btn"
@@ -277,33 +195,147 @@ export default function Navbar() {
             >
               <Bell className="icon-sm text-gray-600" />
             </button>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => requireAuth(() => router.push("/profile"))}
-            >
-              <CircleUserRound className="icon-sm text-gray-600" />
-            </button>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={
-                isAuthenticated ? handleLogout : () => router.push("/login")
-              }
-              aria-label={isAuthenticated ? "Logout" : "Login"}
-            >
-              {isAuthenticated ? (
-                <LogOut className="icon-sm text-orange-500" />
-              ) : (
-                <span className="text-xs font-semibold text-orange-500">
-                  LOGIN
-                </span>
-              )}
-            </button>
-            <span className="text-sm text-slate-600">
-              {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
-            </span>
+            <Badge className="pointer-events-none absolute -right-0.5 -top-1.5 z-[1] flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-gradient-to-br from-(--brand-500) to-(--brand-400) px-1.5 text-[0.85rem] font-medium text-white shadow-[0_2px_8px_rgb(253_94_75/0.22)]">
+              {unreadCount}
+            </Badge>
+            {isNotiOpen && (
+              <NotificationDropdown
+                onClose={() => setIsNotiOpen(false)}
+                userId={user?.id ?? ""}
+                onUnreadCountChange={setUnreadCount}
+              />
+            )}
           </div>
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={() => requireAuth(() => router.push("/profile"))}
+          >
+            <CircleUserRound className="icon-sm text-gray-600" />
+          </button>
+          <span className="max-w-[8rem] truncate text-sm text-slate-600">
+            {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
+          </span>
+          <Button
+            className="min-h-11 rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-4 py-2 text-sm font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400) sm:px-6 sm:text-base"
+            onClick={() => requireAuth(() => setIsModalOpen(true))}
+          >
+            เพิ่มโปรเจกต์
+          </Button>
+          <button
+            type="button"
+            className="icon-btn min-w-11"
+            onClick={
+              isAuthenticated ? handleLogout : () => router.push("/login")
+            }
+            aria-label={isAuthenticated ? "Logout" : "Login"}
+          >
+            {isAuthenticated ? (
+              <LogOut className="icon-sm text-orange-500" />
+            ) : (
+              <span className="text-xs font-semibold text-orange-500">
+                LOGIN
+              </span>
+            )}
+          </button>
+        </div>
+
+        <div className="flex items-center gap-1 sm:gap-2 xl:hidden">
+          {!isAuthenticated && (
+            <button
+              type="button"
+              className="min-h-11 rounded-lg px-2 text-xs font-semibold text-orange-500 sm:px-3"
+              onClick={() => router.push("/login")}
+            >
+              LOGIN
+            </button>
+          )}
+          <button
+            type="button"
+            className="icon-btn"
+            aria-expanded={open}
+            aria-label={open ? "ปิดเมนู" : "เปิดเมนู"}
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <X className="icon-sm" /> : <Menu className="icon-sm" />}
+          </button>
+        </div>
+      </div>
+
+      {open && (
+        <div className="fixed inset-0 top-[57px] z-40 overflow-y-auto border-t bg-white md:top-[65px] xl:hidden">
+          <div className="space-y-1 px-4 py-4 sm:px-6">
+            {menuItems.map(({ key, label, href }) => (
+              <button
+                key={key}
+                type="button"
+                className={`text-nav block min-h-11 w-full rounded-lg px-3 py-2.5 text-left ${
+                  active === key
+                    ? "bg-rose-50 text-(--brand-500)"
+                    : "text-slate-700 hover:bg-slate-50"
+                }`}
+                onClick={() => {
+                  router.push(href);
+                  setOpen(false);
+                }}
+              >
+                {label}
+              </button>
+            ))}
+
+            <div className="flex items-center gap-3 border-t border-slate-100 pt-4">
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() =>
+                  requireAuth(() => {
+                    setIsNotiOpen((prev) => !prev);
+                    setOpen(false);
+                  })
+                }
+              >
+                <Bell className="icon-sm text-gray-600" />
+              </button>
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => requireAuth(() => router.push("/profile"))}
+              >
+                <CircleUserRound className="icon-sm text-gray-600" />
+              </button>
+              <span className="min-w-0 flex-1 truncate text-sm text-slate-600">
+                {isLoading ? "กำลังโหลด..." : user ? user.name : "ผู้เยี่ยมชม"}
+              </span>
+              {isAuthenticated && (
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={handleLogout}
+                  aria-label="Logout"
+                >
+                  <LogOut className="icon-sm text-orange-500" />
+                </button>
+              )}
+            </div>
+
+            <Button
+              className="min-h-11 w-full rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 py-2.5 text-base font-medium text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)]"
+              onClick={() => requireAuth(() => setIsModalOpen(true))}
+            >
+              เพิ่มโปรเจกต์
+            </Button>
+          </div>
+
+          {isNotiOpen && isAuthenticated && (
+            <div className="border-t border-slate-100 px-4 py-4 sm:px-6">
+              <NotificationDropdown
+                onClose={() => setIsNotiOpen(false)}
+                userId={user?.id ?? ""}
+                onUnreadCountChange={setUnreadCount}
+                variant="embedded"
+              />
+            </div>
+          )}
         </div>
       )}
 

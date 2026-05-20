@@ -166,9 +166,11 @@ export function ApplyProjectModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[95vh] w-[96vw] max-w-4xl overflow-y-auto rounded-3xl p-8">
+      <DialogContent className="max-h-[min(95dvh,calc(100dvh-1rem))] w-[calc(100%-1rem)] max-w-4xl overflow-y-auto rounded-3xl p-4 sm:w-[96vw] sm:p-6 md:p-8">
         <DialogHeader className="space-y-2">
-          <DialogTitle className="text-2xl">สมัครเข้าร่วมโปรเจกต์</DialogTitle>
+          <DialogTitle className="text-xl sm:text-2xl">
+            สมัครเข้าร่วมโปรเจกต์
+          </DialogTitle>
           <DialogDescription className="text-base">
             เลือกตำแหน่งที่ต้องการและระบุข้อมูลของคุณ
           </DialogDescription>

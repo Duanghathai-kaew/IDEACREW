@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,7 @@ export function ProjectApplicationControls({
   applicationEndDateLabel,
   projectStatus,
 }: Props) {
+  const router = useRouter();
   const { user, isLoading } = useAuth();
   const [applyOpen, setApplyOpen] = useState(false);
   const [successOpen, setSuccessOpen] = useState(false);
@@ -90,27 +92,35 @@ export function ProjectApplicationControls({
     !isOwner &&
     !isDuplicateApplication;
 
-  const buttonLabel = isClosed
-    ? getProjectRecruitmentStatusLabel(projectStatus)
-    : !isOpen
+  const buttonLabel = !user?.id && !isLoading
+    ? "เข้าสู่ระบบเพื่อสมัคร"
+    : isClosed
       ? getProjectRecruitmentStatusLabel(projectStatus)
-      : isCheckingApplication
-        ? "กำลังตรวจสอบสถานะ..."
-        : applicationStatus === "pending"
-          ? "ส่งใบสมัครแล้ว"
-          : applicationStatus === "accepted"
-            ? "เข้าร่วมทีมแล้ว"
-            : applicationStatus === "rejected"
-              ? "สมัครใหม่อีกครั้ง"
-              : "สมัครเลย";
+      : !isOpen
+        ? getProjectRecruitmentStatusLabel(projectStatus)
+        : isCheckingApplication
+          ? "กำลังตรวจสอบสถานะ..."
+          : applicationStatus === "pending"
+            ? "ส่งใบสมัครแล้ว"
+            : applicationStatus === "accepted"
+              ? "เข้าร่วมทีมแล้ว"
+              : applicationStatus === "rejected"
+                ? "สมัครใหม่อีกครั้ง"
+                : "สมัครเลย";
 
   return (
     <>
       <button
-        className="w-full rounded-lg bg-white px-4 py-3 font-semibold shadow-lg transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
+        className="min-h-11 w-full rounded-lg bg-white px-4 py-3 font-semibold shadow-lg transition-all duration-200 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-70"
         style={{ color: "var(--form-primary)" }}
-        disabled={!canApply}
-        onClick={() => setApplyOpen(true)}
+        disabled={!canApply && Boolean(user?.id)}
+        onClick={() => {
+          if (!user?.id) {
+            router.push("/login");
+            return;
+          }
+          setApplyOpen(true);
+        }}
       >
         {buttonLabel}
       </button>

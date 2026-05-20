@@ -174,10 +174,12 @@ export default function NotificationDropdown({
   onClose,
   userId,
   onUnreadCountChange,
+  variant = "dropdown",
 }: {
   onClose: () => void;
   userId: string;
   onUnreadCountChange: (count: number) => void;
+  variant?: "dropdown" | "embedded";
 }) {
   const router = useRouter();
   const [activeTab, setActiveTab] =
@@ -327,8 +329,13 @@ export default function NotificationDropdown({
     onClose();
   }
 
+  const containerClassName =
+    variant === "embedded"
+      ? "relative z-50 w-full max-w-full overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-lg"
+      : "absolute right-0 top-12 z-50 w-[min(100vw-2rem,360px)] max-w-[calc(100vw-2rem)] overflow-hidden rounded-2xl border border-brand-100 bg-white shadow-2xl sm:right-0";
+
   return (
-    <div className="absolute right-0 top-12 z-50 w-[360px] rounded-2xl shadow-2xl overflow-hidden border border-brand-100 bg-white">
+    <div className={containerClassName}>
       <div className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 px-5 pt-4 pb-3 text-white">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
