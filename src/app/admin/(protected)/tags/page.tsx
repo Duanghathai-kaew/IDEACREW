@@ -55,11 +55,13 @@ type StatusFilterValue = (typeof statusOptions)[number]["value"];
 export default async function AdminTagsPage({
   searchParams,
 }: {
-  searchParams?: { type?: string; status?: string };
+  searchParams?: Promise<{ type?: string; status?: string }>;
 }) {
   const { tags: adminTags, error } = await getAdminTagsService();
-  const typeFilter = (searchParams?.type ?? "all") as TagFilterValue;
-  const statusFilter = (searchParams?.status ?? "all") as StatusFilterValue;
+  const resolvedSearchParams = (await searchParams) ?? {};
+  const typeFilter = (resolvedSearchParams.type ?? "all") as TagFilterValue;
+  const statusFilter = (resolvedSearchParams.status ??
+    "all") as StatusFilterValue;
 
   const filteredTags = adminTags.filter((tag) => {
     if (typeFilter !== "all" && tag.type !== typeFilter) return false;

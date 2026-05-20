@@ -8,6 +8,7 @@ import {
 } from "@/features/projects/repositories/projects.repository";
 import {
   createProjectBodySchema,
+  normalizeProjectFormData,
   projectsQuerySchema,
 } from "@/features/projects/schemas/projects-api.schema";
 import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
@@ -18,12 +19,16 @@ import { unstable_noStore as noStore } from "next/cache";
 function normalizeProjectFormDataForStorage(
   formData: ProjectFormData,
 ): ProjectFormData {
+  const normalized = normalizeProjectFormData(formData);
+
   return {
-    ...formData,
-    positions: formData.positions.map((position) => ({
-      ...position,
-      requiredSkills: position.skills,
-    })),
+    ...normalized,
+    positions: normalized.positions.map(
+      (position: ProjectFormData["positions"][number]) => ({
+        ...position,
+        requiredSkills: position.skills,
+      }),
+    ),
   };
 }
 

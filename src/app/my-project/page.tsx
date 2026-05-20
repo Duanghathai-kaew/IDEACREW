@@ -1,10 +1,5 @@
 "use client";
 
-import {
-  AppliedProjectCard,
-  getProjectApplicationsForUser,
-} from "@/features/applications/actions/project-applications.action";
-import { useAuth } from "@/features/auth/components/auth-provider";
 import Navbar from "@/components/layout/navbar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,6 +11,11 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  AppliedProjectCard,
+  getProjectApplicationsForUser,
+} from "@/features/applications/actions/project-applications.action";
+import { useAuth } from "@/features/auth/components/auth-provider";
 import { MyProject } from "@/features/projects/services/my-project-mock-data";
 import { CalendarDays, Gift, Mail, Trash2, Users } from "lucide-react";
 import Link from "next/link";
@@ -34,12 +34,12 @@ const statusMeta = {
     border: "border-emerald-400",
   },
   pending_approval: {
-    label: "รอการอนุมัติ",
+    label: "รออนุมัติ",
     pill: "bg-amber-100 text-amber-700",
     border: "border-amber-400",
   },
   rejected_by_admin: {
-    label: "ตีกลับโดยแอดมิน",
+    label: "ไม่ผ่านการอนุมัติ",
     pill: "bg-rose-100 text-rose-700",
     border: "border-rose-400",
   },
@@ -49,7 +49,7 @@ const statusMeta = {
     border: "border-sky-400",
   },
   reviewing: {
-    label: "กำลังดำเนินการ",
+    label: "กำลังตรวจสอบ",
     pill: "bg-emerald-100 text-emerald-700",
     border: "border-emerald-400",
   },
@@ -63,9 +63,9 @@ const statusMeta = {
 const filters = [
   { key: "all", label: "ทั้งหมด" },
   { key: "draft", label: "แบบร่าง" },
-  { key: "queue", label: "รอดำเนินการ" },
-  { key: "active", label: "กำลังดำเนินการ" },
-  { key: "done", label: "จบแล้ว" },
+  { key: "queue", label: "รออนุมัติ" },
+  { key: "active", label: "เปิดรับสมัคร" },
+  { key: "done", label: "ปิดรับแล้ว" },
 ] as const;
 
 type FilterKey = "all" | "draft" | "queue" | "active" | "done";
@@ -289,10 +289,10 @@ export default function MyProjectPage() {
                       <Gift className="w-6 h-6" />
                     </div>
                     <h3 className="mt-4 text-lg font-semibold text-amber-700">
-                      ยังไม่มีโปรเจกต์
+                      ไม่พบโปรเจกต์ในสถานะนี้
                     </h3>
                     <p className="mt-2 text-sm text-slate-600">
-                      เริ่มต้นโพสต์โปรเจกต์ของคุณตอนนี้!
+                      ลองเปลี่ยนตัวกรอง หรือสร้างโปรเจกต์ใหม่เพื่อเริ่มต้นได้เลย
                     </p>
                   </div>
                 ) : (
@@ -361,7 +361,7 @@ export default function MyProjectPage() {
                           project.status === "reviewing" ? (
                             <Link
                               href={`/project/${project.detailId ?? project.id}`}
-                              className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 shadow"
+                              className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-white bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 shadow"
                             >
                               ดูรายละเอียดโปรเจกต์
                             </Link>
@@ -371,7 +371,7 @@ export default function MyProjectPage() {
                             </button>
                           ) : project.status === "approved" ? (
                             <button className="inline-flex items-center justify-center px-4 py-2 rounded-lg text-sm font-medium text-sky-700 bg-sky-100">
-                              พร้อมเปิดรับสมัคร
+                              อนุมัติแล้ว
                             </button>
                           ) : project.status === "draft" ? (
                             <Link
@@ -405,7 +405,7 @@ export default function MyProjectPage() {
                 </div>
               ) : applications.length === 0 ? (
                 <div className="bg-white border border-slate-200 rounded-2xl px-6 py-10 text-center text-slate-500">
-                  ยังไม่มีประวัติการสมัคร
+                  ยังไม่มีประวัติการสมัครของคุณ
                 </div>
               ) : (
                 applications.map((application) => (
@@ -499,7 +499,7 @@ function ApplicationHistoryCard({
               application.ownerEmail || application.ownerContactLink,
             )}
             disabled={!application.ownerEmail && !application.ownerContactLink}
-            className="bg-gradient-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
+            className="bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 text-white"
           >
             {application.ownerContactLink ? (
               <a

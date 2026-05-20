@@ -1,5 +1,6 @@
 import { z } from "zod";
 
+import { normalizeProjectFormData } from "@/features/projects/schemas/projects-api.schema";
 import { MyProjectStatus } from "@/features/projects/services/my-project-mock-data";
 import { syncProjectCategoriesForProject } from "@/features/projects/services/project-tags.service";
 import {
@@ -95,12 +96,16 @@ function mapBenefits(benefits: string[] | null): Benefit[] {
 function normalizeProjectFormDataForStorage(
   formData: ProjectFormData,
 ): ProjectFormData {
+  const normalized = normalizeProjectFormData(formData);
+
   return {
-    ...formData,
-    positions: formData.positions.map((position) => ({
-      ...position,
-      requiredSkills: position.skills,
-    })),
+    ...normalized,
+    positions: normalized.positions.map(
+      (position: ProjectFormData["positions"][number]) => ({
+        ...position,
+        requiredSkills: position.skills,
+      }),
+    ),
   };
 }
 
