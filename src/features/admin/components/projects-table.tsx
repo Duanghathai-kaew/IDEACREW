@@ -609,43 +609,6 @@ export function ProjectsTable() {
                   </div>
                 </section>
 
-                {/* Assets / Links */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
-                    Assets / Links
-                  </h3>
-
-                  <div className="flex flex-col gap-3">
-                    {selectedProject.githubUrl && (
-                      <a
-                        href={selectedProject.githubUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        GitHub Repository
-                      </a>
-                    )}
-
-                    {selectedProject.demoUrl && (
-                      <a
-                        href={selectedProject.demoUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        Demo Link
-                      </a>
-                    )}
-
-                    {!selectedProject.githubUrl && !selectedProject.demoUrl && (
-                      <p className="text-sm text-slate-400">
-                        No links attached
-                      </p>
-                    )}
-                  </div>
-                </section>
-
                 {/* Approval Decision */}
                 <section className="rounded-2xl border border-slate-200 bg-white p-6">
                   <h3 className="mb-5 text-xl font-semibold text-slate-900">
