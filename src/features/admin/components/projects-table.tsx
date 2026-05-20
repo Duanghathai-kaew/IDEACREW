@@ -466,7 +466,7 @@ export function ProjectsTable() {
           }
         }}
       >
-        <DialogContent className="flex max-h-[90vh] flex-col overflow-hidden">
+        <DialogContent className="flex h-[90vh] max-w-5xl flex-col overflow-hidden">
           {" "}
           {selectedProject ? (
             <>
@@ -496,306 +496,323 @@ export function ProjectsTable() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-y-auto space-y-6 px-8 py-6">
-                {/* Description */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-4 text-xl font-semibold text-slate-900">
-                    Description
-                  </h3>
-
-                  <p className="leading-7 text-slate-600">
-                    {selectedProject.description || "No description available"}
-                  </p>
-                </section>
-
-                {/* Owner Info */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
-                    Owner Information
-                  </h3>
-
-                  <div className="grid gap-6 md:grid-cols-3">
-                    <div>
-                      <p className="mb-1 text-sm text-slate-400">Owner Name</p>
-
-                      <p className="font-medium text-slate-800">
-                        {selectedProject.ownerName}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="mb-1 text-sm text-slate-400">Email</p>
-
-                      <p className="font-medium text-slate-800">
-                        {selectedProject.ownerEmail || "-"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="mb-1 text-sm text-slate-400">Applicants</p>
-
-                      <p className="font-medium text-slate-800">
-                        {selectedProject.applicantCount}
-                      </p>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Project Info */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
-                    Project Information
-                  </h3>
-
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div>
-                      <p className="mb-1 text-sm text-slate-400">Deadline</p>
-
-                      <p className="font-medium text-slate-800">
-                        {formatReadableDate(selectedProject.applicationEndDate)}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="mb-1 text-sm text-slate-400">
-                        Project Status
-                      </p>
-
-                      <Badge
-                        variant="outline"
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold ${getLifecycleBadgeClass(
-                          selectedProject.projectStatus,
-                        )}`}
-                      >
-                        {selectedProject.projectStatus}
-                      </Badge>
-                    </div>
-                  </div>
-                </section>
-
-                {/* Recruitment Progress */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <div className="mb-4 flex items-center justify-between">
-                    <h3 className="text-xl font-semibold text-slate-900">
-                      Recruitment Progress
+              <div className="flex-1 overflow-y-auto px-8 py-6">
+                <div className="space-y-6">
+                  {/* Description */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <h3 className="mb-4 text-xl font-semibold text-slate-900">
+                      Description
                     </h3>
 
-                    <span className="text-sm text-slate-500">
-                      {selectedProject.recruitmentProgress.completionRate}%
-                    </span>
-                  </div>
-
-                  <div className="mb-3 flex items-center justify-between text-sm text-slate-500">
-                    <span>
-                      {selectedProject.recruitmentProgress.acceptedCount}/
-                      {selectedProject.recruitmentProgress.totalNeeded} accepted
-                    </span>
-
-                    <span>{selectedProject.applicantCount} applicants</span>
-                  </div>
-
-                  <div className="h-3 overflow-hidden rounded-full bg-slate-100">
-                    <div
-                      className={`h-full rounded-full ${getProgressClass(
-                        selectedProject.recruitmentProgress.completionRate,
-                      )}`}
-                      style={{
-                        width: calculateProgressWidth(
-                          selectedProject.recruitmentProgress.completionRate,
-                        ),
-                      }}
-                    />
-                  </div>
-                </section>
-
-                {/* Positions */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
-                    Positions
-                  </h3>
-
-                  <div className="space-y-4">
-                    {selectedProject.positions.map((position) => (
-                      <div
-                        key={position.id}
-                        className="rounded-2xl border border-slate-200 p-5"
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div>
-                            <p className="text-lg font-semibold text-slate-800">
-                              {position.title}
-                            </p>
-
-                            <p className="mt-1 text-sm text-slate-500">
-                              {position.acceptedCount}/{position.neededCount}{" "}
-                              accepted · {position.applicantCount} applicants
-                            </p>
-                          </div>
-
-                          <Badge variant="outline" className="rounded-full">
-                            {position.neededCount} needed
-                          </Badge>
-                        </div>
-
-                        {/* Skills */}
-                        <div className="mt-5">
-                          <p className="mb-2 text-sm font-medium text-slate-700">
-                            Required Skills
-                          </p>
-
-                          <div className="flex flex-wrap gap-2">
-                            {position.requiredSkills.length > 0 ? (
-                              position.requiredSkills.map((skill) => (
-                                <span
-                                  key={skill}
-                                  className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
-                                >
-                                  {skill}
-                                </span>
-                              ))
-                            ) : (
-                              <span className="text-sm text-slate-400">
-                                No required skills
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </section>
-
-                {/* Tags */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
-                    Tags
-                  </h3>
-
-                  {selectedProject.tags?.length ? (
-                    <div className="flex-1 overflow-y-auto space-y-6 px-6">
-                      {approvedTags.length > 0 && (
-                        <div className="space-y-3">
-                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
-                            Approved Tags
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {approvedTags.map((tag) => (
-                              <Badge
-                                key={tag.id}
-                                variant="secondary"
-                                className="rounded-full"
-                              >
-                                {tag.name}
-                                <span className="ml-2 text-[11px] font-medium text-slate-500">
-                                  {tag.type === "skill" ? "Skill" : "Category"}
-                                </span>
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {pendingTags.length > 0 && (
-                        <div className="space-y-3">
-                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
-                            Pending Tags Requiring Approval
-                          </p>
-                          <div className="space-y-2">
-                            {pendingTags.map((tag) => (
-                              <label
-                                key={tag.id}
-                                className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-100 bg-amber-50/50 px-4 py-3"
-                              >
-                                <div className="flex items-center gap-3">
-                                  <input
-                                    type="checkbox"
-                                    className="h-4 w-4 accent-amber-500"
-                                    checked={selectedPendingTagIds.includes(
-                                      tag.id,
-                                    )}
-                                    onChange={() => togglePendingTag(tag.id)}
-                                  />
-                                  <div>
-                                    <p className="text-sm font-semibold text-slate-800">
-                                      {tag.name}
-                                    </p>
-                                    <p className="text-xs text-slate-500">
-                                      {tag.type === "skill"
-                                        ? "Skill"
-                                        : "Category"}
-                                    </p>
-                                  </div>
-                                </div>
-                                <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
-                                  Pending Approval
-                                </Badge>
-                              </label>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {otherTags.length > 0 && (
-                        <div className="space-y-3">
-                          <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
-                            Other Tags
-                          </p>
-                          <div className="flex flex-wrap gap-2">
-                            {otherTags.map((tag) => (
-                              <Badge
-                                key={tag.id}
-                                variant="outline"
-                                className="rounded-full border-slate-200 text-slate-500"
-                              >
-                                {tag.name}
-                                <span className="ml-2 text-[11px] font-medium">
-                                  {tag.type === "skill" ? "Skill" : "Category"}
-                                </span>
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-slate-400">No tags available</p>
-                  )}
-                </section>
-
-                {/* Approval Decision */}
-                <section className="rounded-2xl border border-slate-200 bg-white p-6">
-                  <h3 className="mb-5 text-xl font-semibold text-slate-900">
-                    Approval Decision
-                  </h3>
-
-                  <div className="flex gap-8">
-                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                      <input type="radio" name="decision" />
-                      Approve Project
-                    </label>
-
-                    <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
-                      <input type="radio" name="decision" />
-                      Reject Project
-                    </label>
-                  </div>
-
-                  {/* Reject Reason */}
-                  <div className="mt-6">
-                    <p className="mb-2 text-sm font-medium text-slate-700">
-                      Decision Rationale & Feedback
+                    <p className="leading-7 text-slate-600">
+                      {selectedProject.description ||
+                        "No description available"}
                     </p>
+                  </section>
 
-                    <Textarea
-                      value={rejectReason}
-                      onChange={(event) => setRejectReason(event.target.value)}
-                      placeholder="Enter detailed comments for the project owner..."
-                      className="min-h-32"
-                    />
-                  </div>
-                </section>
+                  {/* Owner Info */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                      Owner Information
+                    </h3>
+
+                    <div className="grid gap-6 md:grid-cols-3">
+                      <div>
+                        <p className="mb-1 text-sm text-slate-400">
+                          Owner Name
+                        </p>
+
+                        <p className="font-medium text-slate-800">
+                          {selectedProject.ownerName}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="mb-1 text-sm text-slate-400">Email</p>
+
+                        <p className="font-medium text-slate-800">
+                          {selectedProject.ownerEmail || "-"}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="mb-1 text-sm text-slate-400">
+                          Applicants
+                        </p>
+
+                        <p className="font-medium text-slate-800">
+                          {selectedProject.applicantCount}
+                        </p>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Project Info */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                      Project Information
+                    </h3>
+
+                    <div className="grid gap-6 md:grid-cols-2">
+                      <div>
+                        <p className="mb-1 text-sm text-slate-400">Deadline</p>
+
+                        <p className="font-medium text-slate-800">
+                          {formatReadableDate(
+                            selectedProject.applicationEndDate,
+                          )}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="mb-1 text-sm text-slate-400">
+                          Project Status
+                        </p>
+
+                        <Badge
+                          variant="outline"
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold ${getLifecycleBadgeClass(
+                            selectedProject.projectStatus,
+                          )}`}
+                        >
+                          {selectedProject.projectStatus}
+                        </Badge>
+                      </div>
+                    </div>
+                  </section>
+
+                  {/* Recruitment Progress */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h3 className="text-xl font-semibold text-slate-900">
+                        Recruitment Progress
+                      </h3>
+
+                      <span className="text-sm text-slate-500">
+                        {selectedProject.recruitmentProgress.completionRate}%
+                      </span>
+                    </div>
+
+                    <div className="mb-3 flex items-center justify-between text-sm text-slate-500">
+                      <span>
+                        {selectedProject.recruitmentProgress.acceptedCount}/
+                        {selectedProject.recruitmentProgress.totalNeeded}{" "}
+                        accepted
+                      </span>
+
+                      <span>{selectedProject.applicantCount} applicants</span>
+                    </div>
+
+                    <div className="h-3 overflow-hidden rounded-full bg-slate-100">
+                      <div
+                        className={`h-full rounded-full ${getProgressClass(
+                          selectedProject.recruitmentProgress.completionRate,
+                        )}`}
+                        style={{
+                          width: calculateProgressWidth(
+                            selectedProject.recruitmentProgress.completionRate,
+                          ),
+                        }}
+                      />
+                    </div>
+                  </section>
+
+                  {/* Positions */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                      Positions
+                    </h3>
+
+                    <div className="space-y-4">
+                      {selectedProject.positions.map((position) => (
+                        <div
+                          key={position.id}
+                          className="rounded-2xl border border-slate-200 p-5"
+                        >
+                          <div className="flex items-start justify-between gap-4">
+                            <div>
+                              <p className="text-lg font-semibold text-slate-800">
+                                {position.title}
+                              </p>
+
+                              <p className="mt-1 text-sm text-slate-500">
+                                {position.acceptedCount}/{position.neededCount}{" "}
+                                accepted · {position.applicantCount} applicants
+                              </p>
+                            </div>
+
+                            <Badge variant="outline" className="rounded-full">
+                              {position.neededCount} needed
+                            </Badge>
+                          </div>
+
+                          {/* Skills */}
+                          <div className="mt-5">
+                            <p className="mb-2 text-sm font-medium text-slate-700">
+                              Required Skills
+                            </p>
+
+                            <div className="flex flex-wrap gap-2">
+                              {position.requiredSkills.length > 0 ? (
+                                position.requiredSkills.map((skill) => (
+                                  <span
+                                    key={skill}
+                                    className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-600"
+                                  >
+                                    {skill}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="text-sm text-slate-400">
+                                  No required skills
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+
+                  {/* Tags */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                      Tags
+                    </h3>
+
+                    {selectedProject.tags?.length ? (
+                      <div className="flex-1 overflow-y-auto space-y-6 px-6">
+                        {approvedTags.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                              Approved Tags
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {approvedTags.map((tag) => (
+                                <Badge
+                                  key={tag.id}
+                                  variant="secondary"
+                                  className="rounded-full"
+                                >
+                                  {tag.name}
+                                  <span className="ml-2 text-[11px] font-medium text-slate-500">
+                                    {tag.type === "skill"
+                                      ? "Skill"
+                                      : "Category"}
+                                  </span>
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {pendingTags.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                              Pending Tags Requiring Approval
+                            </p>
+                            <div className="space-y-2">
+                              {pendingTags.map((tag) => (
+                                <label
+                                  key={tag.id}
+                                  className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-100 bg-amber-50/50 px-4 py-3"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <input
+                                      type="checkbox"
+                                      className="h-4 w-4 accent-amber-500"
+                                      checked={selectedPendingTagIds.includes(
+                                        tag.id,
+                                      )}
+                                      onChange={() => togglePendingTag(tag.id)}
+                                    />
+                                    <div>
+                                      <p className="text-sm font-semibold text-slate-800">
+                                        {tag.name}
+                                      </p>
+                                      <p className="text-xs text-slate-500">
+                                        {tag.type === "skill"
+                                          ? "Skill"
+                                          : "Category"}
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <Badge className="rounded-full bg-amber-100 text-amber-700 hover:bg-amber-100">
+                                    Pending Approval
+                                  </Badge>
+                                </label>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {otherTags.length > 0 && (
+                          <div className="space-y-3">
+                            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                              Other Tags
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {otherTags.map((tag) => (
+                                <Badge
+                                  key={tag.id}
+                                  variant="outline"
+                                  className="rounded-full border-slate-200 text-slate-500"
+                                >
+                                  {tag.name}
+                                  <span className="ml-2 text-[11px] font-medium">
+                                    {tag.type === "skill"
+                                      ? "Skill"
+                                      : "Category"}
+                                  </span>
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-slate-400">
+                        No tags available
+                      </p>
+                    )}
+                  </section>
+
+                  {/* Approval Decision */}
+                  <section className="rounded-2xl border border-slate-200 bg-white p-6">
+                    <h3 className="mb-5 text-xl font-semibold text-slate-900">
+                      Approval Decision
+                    </h3>
+
+                    <div className="flex gap-8">
+                      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <input type="radio" name="decision" />
+                        Approve Project
+                      </label>
+
+                      <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                        <input type="radio" name="decision" />
+                        Reject Project
+                      </label>
+                    </div>
+
+                    {/* Reject Reason */}
+                    <div className="mt-6">
+                      <p className="mb-2 text-sm font-medium text-slate-700">
+                        Decision Rationale & Feedback
+                      </p>
+
+                      <Textarea
+                        value={rejectReason}
+                        onChange={(event) =>
+                          setRejectReason(event.target.value)
+                        }
+                        placeholder="Enter detailed comments for the project owner..."
+                        className="min-h-32"
+                      />
+                    </div>
+                  </section>
+                </div>
               </div>
-
               {/* Footer */}
               <div className="shrink-0 border-t bg-white p-4">
                 <DialogFooter>
