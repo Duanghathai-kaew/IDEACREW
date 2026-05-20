@@ -11,6 +11,7 @@ type SearchBarProps = {
 
 export default function SearchBar({ onSearch }: SearchBarProps) {
   const [keyword, setKeyword] = useState("");
+  const helperTextId = "project-search-helper-text";
 
   function handleSearch() {
     onSearch(keyword.trim());
@@ -30,14 +31,28 @@ export default function SearchBar({ onSearch }: SearchBarProps) {
             value={keyword}
             onChange={(e) => handleKeywordChange(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-            placeholder="ค้นหาโปรเจกต์ ตำแหน่ง หรือทักษะที่ต้องการ..."
+            placeholder="ค้นหาโปรเจกต์ ตำแหน่ง ทักษะ หรือคำที่เกี่ยวข้อง..."
+            aria-describedby={helperTextId}
             className="h-12 min-h-11 w-full rounded-xl bg-white pl-11"
           />
+          <p
+            id={helperTextId}
+            className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-slate-500 sm:text-sm"
+          >
+            <span className="font-medium text-slate-600">ค้นหาได้จาก:</span>
+            <span>ชื่อโปรเจกต์</span>
+            <span aria-hidden="true">•</span>
+            <span>ตำแหน่งที่เปิดรับ</span>
+            <span aria-hidden="true">•</span>
+            <span>ทักษะ</span>
+            <span aria-hidden="true">•</span>
+            <span>หมวดหมู่</span>
+          </p>
         </div>
 
         <Button
           onClick={handleSearch}
-          className="h-12 min-h-11 w-full shrink-0 rounded-xl bg-linear-to-br from-(--brand-500) via-(--brand-400) to-(--brand-300) px-6 text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] hover:bg-linear-to-br hover:from-(--brand-500) hover:to-(--brand-400) sm:w-auto sm:min-w-[7.5rem]"
+          className="h-12 min-h-11 w-full shrink-0 rounded-xl bg-linear-to-br from-brand-500 via-brand-400 to-brand-300 px-6 text-white shadow-[0_4px_24px_rgb(253_94_75/0.2)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_10px_28px_rgb(253_94_75/0.24)] active:scale-[0.98] hover:bg-linear-to-br hover:from-brand-500 hover:to-brand-400 sm:w-auto sm:min-w-30"
         >
           <Search className="h-4 w-4 sm:mr-1" />
           <span>ค้นหา</span>
