@@ -813,13 +813,14 @@ export function ProjectsTable() {
                   </section>
                 </div>
               </div>
+
               {/* Footer */}
-              <div className="sticky bottom-0 z-10 shrink-0 border-t bg-white px-6 py-5">
+              <div className="sticky bottom-0 z-10 shrink-0 border-t border-slate-200 bg-white px-6 py-5 shadow-[0_-4px_12px_rgba(0,0,0,0.04)]">
                 <DialogFooter className="!flex !flex-row items-center justify-end gap-3">
                   <Button
                     type="button"
                     variant="outline"
-                    className="border-rose-200 text-rose-700 hover:bg-rose-50"
+                    className="border-rose-300 bg-white text-rose-700 hover:bg-rose-50"
                     disabled={actionProjectId === selectedProject.id}
                     onClick={() =>
                       void handleReject(selectedProject.id, rejectReason)
@@ -830,7 +831,7 @@ export function ProjectsTable() {
 
                   <Button
                     type="button"
-                    className="bg-indigo-600 text-white hover:bg-indigo-700"
+                    className="bg-emerald-600 text-white hover:bg-emerald-700"
                     disabled={actionProjectId === selectedProject.id}
                     onClick={() => void handleApprove(selectedProject.id)}
                   >
