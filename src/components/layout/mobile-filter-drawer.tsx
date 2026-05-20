@@ -1,21 +1,13 @@
 "use client";
 
-import Sidebar from "@/components/layout/sidebar";
+import Sidebar, { type SidebarProps } from "@/components/layout/sidebar";
 import { SlidersHorizontal, X } from "lucide-react";
 import { useEffect } from "react";
 
-type MobileFilterDrawerProps = {
+type MobileFilterDrawerProps = Omit<SidebarProps, "variant"> & {
   open: boolean;
   onClose: () => void;
   activeFilterCount: number;
-  selectedSkills: string[];
-  onSkillsChange: (next: string[]) => void;
-  selectedCategories: string[];
-  onCategoriesChange: (next: string[]) => void;
-  status: "all" | "open" | "closed";
-  onStatusChange: (next: "all" | "open" | "closed") => void;
-  onReset: () => void;
-  canReset: boolean;
 };
 
 export function MobileFilterToggle({
@@ -31,10 +23,10 @@ export function MobileFilterToggle({
       onClick={onOpen}
       className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 lg:hidden"
     >
-      <SlidersHorizontal className="h-4 w-4 text-(--brand-500)" />
+      <SlidersHorizontal className="h-4 w-4 text-brand-500" />
       ตัวกรอง
       {activeFilterCount > 0 && (
-        <span className="rounded-full bg-linear-to-br from-(--brand-500) to-(--brand-400) px-2 py-0.5 text-xs text-white">
+        <span className="rounded-full bg-linear-to-br from-brand-500 to-brand-400 px-2 py-0.5 text-xs text-white">
           {activeFilterCount}
         </span>
       )}
@@ -84,7 +76,7 @@ export default function MobileFilterDrawer({
       >
         <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
           <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-            <SlidersHorizontal className="h-4 w-4 text-(--brand-500)" />
+            <SlidersHorizontal className="h-4 w-4 text-brand-500" />
             ตัวกรอง
             {activeFilterCount > 0 && (
               <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">

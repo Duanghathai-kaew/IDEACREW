@@ -13,25 +13,19 @@ import {
   mockProjects,
   SimpleProject,
 } from "@/features/projects/services/simple-project-mock-data";
+import { type ProjectFilterOptions } from "@/features/projects/types/filter-options.type";
 
-const skillFilterKeywords: Record<string, string[]> = {
-  frontend: [
-    "frontend",
-    "front-end",
-    "react",
-    "next.js",
-    "typescript",
-    "tailwind",
-    "เว็บ",
-  ],
-  uxui: ["ux", "ui", "figma", "design", "ออกแบบ"],
-  content: ["content", "creator", "caster", "script", "พากย์", "คอนเทนต์"],
-};
+function normalizeFilterValue(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
-const categoryFilterKeywords: Record<string, string[]> = {
-  esport: ["e-sport", "esport", "กีฬาอีสปอร์ต", "พากย์", "เกม"],
-  openhouse: ["open house", "openhouse", "โอเพ่นเฮาส์", "งานเปิดบ้าน"],
-};
+function buildFilterKey(type: "skill" | "category", value: string) {
+  return `${type}::${normalizeFilterValue(value)}`;
+}
+
+function getProjectFilterKeySet(values: string[], type: "skill" | "category") {
+  return new Set(values.map((value) => buildFilterKey(type, value)));
+}
 
 function getProjectSearchText(project: SimpleProject) {
   return [
@@ -48,12 +42,16 @@ function getProjectSearchText(project: SimpleProject) {
 
 export default function Home() {
   const [projects, setProjects] = useState<SimpleProject[]>(mockProjects);
+  const [filterOptions, setFilterOptions] = useState<ProjectFilterOptions>({
+    skills: [],
+    categories: [],
+  });
   const [keyword, setKeyword] = useState("");
   const [resetSignal, setResetSignal] = useState(0);
   const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<"all" | "open" | "closed">(
-    "open",
+    "all",
   );
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
@@ -76,6 +74,26 @@ export default function Home() {
 
     fetchProjects();
 
+    async function fetchFilterOptions() {
+      try {
+        const response = await fetch("/api/project-filters", {
+          cache: "no-store",
+        });
+        if (!response.ok) return;
+
+        const result = (await response.json()) as {
+          data?: ProjectFilterOptions;
+        };
+        if (!mounted || !result.data) return;
+
+        setFilterOptions(result.data);
+      } catch {
+        // Keep the filter list empty if the source of truth is unavailable.
+      }
+    }
+
+    fetchFilterOptions();
+
     return () => {
       mounted = false;
     };
@@ -83,24 +101,32 @@ export default function Home() {
 
   const filtered = useMemo(() => {
     const q = keyword.trim().toLowerCase();
+    const selectedSkillKeys = new Set(selectedSkills);
+    const selectedCategoryKeys = new Set(selectedCategories);
 
     return projects.filter((project) => {
       const text = getProjectSearchText(project);
+      const projectSkillKeys = getProjectFilterKeySet(
+        project.positions.flatMap((pos) => pos.skills),
+        "skill",
+      );
+      const projectCategoryKeys = getProjectFilterKeySet(
+        project.category,
+        "category",
+      );
 
       const passKeyword = q === "" || text.includes(q);
 
       const passSkills =
-        selectedSkills.length === 0 ||
-        selectedSkills.some((skillKey) =>
-          (skillFilterKeywords[skillKey] ?? []).some((kw) => text.includes(kw)),
+        selectedSkillKeys.size === 0 ||
+        Array.from(selectedSkillKeys).some((skillKey) =>
+          projectSkillKeys.has(skillKey),
         );
 
       const passCategories =
-        selectedCategories.length === 0 ||
-        selectedCategories.some((categoryKey) =>
-          (categoryFilterKeywords[categoryKey] ?? []).some((kw) =>
-            text.includes(kw),
-          ),
+        selectedCategoryKeys.size === 0 ||
+        Array.from(selectedCategoryKeys).some((categoryKey) =>
+          projectCategoryKeys.has(categoryKey),
         );
 
       const passStatus =
@@ -118,7 +144,7 @@ export default function Home() {
     setKeyword("");
     setSelectedSkills([]);
     setSelectedCategories([]);
-    setStatusFilter("open");
+    setStatusFilter("all");
     setResetSignal((prev) => prev + 1);
     setMobileFiltersOpen(false);
   }
@@ -127,12 +153,49 @@ export default function Home() {
     keyword.trim() !== "" ||
     selectedSkills.length > 0 ||
     selectedCategories.length > 0 ||
-    statusFilter !== "open";
+    statusFilter !== "all";
 
   const activeFilterCount =
     selectedSkills.length +
     selectedCategories.length +
-    (statusFilter !== "open" ? 1 : 0);
+    (statusFilter !== "all" ? 1 : 0);
+
+  const statusLabel =
+    statusFilter === "open"
+      ? "เปิดรับ"
+      : statusFilter === "closed"
+        ? "ปิดรับแล้ว"
+        : "ทั้งหมด";
+
+  const optionLabelByKey = useMemo(() => {
+    return new Map(
+      [...filterOptions.skills, ...filterOptions.categories].map((option) => [
+        option.key,
+        option.label,
+      ]),
+    );
+  }, [filterOptions]);
+
+  const activeFilterSummary = useMemo(() => {
+    const labels = [
+      ...selectedSkills.map((skill) => optionLabelByKey.get(skill) ?? skill),
+      ...selectedCategories.map(
+        (category) => optionLabelByKey.get(category) ?? category,
+      ),
+    ];
+
+    if (statusFilter !== "all") {
+      labels.push(statusLabel);
+    }
+
+    return labels.length > 0 ? labels.join(" • ") : "แสดงผลลัพธ์ทั้งหมด";
+  }, [
+    optionLabelByKey,
+    selectedCategories,
+    selectedSkills,
+    statusFilter,
+    statusLabel,
+  ]);
 
   const sidebarProps = {
     selectedSkills,
@@ -143,6 +206,8 @@ export default function Home() {
     onStatusChange: setStatusFilter,
     onReset: handleResetFilters,
     canReset,
+    skillOptions: filterOptions.skills,
+    categoryOptions: filterOptions.categories,
   };
 
   return (
@@ -163,6 +228,25 @@ export default function Home() {
             activeFilterCount={activeFilterCount}
             onOpen={() => setMobileFiltersOpen(true)}
           />
+          <div className="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-[8px]">
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-slate-800">
+                ผลลัพธ์ {filtered.length} รายการ
+              </p>
+              <p className="truncate text-xs text-slate-500">
+                {activeFilterSummary}
+              </p>
+            </div>
+            {canReset && (
+              <button
+                type="button"
+                onClick={handleResetFilters}
+                className="min-h-10 shrink-0 rounded-full border border-slate-200 bg-white px-3.5 py-2 text-xs font-semibold text-slate-600 transition hover:bg-slate-50"
+              >
+                ล้างตัวกรอง
+              </button>
+            )}
+          </div>
           <ProjectFeed
             projects={filtered}
             hasActiveFilters={canReset || keyword.trim() !== ""}
