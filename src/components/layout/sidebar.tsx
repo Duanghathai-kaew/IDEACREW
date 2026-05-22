@@ -34,6 +34,7 @@ function toggle(list: string[], value: string) {
 
 // จำกัดจำนวนสูงสุดที่จะแสดงในตอนแรกก่อนกด "ดูเพิ่มเติม"
 const INITIAL_DISPLAY_LIMIT = 6;
+const FILTER_LIST_MAX_HEIGHT_CLASS = "max-h-64 overflow-y-auto pr-1";
 
 export default function Sidebar({
   selectedSkills,
@@ -93,7 +94,11 @@ export default function Sidebar({
             <p className="mb-2.5 block font-medium text-slate-800">
               ทักษะที่ต้องการ
             </p>
-            <div className="space-y-1">
+            <div
+              className={`space-y-1 ${
+                showAllSkills ? FILTER_LIST_MAX_HEIGHT_CLASS : ""
+              }`}
+            >
               {skillOptions.length > 0 ? (
                 displayedSkills.map((option) => (
                   <label
@@ -150,7 +155,11 @@ export default function Sidebar({
           {/* Section: หมวดหมู่ */}
           <div className="mb-7 border-b border-slate-200/80 pb-5">
             <p className="mb-2.5 block font-medium text-slate-800">หมวดหมู่</p>
-            <div className="space-y-1">
+            <div
+              className={`space-y-1 ${
+                showAllCategories ? FILTER_LIST_MAX_HEIGHT_CLASS : ""
+              }`}
+            >
               {categoryOptions.length > 0 ? (
                 displayedCategories.map((option) => (
                   <label
