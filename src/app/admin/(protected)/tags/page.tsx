@@ -26,13 +26,30 @@ async function updateTagStatusAction(formData: FormData) {
 
   if (!name || !type || !status) return;
 
+  const normalizeTag = (value: string) =>
+    value.trim().toLowerCase().replace(/\s+/g, " ");
+
+  const { data: rows, error: fetchError } = await supabaseAdminClient
+    .from("project_categories")
+    .select("id,category_name")
+    .eq("type", type);
+
+  if (fetchError) return;
+
+  const targetKey = normalizeTag(name);
+  const matchedIds = (rows ?? [])
+    .filter((row) => normalizeTag(row.category_name ?? "") === targetKey)
+    .map((row) => row.id);
+
+  if (matchedIds.length === 0) return;
+
   await supabaseAdminClient
     .from("project_categories")
     .update({ status })
-    .eq("category_name", name)
-    .eq("type", type);
+    .in("id", matchedIds);
 
   revalidatePath("/admin/tags");
+  revalidatePath("/");
 }
 
 const typeOptions = [
