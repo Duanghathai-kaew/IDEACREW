@@ -309,12 +309,11 @@ export function ProjectsTable() {
           type="button"
           data-no-row-click="true"
           onClick={() => setSelectedProjectId(project.id)}
-          className="space-y-1 text-left hover:opacity-80"
+          className="text-left hover:opacity-80"
         >
           <p className="line-clamp-1 font-medium text-slate-700">
             {project.title}
           </p>
-          <p className="text-xs text-slate-400">ID {project.id}</p>
         </button>
       ),
     },
