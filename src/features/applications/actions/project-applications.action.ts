@@ -1,5 +1,8 @@
 "use server";
 
+import { requireCurrentSession } from "@/lib/auth/current-session";
+import { requireAdmin } from "@/lib/auth/admin-session";
+
 import { revalidatePath } from "next/cache";
 
 import {
@@ -38,20 +41,36 @@ export type {
   TeamMember,
 } from "@/features/applications/dto/recruitment.dto";
 
-export const getApplyProfilePrefill = getApplyProfilePrefillService;
+export async function getApplyProfilePrefill(userId: string) {
+  const session = await requireCurrentSession();
+  if (userId !== session.userId) throw new Error("Unauthorized user");
+  return getApplyProfilePrefillService(session.userId);
+}
 export const getProjectPositions = getProjectPositionsService;
-export const getProjectApplicationsForUser =
-  getProjectApplicationsForUserService;
+export async function getProjectApplicationsForUser(userId: string) {
+  const session = await requireCurrentSession();
+  if (userId !== session.userId) throw new Error("Unauthorized user");
+  return getProjectApplicationsForUserService(session.userId);
+}
 export const getProjectRecruitmentProgress =
   getProjectRecruitmentProgressService;
 export const getProjectTeamMembers = getProjectTeamMembersService;
-export const getProjectApplicants = getProjectApplicantsService;
-export const getAdminProjects = getAdminProjectsService;
+export async function getProjectApplicants(
+  input: Parameters<typeof getProjectApplicantsService>[0],
+) {
+  const session = await requireCurrentSession();
+  return getProjectApplicantsService({ ...input, ownerId: session.userId });
+}
+export async function getAdminProjects() {
+  await requireAdmin();
+  return getAdminProjectsService();
+}
 
 export async function submitProjectApplication(
   input: Parameters<typeof submitProjectApplicationService>[0],
 ) {
-  const result = await submitProjectApplicationService(input);
+  const session = await requireCurrentSession();
+  const result = await submitProjectApplicationService({ ...input, userId: session.userId });
   if (result.ok) {
     revalidatePath(`/project/${input.projectId}`);
     revalidatePath("/my-project");
@@ -62,7 +81,8 @@ export async function submitProjectApplication(
 export async function acceptApplication(
   input: Parameters<typeof acceptApplicationService>[0],
 ) {
-  const result = await acceptApplicationService(input);
+  const session = await requireCurrentSession();
+  const result = await acceptApplicationService({ ...input, ownerId: session.userId });
   if (result.ok) {
     const projectId = await fetchProjectIdForApplication(input.applicationId);
     if (projectId) {
@@ -77,7 +97,8 @@ export async function acceptApplication(
 export async function rejectApplication(
   input: Parameters<typeof rejectApplicationService>[0],
 ) {
-  const result = await rejectApplicationService(input);
+  const session = await requireCurrentSession();
+  const result = await rejectApplicationService({ ...input, ownerId: session.userId });
   if (result.ok) {
     const projectId = await fetchProjectIdForApplication(input.applicationId);
     if (projectId) {
@@ -92,6 +113,7 @@ export async function approveProject(
   projectId: string,
   selectedTagIds: string[],
 ) {
+  await requireAdmin();
   const result = await approveProjectService(projectId, selectedTagIds);
   if (result.ok) {
     revalidatePath("/my-project");
@@ -103,6 +125,7 @@ export async function approveProject(
 }
 
 export async function rejectProject(projectId: string, feedback: string) {
+  await requireAdmin();
   const result = await rejectProjectService(projectId, feedback);
   if (result.ok) {
     revalidatePath("/my-project");

@@ -1,5 +1,6 @@
+import { getCurrentSession } from "@/lib/auth/current-session";
 import { unstable_noStore as noStore } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
 import {
   getMyProjectsService,
@@ -8,11 +9,15 @@ import {
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     noStore();
     const result = await getMyProjectsService({
-      ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
+      ownerId: session.userId,
     });
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) {

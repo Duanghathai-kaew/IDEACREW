@@ -1,3 +1,4 @@
+import { getCurrentSession } from "@/lib/auth/current-session";
 import { NextRequest, NextResponse } from "next/server";
 
 import { supabaseAdminClient } from "@/lib/supabase/admin-client";
@@ -68,8 +69,12 @@ function deriveYearFromStudentId(studentId: string) {
   return `ชั้นปีที่ ${year}`;
 }
 
-export async function GET(request: NextRequest) {
-  const userId = request.nextUrl.searchParams.get("userId")?.trim();
+export async function GET() {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
+  const userId = session.userId;
   if (!userId) {
     return NextResponse.json({ error: "userId is required" }, { status: 400 });
   }
@@ -176,8 +181,12 @@ export async function GET(request: NextRequest) {
 }
 
 export async function PATCH(request: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   const body = await parseBody(request);
-  const userId = body.userId?.trim();
+  const userId = session.userId;
   const profile = body.profile;
 
   if (!userId) {

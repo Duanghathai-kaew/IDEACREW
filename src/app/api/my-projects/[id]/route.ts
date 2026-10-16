@@ -1,3 +1,4 @@
+import { getCurrentSession } from "@/lib/auth/current-session";
 import { unstable_noStore as noStore } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -17,12 +18,16 @@ export const runtime = "nodejs";
 
 type ParamsContext = { params: Promise<{ id: string }> };
 
-export async function GET(request: NextRequest, context: ParamsContext) {
+export async function GET(_request: NextRequest, context: ParamsContext) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     noStore();
     const params = myProjectParamsSchema.parse(await context.params);
     const query = myProjectOwnerQuerySchema.parse({
-      ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
+      ownerId: session.userId,
     });
     const result = await getMyProjectByIdService({
       id: params.id,
@@ -42,11 +47,15 @@ export async function GET(request: NextRequest, context: ParamsContext) {
 }
 
 export async function PATCH(request: NextRequest, context: ParamsContext) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     noStore();
     const params = myProjectParamsSchema.parse(await context.params);
     const query = myProjectOwnerQuerySchema.parse({
-      ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
+      ownerId: session.userId,
     });
     const body = updateMyProjectBodySchema.parse(await request.json());
 
@@ -68,12 +77,16 @@ export async function PATCH(request: NextRequest, context: ParamsContext) {
   }
 }
 
-export async function DELETE(request: NextRequest, context: ParamsContext) {
+export async function DELETE(_request: NextRequest, context: ParamsContext) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     noStore();
     const params = myProjectParamsSchema.parse(await context.params);
     const query = myProjectOwnerQuerySchema.parse({
-      ownerId: request.nextUrl.searchParams.get("ownerId")?.trim(),
+      ownerId: session.userId,
     });
     const result = await deleteMyProjectByIdService({
       id: params.id,

@@ -1,3 +1,4 @@
+import { getCurrentSession } from "@/lib/auth/current-session";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
@@ -8,7 +9,7 @@ import {
 
 export const runtime = "nodejs";
 
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const result = await getProjectsFeedService({});
     return NextResponse.json(result.body, { status: result.status });
@@ -22,9 +23,13 @@ export async function GET(_request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     const body = await request.json();
-    const result = await createProjectService(body);
+    const result = await createProjectService({ ...body, ownerId: session.userId });
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) {
     const zodResult = mapZodError(error);

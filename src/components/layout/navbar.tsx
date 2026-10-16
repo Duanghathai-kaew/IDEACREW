@@ -114,15 +114,6 @@ export default function Navbar() {
   }, [user?.id]);
 
   async function handleLogout() {
-    try {
-      await fetch("/api/logout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-    } catch {
-      // Continue local sign out even if network request fails.
-    }
-
     await signOut();
     setOpen(false);
     router.push("/");

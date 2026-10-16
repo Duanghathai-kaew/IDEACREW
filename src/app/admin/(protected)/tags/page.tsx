@@ -1,3 +1,4 @@
+import { requireAdmin } from "@/lib/auth/admin-session";
 import { Badge } from "@/components/ui/badge";
 import { PageHeader } from "@/features/admin/components/page-header";
 import { getAdminTagsService } from "@/features/admin/services/get-admin-tags.service";
@@ -19,6 +20,7 @@ const statusActionLabels: Record<string, string> = {
 
 async function updateTagStatusAction(formData: FormData) {
   "use server";
+  await requireAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
   const type = String(formData.get("type") ?? "").trim();

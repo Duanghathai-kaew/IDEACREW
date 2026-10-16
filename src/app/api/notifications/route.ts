@@ -1,3 +1,4 @@
+import { getCurrentSession } from "@/lib/auth/current-session";
 import { NextRequest, NextResponse } from "next/server";
 
 import {
@@ -6,10 +7,14 @@ import {
   mapNotificationsZodError,
 } from "@/features/notifications/services/notifications-api.service";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     const result = await getNotificationsService({
-      userId: request.nextUrl.searchParams.get("userId")?.trim(),
+      userId: session.userId,
     });
     return NextResponse.json(result.body, { status: result.status });
   } catch (error) {
@@ -22,9 +27,13 @@ export async function GET(request: NextRequest) {
 }
 
 export async function DELETE(request: NextRequest) {
+  const session = await getCurrentSession();
+  if (!session) {
+    return NextResponse.json({ error: "Please login again" }, { status: 401 });
+  }
   try {
     const result = await deleteNotificationsService({
-      userId: request.nextUrl.searchParams.get("userId")?.trim(),
+      userId: session.userId,
       category: request.nextUrl.searchParams.get("category")?.trim() || undefined,
     });
     return NextResponse.json(result.body, { status: result.status });

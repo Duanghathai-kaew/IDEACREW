@@ -1,3 +1,23 @@
+## Presentation login
+
+The presentation supports existing TU profiles with their original student ID and a shared demo password. Admins use a separate configured account. No TU API or Supabase Auth signup is needed.
+
+```env
+ADMIN_USERNAME=your-demo-username
+ADMIN_PASSWORD=your-demo-password
+SESSION_SECRET=your-long-random-secret
+DEMO_USER_PASSWORD=your-shared-demo-password
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-key
+SUPABASE_SERVICE_ROLE_KEY=your-server-only-key
+# Optional: change only to switch to another existing profile.
+ADMIN_USER_ID=e68cc396-34e4-4a9f-aa8b-8819c07812ca
+```
+
+Open `/login` and enter the original TU student ID with `DEMO_USER_PASSWORD`. Only existing profiles are accepted: the original `username` is matched first, with `student_id` used for older profiles without a username. Login does not create or replace data. The UUID stays the same, preserving the profile, projects and applications. This demo password does not validate real TU credentials; remove `DEMO_USER_PASSWORD` to disable student demo login.
+
+Admin login at `/admin/login` uses `ADMIN_USERNAME` / `ADMIN_PASSWORD`. Only this configured account receives admin access; student demo sessions cannot access admin pages or actions. A signed HttpOnly cookie keeps the login for seven days. Logout clears it for both areas. Restart the server after changing env values, and configure the same values on the hosting platform when deploying. Keep `.env.local` private.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started

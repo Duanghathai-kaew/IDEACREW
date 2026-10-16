@@ -13,5 +13,6 @@ export async function POST() {
     path: "/",
     maxAge: 0,
   });
+  response.cookies.delete("admin_session");
   return response;
 }

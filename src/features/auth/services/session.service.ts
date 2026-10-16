@@ -3,6 +3,8 @@ type SessionPayload = {
   email: string;
   name: string;
   tuId: string;
+  role: "student" | "staff";
+  isAdmin: boolean;
   iat: number;
   exp: number;
 };
@@ -14,11 +16,9 @@ export const SESSION_COOKIE_NAME = "ideacrew_session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 7;
 
 function getSessionSecret() {
-  return (
-    process.env.SESSION_SECRET?.trim() ||
-    process.env.TU_SESSION_SECRET?.trim() ||
-    "dev-session-secret"
-  );
+  const secret = process.env.SESSION_SECRET?.trim();
+  if (!secret) throw new Error("Missing SESSION_SECRET");
+  return secret;
 }
 
 function bytesToBase64Url(bytes: Uint8Array) {
@@ -56,6 +56,8 @@ export async function createSessionToken(input: {
   email: string;
   name: string;
   tuId: string;
+  role?: "student" | "staff";
+  isAdmin?: boolean;
 }) {
   const now = Date.now();
   const payload: SessionPayload = {
@@ -63,6 +65,8 @@ export async function createSessionToken(input: {
     email: input.email,
     name: input.name,
     tuId: input.tuId,
+    role: input.role ?? "student",
+    isAdmin: input.isAdmin ?? false,
     iat: now,
     exp: now + SESSION_MAX_AGE_SECONDS * 1000,
   };
@@ -80,24 +84,27 @@ export async function createSessionToken(input: {
 }
 
 export async function verifySessionToken(token: string) {
-  const [payloadPart, signaturePart] = token.split(".");
-  if (!payloadPart || !signaturePart) return null;
-
-  const payloadBytes = base64UrlToBytes(payloadPart);
-  const payloadJson = decoder.decode(payloadBytes);
-  const key = await importHmacKey(getSessionSecret());
-  const isValid = await crypto.subtle.verify(
-    "HMAC",
-    key,
-    base64UrlToBytes(signaturePart),
-    encoder.encode(payloadJson),
-  );
-
-  if (!isValid) return null;
-
   try {
+    const parts = token.split(".");
+    if (parts.length !== 2) return null;
+    const [payloadPart, signaturePart] = parts;
+    if (!payloadPart || !signaturePart) return null;
+    const payloadJson = decoder.decode(base64UrlToBytes(payloadPart));
+    const key = await importHmacKey(getSessionSecret());
+    const isValid = await crypto.subtle.verify(
+      "HMAC", key, base64UrlToBytes(signaturePart), encoder.encode(payloadJson),
+    );
+    if (!isValid) return null;
     const payload = JSON.parse(payloadJson) as SessionPayload;
-    if (payload.exp < Date.now()) return null;
+    if (
+      typeof payload.userId !== "string" || !payload.userId ||
+      typeof payload.email !== "string" || typeof payload.name !== "string" ||
+      typeof payload.tuId !== "string" ||
+      !["student", "staff"].includes(payload.role) ||
+      typeof payload.isAdmin !== "boolean" ||
+      !Number.isFinite(payload.iat) || !Number.isFinite(payload.exp) ||
+      payload.exp <= Date.now()
+    ) return null;
     return payload;
   } catch {
     return null;

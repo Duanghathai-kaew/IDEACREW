@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 export function LoginForm() {
-  const { signInForDevelopment } = useAuth();
+  const { refreshUser } = useAuth();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -33,10 +33,7 @@ export function LoginForm() {
         return;
       }
 
-      const user = data?.user;
-      if (user) {
-        await signInForDevelopment(user);
-      }
+      await refreshUser();
 
       router.push("/");
     } catch {
@@ -50,11 +47,11 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <p className="mb-4 text-sm text-slate-600 text-center">
-        เข้าสู่ระบบด้วยบัญชี admin
+        ใช้รหัสนักศึกษา TU เดิมกับรหัสผ่านสำหรับการนำเสนอ
       </p>
 
       <div className="mb-3">
-        <label className="block text-sm font-medium mb-1">Username</label>
+        <label className="block text-sm font-medium mb-1">รหัสนักศึกษา / Username</label>
         <input
           type="text"
           value={username}
@@ -62,6 +59,7 @@ export function LoginForm() {
           required
           className="min-h-11 w-full rounded-md border px-3 py-2"
           aria-label="username"
+          autoComplete="username"
         />
       </div>
 
@@ -74,6 +72,7 @@ export function LoginForm() {
           required
           className="min-h-11 w-full rounded-md border px-3 py-2"
           aria-label="password"
+          autoComplete="current-password"
         />
       </div>
 
