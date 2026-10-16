@@ -219,7 +219,7 @@ export default function Home() {
       </div>
 
       <main className="mx-auto grid w-full min-w-0 max-w-7xl flex-1 grid-cols-1 items-start gap-4 px-4 py-4 sm:gap-6 sm:px-6 sm:py-6 lg:grid-cols-[280px_1fr]">
-        <aside className="hidden min-w-0 lg:block lg:self-start">
+        <aside className="hidden min-w-0 lg:sticky lg:top-24 lg:block lg:self-start">
           <Sidebar {...sidebarProps} />
         </aside>
 

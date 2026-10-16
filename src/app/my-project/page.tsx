@@ -70,6 +70,14 @@ const filters = [
 
 type FilterKey = "all" | "draft" | "queue" | "active" | "done";
 
+const selectedFilterStyles: Record<FilterKey, string> = {
+  all: "border-transparent bg-linear-to-br from-brand-500 via-brand-400 to-brand-300 text-white hover:to-brand-400 active:brightness-95",
+  draft: `${statusMeta.draft.pill} border-slate-300 hover:bg-slate-200 active:bg-slate-300`,
+  queue: `${statusMeta.pending_approval.pill} border-amber-400 hover:bg-amber-200 active:bg-amber-300`,
+  active: `${statusMeta.open.pill} border-emerald-400 hover:bg-emerald-200 active:bg-emerald-300`,
+  done: `${statusMeta.closed.pill} border-slate-500 hover:bg-slate-300 active:bg-slate-400`,
+};
+
 type MyProjectResponse = {
   data?: MyProject[];
   error?: string;
@@ -238,13 +246,15 @@ export default function MyProjectPage() {
             <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm">
               <TabsTrigger
                 value="created"
-                className="h-11 cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
+                variant="filled"
+                className="h-11 cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
               >
                 โปรเจกต์ที่สร้าง
               </TabsTrigger>
               <TabsTrigger
                 value="applied"
-                className="h-11 cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
+                variant="filled"
+                className="h-11 cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
               >
                 โปรเจกต์ที่สมัคร
               </TabsTrigger>
@@ -262,7 +272,7 @@ export default function MyProjectPage() {
                       onClick={() => setActiveFilter(filter.key)}
                       className={`cursor-pointer px-4 py-2 rounded-full text-sm font-medium border transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none ${
                         isActive
-                          ? "bg-slate-700 text-white border-slate-700 shadow-sm hover:bg-slate-800 hover:border-slate-800 active:bg-slate-900"
+                          ? `${selectedFilterStyles[filter.key]} shadow-sm`
                           : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100"
                       }`}
                     >
@@ -270,7 +280,9 @@ export default function MyProjectPage() {
                       <span
                         className={`ml-2 inline-flex items-center justify-center w-5 h-5 text-xs rounded-full ${
                           isActive
-                            ? "bg-white/20 text-white"
+                            ? filter.key === "all"
+                              ? "bg-white/20 text-white"
+                              : "bg-white/60 text-current"
                             : "bg-slate-100 text-slate-700"
                         }`}
                       >

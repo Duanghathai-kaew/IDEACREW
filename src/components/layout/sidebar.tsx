@@ -50,6 +50,7 @@ export default function Sidebar({
   variant = "default",
 }: SidebarProps) {
   const isDrawer = variant === "drawer";
+  const statusGroupName = React.useId();
 
   // State สำหรับควบคุมการย่อขยายของกลุ่มทักษะและหมวดหมู่
   const [showAllSkills, setShowAllSkills] = React.useState(false);
@@ -68,15 +69,13 @@ export default function Sidebar({
     <aside
       className={
         isDrawer
-          ? "flex h-full min-h-0 w-full flex-col overflow-hidden rounded-[20px] bg-white shadow-none"
-          : /* คุมความสูงสูงสุดด้วย max-h เพื่อให้กล่องหดตามเนื้อหาจริงได้ และไม่ยืดทะลุขอบจอ */
-            "sidebar-enter lg:sticky lg:top-24 lg:z-20 lg:self-start lg:max-h-[calc(100vh-120px)] lg:w-full lg:flex-col lg:overflow-hidden"
+          ? "flex h-full min-h-0 w-full flex-col overflow-hidden"
+          : "sidebar-enter flex min-h-0 w-full flex-col overflow-hidden lg:max-h-[calc(100dvh-7.5rem)]"
       }
     >
-      {/* กล่องสีขาวหลัก: ถอด h-full ออกแล้วใส่ max-h-full คู่กับ min-h-0 เพื่อรองรับการยืดหด (Fit Content) */}
-      <div className="flex max-h-full min-h-0 w-full flex-col overflow-hidden rounded-[20px] bg-white/90 shadow-[0_10px_30px_rgb(15_23_42/0.08)] backdrop-blur-[14px]">
+      <div className={`flex min-h-0 w-full flex-1 flex-col overflow-hidden bg-white ${isDrawer ? "" : "rounded-[20px] shadow-[0_10px_30px_rgb(15_23_42/0.08)]"}`}>
         {/* Header ส่วนหัวตัวกรอง */}
-        <div className="flex items-center gap-3 bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 px-4.5 py-4 font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.15)] shrink-0">
+        {!isDrawer && <div className="flex items-center gap-3 bg-linear-to-r from-brand-500 via-brand-400 to-brand-300 px-4.5 py-4 font-semibold text-white shadow-[0_1px_0_rgba(255,255,255,0.15)] shrink-0">
           <Image
             src="/logo.svg"
             alt="IdeaCrew logo"
@@ -85,10 +84,9 @@ export default function Sidebar({
             className="h-12 w-auto shrink-0"
           />
           <span>ตัวกรอง</span>
-        </div>
+        </div>}
 
-        {/* Content Area: ใส่ min-h-0 เพื่อปล่อยให้ย่อยหดตัวตามจริง และสกรอลล์ในนี้เมื่อยาวเกินหน้าจอเท่านั้น */}
-        <div className="flex-1 min-h-0 overflow-y-auto px-5 py-5 custom-scrollbar">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-4 sm:px-5 custom-scrollbar">
           {/* Section: ทักษะที่ต้องการ */}
           <div className="mb-7 border-b border-slate-200/80 pb-5">
             <p className="mb-2.5 block font-medium text-slate-800">
@@ -231,7 +229,7 @@ export default function Sidebar({
                   <input
                     className="accent-brand-500 h-4 w-4 cursor-pointer"
                     type="radio"
-                    name="status"
+                    name={statusGroupName}
                     checked={status === option.id}
                     onChange={() => onStatusChange(option.id)}
                   />{" "}
@@ -241,12 +239,13 @@ export default function Sidebar({
             </div>
           </div>
 
-          {/* ปุ่มล้างตัวกรอง */}
+        </div>
+        <div className="shrink-0 border-t border-slate-100 px-4 py-3">
           <button
             type="button"
             onClick={onReset}
             disabled={!canReset}
-            className="mt-5 min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
+            className="min-h-11 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-slate-50"
           >
             ล้างตัวกรอง
           </button>

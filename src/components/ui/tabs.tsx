@@ -69,20 +69,27 @@ function TabsList({ className, ...props }: React.ComponentProps<"div">) {
 
 type TabsTriggerProps = React.ComponentProps<"button"> & {
   value: string;
+  variant?: "default" | "filled";
 };
 
-function TabsTrigger({ className, value, ...props }: TabsTriggerProps) {
+function TabsTrigger({ className, value, variant = "default", ...props }: TabsTriggerProps) {
   const context = useTabsContext();
   const active = context.value === value;
 
   return (
     <button
       type="button"
+      data-state={active ? "active" : "inactive"}
+      aria-pressed={active}
       className={cn(
         "inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium transition",
         active
-          ? "bg-white text-slate-900 shadow-sm"
-          : "text-slate-500 hover:text-slate-700",
+          ? variant === "filled"
+            ? "bg-linear-to-br from-brand-500 via-brand-400 to-brand-300 text-white shadow-sm hover:to-brand-400 active:brightness-95"
+            : "bg-white text-slate-900 shadow-sm"
+          : variant === "filled"
+            ? "text-slate-500 hover:bg-slate-50 hover:text-slate-700 active:bg-slate-100"
+            : "text-slate-500 hover:text-slate-700",
         className,
       )}
       onClick={() => context.setValue(value)}

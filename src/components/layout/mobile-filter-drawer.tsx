@@ -1,6 +1,7 @@
 "use client";
 
 import Sidebar, { type SidebarProps } from "@/components/layout/sidebar";
+import * as Dialog from "@radix-ui/react-dialog";
 import { SlidersHorizontal, X } from "lucide-react";
 import { useEffect } from "react";
 
@@ -19,14 +20,17 @@ export function MobileFilterToggle({
 }) {
   return (
     <button
+      id="project-filter-toggle"
       type="button"
       onClick={onOpen}
-      className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 lg:hidden"
+      aria-haspopup="dialog"
+      aria-controls="project-filter-panel"
+      className="flex min-h-11 w-full cursor-pointer items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50 active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 lg:hidden"
     >
       <SlidersHorizontal className="h-4 w-4 text-brand-500" />
       ตัวกรอง
       {activeFilterCount > 0 && (
-        <span className="rounded-full bg-linear-to-br from-brand-500 to-brand-400 px-2 py-0.5 text-xs text-white">
+        <span className="rounded-full bg-slate-700 px-2 py-0.5 text-xs text-white">
           {activeFilterCount}
         </span>
       )}
@@ -42,61 +46,52 @@ export default function MobileFilterDrawer({
 }: MobileFilterDrawerProps) {
   useEffect(() => {
     if (!open) return;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+    const desktop = window.matchMedia("(min-width: 1024px)");
+    function closeOnDesktop(event: MediaQueryListEvent) {
+      if (event.matches) onClose();
     }
-
-    document.addEventListener("keydown", handleEscape);
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      document.removeEventListener("keydown", handleEscape);
-    };
+    desktop.addEventListener("change", closeOnDesktop);
+    return () => desktop.removeEventListener("change", closeOnDesktop);
   }, [open, onClose]);
 
-  if (!open) return null;
-
   return (
-    <div className="fixed inset-0 z-40 lg:hidden">
-      <button
-        type="button"
-        aria-label="ปิดตัวกรอง"
-        className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
-        onClick={onClose}
-      />
-      <aside
-        role="dialog"
-        aria-modal="true"
-        aria-label="ตัวกรองโปรเจกต์"
-        className="absolute left-0 top-0 flex h-full w-[min(100%,20rem)] flex-col bg-white shadow-2xl"
-      >
-        <div className="flex items-center justify-between border-b border-slate-200 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm font-semibold text-slate-800">
-            <SlidersHorizontal className="h-4 w-4 text-brand-500" />
-            ตัวกรอง
-            {activeFilterCount > 0 && (
-              <span className="rounded-full bg-rose-100 px-2 py-0.5 text-xs text-rose-700">
-                {activeFilterCount}
-              </span>
-            )}
+    <Dialog.Root open={open} onOpenChange={(next) => { if (!next) onClose(); }}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/40 backdrop-blur-[1px]" />
+        <Dialog.Content
+          id="project-filter-panel"
+          aria-describedby={undefined}
+          onCloseAutoFocus={(event) => {
+            event.preventDefault();
+            const toggle = document.getElementById("project-filter-toggle");
+            if (toggle?.getClientRects().length) toggle.focus();
+          }}
+          className="fixed inset-x-0 bottom-0 z-50 flex h-[90dvh] max-h-[48rem] min-h-0 flex-col overflow-hidden rounded-t-2xl bg-white shadow-2xl outline-none sm:inset-y-0 sm:right-auto sm:h-dvh sm:max-h-none sm:w-96 sm:rounded-none"
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-200 px-4 py-3">
+            <Dialog.Title className="flex items-center gap-2 text-sm font-semibold text-slate-800">
+              <SlidersHorizontal className="h-4 w-4 text-brand-500" />
+              ตัวกรองโปรเจกต์
+              {activeFilterCount > 0 && (
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-700">
+                  {activeFilterCount}
+                </span>
+              )}
+            </Dialog.Title>
+            <Dialog.Close type="button" aria-label="ปิดตัวกรอง" className="icon-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400">
+              <X className="icon-sm" />
+            </Dialog.Close>
           </div>
-          <button
-            type="button"
-            aria-label="ปิด"
-            className="icon-btn"
-            onClick={onClose}
-          >
-            <X className="icon-sm" />
-          </button>
-        </div>
-        <div className="min-h-0 flex-1 overflow-y-auto p-3">
-          <Sidebar {...sidebarProps} variant="drawer" />
-        </div>
-      </aside>
-    </div>
+          <div className="min-h-0 flex-1 overflow-hidden">
+            <Sidebar {...sidebarProps} variant="drawer" />
+          </div>
+          <div className="shrink-0 border-t border-slate-100 px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            <Dialog.Close type="button" className="min-h-11 w-full cursor-pointer rounded-xl bg-slate-700 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-slate-800 active:bg-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2">
+              ดูโปรเจกต์
+            </Dialog.Close>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }
