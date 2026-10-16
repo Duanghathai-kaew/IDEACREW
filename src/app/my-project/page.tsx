@@ -236,10 +236,16 @@ export default function MyProjectPage() {
 
           <Tabs defaultValue="created" className="space-y-6">
             <TabsList className="grid h-auto w-full grid-cols-2 rounded-2xl bg-white p-1 shadow-sm">
-              <TabsTrigger value="created" className="h-11 rounded-xl">
+              <TabsTrigger
+                value="created"
+                className="h-11 cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
+              >
                 โปรเจกต์ที่สร้าง
               </TabsTrigger>
-              <TabsTrigger value="applied" className="h-11 rounded-xl">
+              <TabsTrigger
+                value="applied"
+                className="h-11 cursor-pointer rounded-xl transition-[background-color,color,box-shadow,transform] duration-150 hover:bg-slate-50 active:scale-[0.98] active:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none"
+              >
                 โปรเจกต์ที่สมัคร
               </TabsTrigger>
             </TabsList>
@@ -251,17 +257,14 @@ export default function MyProjectPage() {
                   return (
                     <button
                       key={filter.key}
+                      type="button"
+                      aria-pressed={isActive}
                       onClick={() => setActiveFilter(filter.key)}
-                      className={`px-4 py-2 rounded-full text-sm font-medium border transition-all ${
+                      className={`cursor-pointer px-4 py-2 rounded-full text-sm font-medium border transition-[background-color,border-color,color,box-shadow,transform] duration-150 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-2 motion-reduce:transform-none ${
                         isActive
-                          ? "text-white border-transparent shadow"
-                          : "bg-white text-slate-700 border-slate-200 hover:border-brand-400"
+                          ? "bg-slate-700 text-white border-slate-700 shadow-sm hover:bg-slate-800 hover:border-slate-800 active:bg-slate-900"
+                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-400 active:bg-slate-100"
                       }`}
-                      style={
-                        isActive
-                          ? { background: "var(--brand-gradient-135)" }
-                          : undefined
-                      }
                     >
                       {filter.label}
                       <span
