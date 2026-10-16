@@ -19,8 +19,7 @@ export function LoginForm() {
     setLoading(true);
 
     try {
-      // Call server-side route which hides TU API key and avoids CORS issues
-      const res = await fetch("/api/tu-login", {
+      const res = await fetch("/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username, password }),
@@ -36,13 +35,7 @@ export function LoginForm() {
 
       const user = data?.user;
       if (user) {
-        await signInForDevelopment({
-          id: user.id,
-          name: user.displayname,
-          email: user.email,
-          tuId: user.username,
-          role: "student",
-        });
+        await signInForDevelopment(user);
       }
 
       router.push("/");
@@ -57,7 +50,7 @@ export function LoginForm() {
   return (
     <form onSubmit={handleSubmit} className="w-full">
       <p className="mb-4 text-sm text-slate-600 text-center">
-        เข้าสู่ระบบด้วยบัญชี TU
+        เข้าสู่ระบบด้วยบัญชี admin
       </p>
 
       <div className="mb-3">
