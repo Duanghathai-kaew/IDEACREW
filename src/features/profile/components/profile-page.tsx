@@ -677,7 +677,7 @@ export default function ProfilePage({
             <h3 className={sectionTitle}>Portfolio URLs</h3>
             <div className="space-y-3">
               {data.portfolioLinks.map((link, index) => (
-                <div key={link.label + index} className="space-y-1">
+                <div key={index} className="space-y-1">
                   {isEditing ? (
                     <div className="space-y-2">
                       <input
@@ -742,7 +742,7 @@ export default function ProfilePage({
             <h3 className={sectionTitle}>Social Links</h3>
             <div className="space-y-3">
               {data.socialLinks.map((link, index) => (
-                <div key={link.label + index} className="space-y-1">
+                <div key={index} className="space-y-1">
                   {isEditing ? (
                     <div className="space-y-2">
                       <input
@@ -818,7 +818,7 @@ export default function ProfilePage({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {data.projects.map((project, index) => (
               <article
-                key={project.title + index}
+                key={index}
                 className="bg-white rounded-2xl shadow-sm border border-brand-100 overflow-hidden"
               >
                 <div className="h-36 bg-gradient-to-r from-brand-200 to-brand-100" />
@@ -897,7 +897,7 @@ export default function ProfilePage({
                   <div className="flex flex-wrap gap-2">
                     {isEditing ? (
                       <input
-                        value={draft.projects[index]?.tags.join(", ") ?? ""}
+                        defaultValue={draft.projects[index]?.tags.join(", ") ?? ""}
                         onChange={(e) =>
                           setDraft((prev) => {
                             const next = cloneProfile(prev);
