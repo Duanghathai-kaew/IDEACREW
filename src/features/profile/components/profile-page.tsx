@@ -821,7 +821,7 @@ export default function ProfilePage({
                 key={index}
                 className="bg-white rounded-2xl shadow-sm border border-brand-100 overflow-hidden"
               >
-                <div className="h-36 bg-gradient-to-r from-brand-200 to-brand-100" />
+                <div aria-hidden="true" className="h-1 bg-slate-100" />
                 <div className="p-4 space-y-2">
                   {isEditing ? (
                     <input
